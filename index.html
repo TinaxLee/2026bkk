@@ -185,10 +185,10 @@
                 const list = items.filter(i => i.owner === owner);
                 const color = owner === 'tina' ? '#E6BEBB' : '#8A9AAB';
                 document.getElementById(tid).innerHTML = list.map(i => `
-                    <div class="p-4 flex items-center gap-3 border-b border-gray-50 active:bg-gray-50 group">
+                    <div class="p-4 flex items-center gap-3 border-b border-gray-50 active:bg-gray-50">
                         <div onclick="togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 cursor-pointer" style="background:${i.checked ? color : 'transparent'}; border-color:${i.checked ? color : '#DDD'}"></div>
                         <span onclick="togglePack('${i.id}', ${i.checked})" class="flex-1 text-sm cursor-pointer ${i.checked ? 'line-through text-gray-300' : 'font-bold'}">${i.item}</span>
-                        <button onclick="deleteItem('packing', '${i.id}')" class="text-gray-300 hover:text-red-300 transition-colors p-1">✕</button>
+                        <button onclick="deleteItem('packing', '${i.id}')" class="text-gray-300 p-1">✕</button>
                     </div>`).join('');
             };
             draw('tina', 'pk-list-tina');
@@ -260,7 +260,7 @@
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-3 rounded-xl rounded-tr-none text-xs font-bold">${query}</span></div>`;
             
             const loadingId = 'loading-' + Date.now();
-            chat.innerHTML += `<div id="${loadingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-gray-400 italic">Gemini 正在為妳規劃攻略中... ✨</div></div>`;
+            chat.innerHTML += `<div id="${loadingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-gray-400 italic">Gemini 正在規劃攻略中... ✨</div></div>`;
             chat.scrollTop = chat.scrollHeight;
 
             try {
@@ -270,12 +270,12 @@
                 });
                 const data = await res.json();
                 const text = data.candidates[0].content.parts[0].text;
-                const loadingEl = document.getElementById(loadingId);
-                if(loadingEl) loadingEl.remove();
+                const loadEl = document.getElementById(loadingId);
+                if(loadEl) loadEl.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { 
-                const loadingEl = document.getElementById(loadingId);
-                if(loadingEl) loadingEl.innerHTML = `<div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-red-400">連線稍慢，請再試一次。</div>`;
+                const loadEl = document.getElementById(loadingId);
+                if(loadEl) loadEl.innerHTML = `<div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-red-400">請再試一次。</div>`;
             }
             finally { btn.disabled = false; chat.scrollTop = chat.scrollHeight; }
         };
@@ -326,6 +326,21 @@
     <main class="max-w-md mx-auto p-5">
         <!-- 行程 -->
         <div id="content-itinerary" class="tab-content">
+            <!-- 天氣小工具 -->
+            <div class="app-card mb-6 overflow-hidden bg-gradient-to-br from-[#8E9775] to-[#6B705C] text-white p-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">☀️</span>
+                    <div>
+                        <p class="text-[10px] font-bold opacity-80 uppercase">Bangkok / Phuket</p>
+                        <p class="text-sm font-black">曼谷 32°C | 普吉 29°C</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] opacity-70">今日天氣</p>
+                    <p class="text-xs font-bold">晴朗泰放鬆</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3 mb-6">
                 <button onclick="toggleSection('flight')" class="app-card p-4 bg-[#6B705C] text-white btn-press font-black text-xs">航班資訊</button>
                 <button onclick="toggleSection('hotel')" class="app-card p-4 bg-[#DDB892] text-white btn-press font-black text-xs">住宿飯店</button>
@@ -334,12 +349,14 @@
             <div id="hotel-grid" class="expand-panel"><textarea id="hotel-text" onblur="closePanel('hotel')" oninput="saveMeta('hotel')" class="w-full h-24 app-card p-4 outline-none text-xs" placeholder="飯店資訊..."></textarea></div>
 
             <div class="app-card p-6 bg-white/60 mb-6 border-dashed border-2 border-gray-100">
-                <p class="text-[10px] text-center text-[#A5A58D] font-bold italic mb-4 tracking-widest uppercase">泰放鬆出發！去有你/妳的地方 🗺️ ✈️</p>
+                <p class="text-[14px] text-center text-[#4A4E40] font-black italic mb-4 tracking-wide uppercase">
+                    ✨ 泰放鬆出發！去有你/妳的地方 🗺️ ✈️
+                </p>
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <input type="text" id="it-day" placeholder="Day 1" class="bg-gray-50 p-3 rounded-xl text-xs outline-none">
                     <input type="time" id="it-time" class="bg-gray-50 p-3 rounded-xl text-xs outline-none font-bold">
                 </div>
-                <input type="text" id="it-activity" placeholder="要去哪裡？(例：鄭王廟)" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none mb-3" onblur="window.scrollTo(0,0)">
+                <input type="text" id="it-activity" placeholder="要去哪裡？" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none mb-3">
                 <button onclick="addItinerary()" class="bg-[#4A4E40] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">新增行程</button>
             </div>
             <div id="it-list"></div>
@@ -347,6 +364,7 @@
 
         <!-- 記帳 -->
         <div id="content-budget" class="tab-content hidden">
+            <!-- 匯率轉換工具 -->
             <div class="app-card p-4 mb-4 bg-white/80 border-2 border-[#DDB892]/30">
                 <p class="text-[10px] font-black text-[#A5A58D] mb-3 uppercase tracking-widest text-center">💱 匯率小工具 (1:0.95)</p>
                 <div class="flex items-center gap-2">
@@ -370,14 +388,13 @@
                 <div class="grid grid-cols-2 gap-2">
                     <select id="exp-cat" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
                         <option value="food">🍴 美食</option><option value="move">🚗 行程</option>
-                        <option value="stay">🏨 住宿</option><option value="play">🎟️ 購物</option>
+                        <option value="stay">🏨 住宿</option><option value="buy">🛍️ 購物</option>
                     </select>
                     <select id="exp-payer" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
-                        <option value="tina">Tina 霸氣買單 💸</option>
-                        <option value="darren">Darren 護妻神刷 💳</option>
+                        <option value="tina">Tina 霸氣買單 💸</option><option value="darren">Darren 護妻神刷 💳</option>
                     </select>
                 </div>
-                <input type="text" id="exp-item" placeholder="買了什麼？" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none">
+                <input type="text" id="exp-item" placeholder="品項" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none">
                 <div class="flex gap-2">
                     <input type="number" id="exp-cost" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-xs outline-none">
                     <select id="exp-currency" class="bg-gray-50 px-3 rounded-xl text-xs font-bold"><option value="THB">฿</option><option value="TWD">$</option></select>
@@ -403,21 +420,16 @@
         </div>
     </main>
 
-    <!-- Gemini 視窗 -->
+    <!-- Gemini -->
     <div id="gemini-modal" onclick="if(event.target === this) toggleGemini()">
         <div id="gemini-panel" onclick="event.stopPropagation()">
             <div class="p-6 h-full flex flex-col">
                 <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-black text-sm tracking-widest flex items-center gap-2">✨ GEMINI 智慧攻略</h3>
-                    <button onclick="clearGeminiHistory()" class="text-[10px] bg-gray-200 px-3 py-1 rounded-full font-bold">清空對話 🧹</button>
+                    <h3 class="font-black text-sm tracking-widest">✨ GEMINI 智慧攻略</h3>
                     <button onclick="toggleGemini()" class="text-xl">✕</button>
                 </div>
-                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1">
-                    <div class="text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">
-                        Sawadee-ka! 🙏 需要幫忙查哪裡的攻略呢？
-                    </div></div>
-                </div>
+                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1"></div>
                 <div class="flex gap-2 p-2 bg-gray-100 rounded-2xl">
                     <input type="text" id="gemini-input" placeholder="問問看..." class="flex-1 p-3 text-xs outline-none bg-transparent">
                     <button id="gemini-send-btn" onclick="askGemini()" class="bg-[#4A4E40] text-white px-4 rounded-xl text-xs font-bold">發送</button>
@@ -433,8 +445,6 @@
         <div class="w-px h-6 bg-white/20 mx-1"></div>
         <div onclick="toggleGemini()" class="nav-btn btn-press">✨</div>
     </nav>
-
     <script>switchTab('itinerary');</script>
 </body>
 </html>
-
