@@ -5,76 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Darren & Tina 2026 Honeymoon</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/833/833472.png">
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F0EFEA; color: #4A4A4A; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
-        .bg-gradient-custom { background: linear-gradient(135deg, #6B705C 0%, #A5A58D 100%); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .tab-active { background-color: #6B705C; color: white; box-shadow: 0 10px 20px -5px rgba(107, 112, 92, 0.4); }
-        .card-shadow { box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); }
-        .grid-collapse { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .grid-collapse.open { grid-template-rows: 1fr; }
-        .collapse-inner { overflow: hidden; }
-        .arrow-rotate { transition: transform 0.4s ease; }
-        .arrow-rotate.active { transform: rotate(180deg); }
-        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-        .heart-icon { display: inline-block; color: #E6BEBB; animation: heartBeat 2s infinite ease-in-out; }
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .text-morandi-blue { color: #8A9AAB; }
+        :root {
+            --morandi-olive: #6B705C;
+            --morandi-beige: #B7B7A4;
+            --morandi-gold: #DDB892;
+            --morandi-text: #4A4E40;
+            --bg-light: #F0EFEA;
+            --heart-pink: #F8AD9D;
+        }
+
+        body { 
+            font-family: 'Montserrat', 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--morandi-text); 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            overflow-y: auto;
+        }
+
+        .heart-text { color: var(--heart-pink); font-size: 0.8rem; letter-spacing: 0.4em; font-weight: 800; margin-bottom: 0.5rem; }
+        .couple-name { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 2.5rem; 
+            line-height: 1.1; 
+            font-weight: 700; 
+            color: #2D3128; 
+            margin: 0.5rem 0; 
+            letter-spacing: -0.02em; 
+        }
+        .ampersand { color: #2D3128; font-family: serif; font-style: italic; }
+        
+        .honeymoon-subtitle { font-size: 0.85rem; font-weight: 700; color: var(--morandi-olive); letter-spacing: 0.1em; }
+
+        .main-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 2.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 15px -5px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+
+        .bottom-nav {
+            background: rgba(74, 78, 64, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            position: fixed;
+            bottom: 25px; left: 20px; right: 20px;
+            border-radius: 2rem;
+            height: 65px;
+            z-index: 1000;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn { font-size: 1.4rem; cursor: pointer; transition: opacity 0.2s; }
+        .btn-press:active { transform: scale(0.95); }
+
+        .expand-panel { display: none; margin-top: 10px; }
+        .expand-panel.active { display: block; }
+
+        #gemini-modal {
+            position: fixed; inset: 0; z-index: 2000;
+            background: rgba(0,0,0,0.3);
+            visibility: hidden; opacity: 0; transition: opacity 0.3s ease;
+        }
+        #gemini-modal.open { visibility: visible; opacity: 1; }
+        #gemini-panel {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            height: 85%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
+            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+        }
+        #gemini-modal.open #gemini-panel { transform: translateY(0); }
+
+        input, select, textarea { font-size: 16px !important; } 
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-        // 妳的專屬 Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxcDDn80ScpW35TdJdeXOAkfJbHM0DyD0",
-            authDomain: "honeymoon-2026.firebaseapp.com",
-            projectId: "honeymoon-2026",
-            storageBucket: "honeymoon-2026.firebasestorage.app",
-            messagingSenderId: "639168649822",
-            appId: "1:639168649822:web:20399eff7d34144277f2cf",
-            measurementId: "G-5MDQVLDS7P"
-        };
-
+        const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        let userId = null;
-        let exchangeRate = 0.95;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // 1. 自動抓取匯率
-        const fetchRate = async () => {
-            try {
-                const res = await fetch('https://api.frankfurter.dev/v1/latest?base=THB&symbols=TWD');
-                const data = await res.json();
-                if(data?.rates?.TWD) exchangeRate = data.rates.TWD;
-            } catch(e) { console.log("使用預設匯率"); }
+        let currentUser = null;
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
         };
 
-        // 2. 身份與同步
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                userId = user.uid;
-                fetchRate().then(startSyncing);
+                currentUser = user;
+                startSyncing();
             } else {
-                signInAnonymously(auth);
+                initAuth();
             }
         });
 
-        // 定義資料路徑 (確保 Tina 和 Darren 看到同一份)
-        const getColl = (name) => collection(db, 'honeymoon_data', 'shared', name);
-        const getMeta = () => doc(db, 'honeymoon_data', 'shared', 'meta', 'info');
+        const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
+        const getMeta = () => doc(db, 'artifacts', appId, 'public', 'data', 'meta', 'info');
 
         function startSyncing() {
             onSnapshot(getMeta(), (d) => {
@@ -84,246 +133,308 @@
                     if (document.activeElement.id !== 'hotel-text') document.getElementById('hotel-text').value = data.hotel || '';
                 }
             });
-
             onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))));
             onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
             onSnapshot(getColl('expenses'), (s) => renderExpenses(s.docs.map(d => ({id: d.id, ...d.data()}))));
         }
 
-        // 3. 視窗功能
-        window.saveMeta = async (key) => {
-            const val = document.getElementById(key + '-text').value;
-            await setDoc(getMeta(), { [key]: val }, { merge: true });
-        };
-
-        window.addItinerary = async () => {
-            const act = document.getElementById('it-activity').value;
-            if(!act) return;
-            await addDoc(getColl('itinerary'), {
-                day: document.getElementById('it-day').value || 'Day 1',
-                time: document.getElementById('it-time').value || '--:--',
-                activity: act,
-                createdAt: Date.now()
-            });
-            document.getElementById('it-activity').value = '';
-        };
-
-        window.addPacking = async () => {
-            const val = document.getElementById('pack-item').value;
-            if(!val) return;
-            await addDoc(getColl('packing'), {
-                item: val,
-                owner: document.getElementById('pack-owner').value,
-                checked: false,
-                createdAt: Date.now()
-            });
-            document.getElementById('pack-item').value = '';
-        };
-
-        window.togglePack = async (id, status) => {
-            await updateDoc(doc(db, 'honeymoon_data', 'shared', 'packing', id), { checked: !status });
-        };
-
-        window.addExpense = async () => {
-            const item = document.getElementById('exp-item').value;
-            const cost = document.getElementById('exp-cost').value;
-            if(!item || !cost) return;
-            await addDoc(getColl('expenses'), {
-                item, cost: parseFloat(cost),
-                currency: document.getElementById('exp-currency').value,
-                payer: document.getElementById('exp-payer').value,
-                createdAt: Date.now()
-            });
-            document.getElementById('exp-item').value = '';
-            document.getElementById('exp-cost').value = '';
-        };
-
-        window.deleteItem = async (coll, id) => {
-            await deleteDoc(doc(db, 'honeymoon_data', 'shared', coll, id));
-        };
-
-        // --- Render ---
         function renderItinerary(items) {
-            document.getElementById('it-list').innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => `
-                <div class="bg-white p-6 rounded-[2rem] border border-[#EBEBEB] flex gap-5 items-center relative card-shadow fade-in">
-                    <div class="flex flex-col items-center bg-[#F5F5F3] p-3 rounded-2xl min-w-[65px]">
-                        <span class="text-[9px] font-black text-[#A5A5A5] tracking-tighter uppercase">${item.day}</span>
+            const list = document.getElementById('it-list');
+            list.innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => `
+                <div class="app-card p-5 flex gap-4 items-start mb-4">
+                    <div class="flex flex-col items-center bg-[#F5F5F3] p-3 rounded-xl min-w-[60px]">
+                        <span class="text-[9px] font-bold text-gray-400">${item.day}</span>
                         <span class="text-sm font-black text-[#6B705C]">${item.time}</span>
                     </div>
                     <div class="flex-1">
-                        <div class="font-bold text-[#4A4E40] text-sm">${item.activity}</div>
-                        <button onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(item.activity)}', '_blank')" class="text-[9px] font-black text-[#8E9775] mt-2 opacity-70 uppercase tracking-[0.1em] border border-[#8E9775]/20 px-3 py-1 rounded-full">📍 導航</button>
+                        <div class="font-bold text-[#4A4E40] text-sm mb-3">${item.activity}</div>
+                        <div class="flex gap-2">
+                            <a href="https://www.google.com/maps/search/${encodeURIComponent(item.activity)}" target="_blank" class="flex-1 bg-[#8E9775] text-white text-[11px] font-bold py-2 rounded-lg text-center">導航 📍</a>
+                            <button onclick="smartGuide('${item.activity}')" class="flex-1 bg-[#DDB892] text-white text-[11px] font-bold py-2 rounded-lg text-center">攻略 ✨</button>
+                        </div>
                     </div>
-                    <button onclick="deleteItem('itinerary', '${item.id}')" class="text-[#DDD] px-2">✕</button>
-                </div>
-            `).join('');
+                    <button onclick="deleteItem('itinerary', '${item.id}')" class="text-gray-300 p-1">✕</button>
+                </div>`).join('');
+        }
+
+        function renderExpenses(items) {
+            let total = 0;
+            const payerNicks = { tina: 'Tina 霸氣買單 💸', darren: 'Darren 護妻神刷 💳' };
+            document.getElementById('exp-list').innerHTML = items.map(exp => {
+                total += exp.currency === 'THB' ? exp.cost : exp.cost / 0.95;
+                return `
+                <div class="app-card p-4 flex justify-between items-center mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="text-lg">${{food:'🍴',move:'🚗',stay:'🏨',play:'🎟️',buy:'🛍️'}[exp.category] || '💰'}</div>
+                        <div>
+                            <div class="text-sm font-bold text-[#4A4E40]">${exp.item}</div>
+                            <div class="text-[10px] text-[#A5A58D] font-bold">${payerNicks[exp.payer] || exp.payer}</div>
+                        </div>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                        <div class="text-sm font-black text-[#6B705C]">${exp.currency === 'THB' ? '฿' : '$'}${exp.cost.toLocaleString()}</div>
+                        <button onclick="deleteItem('expenses', '${exp.id}')" class="text-gray-200 ml-1">✕</button>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
         }
 
         function renderPacking(items) {
             const draw = (owner, tid) => {
                 const list = items.filter(i => i.owner === owner);
                 const color = owner === 'tina' ? '#E6BEBB' : '#8A9AAB';
-                document.getElementById(tid).innerHTML = list.length ? list.map(i => `
-                    <div onclick="togglePack('${i.id}', ${i.checked})" class="p-5 flex items-center gap-4 border-b border-[#F9F9F7] active:bg-gray-50 transition-colors cursor-pointer">
-                        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center" style="background-color: ${i.checked ? color : 'transparent'}; border-color: ${i.checked ? color : '#DDD'}">
-                            ${i.checked ? '<span class="text-white text-xs">✓</span>' : ''}
-                        </div>
-                        <span class="flex-1 font-bold text-sm ${i.checked ? 'line-through text-[#CCC]' : 'text-[#4A4A4A]'}">${i.item}</span>
-                        <button onclick="event.stopPropagation(); deleteItem('packing', '${i.id}')" class="text-[#DDD] px-2 text-xs">✕</button>
-                    </div>
-                `).join('') : '<p class="p-5 text-center text-[10px] text-[#DDD] font-bold">尚未填寫</p>';
+                document.getElementById(tid).innerHTML = list.map(i => `
+                    <div class="p-4 flex items-center gap-3 border-b border-gray-50 active:bg-gray-50 group">
+                        <div onclick="togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 cursor-pointer" style="background:${i.checked ? color : 'transparent'}; border-color:${i.checked ? color : '#DDD'}"></div>
+                        <span onclick="togglePack('${i.id}', ${i.checked})" class="flex-1 text-sm cursor-pointer ${i.checked ? 'line-through text-gray-300' : 'font-bold'}">${i.item}</span>
+                        <button onclick="deleteItem('packing', '${i.id}')" class="text-gray-300 hover:text-red-300 transition-colors p-1">✕</button>
+                    </div>`).join('');
             };
             draw('tina', 'pk-list-tina');
             draw('darren', 'pk-list-darren');
         }
 
-        function renderExpenses(items) {
-            let total = 0, tinaSum = 0, darrenSum = 0;
-            const html = items.map(exp => {
-                const twd = exp.currency === 'THB' ? exp.cost * exchangeRate : exp.cost;
-                total += twd;
-                if(exp.payer === 'tina') tinaSum += twd; else darrenSum += twd;
-                return `
-                    <div class="bg-white p-5 rounded-3xl flex justify-between items-center card-shadow fade-in">
-                        <div class="flex items-center gap-3">
-                            <div class="w-1.5 h-8 rounded-full" style="background-color: ${exp.payer === 'tina' ? '#E6BEBB' : '#8A9AAB'}"></div>
-                            <div>
-                                <div class="text-sm font-bold text-[#4A4E40]">${exp.item}</div>
-                                <div class="text-[9px] text-[#A5A5A5] font-black uppercase">${exp.payer.toUpperCase()} 支付</div>
-                            </div>
-                        </div>
-                        <div class="text-right flex items-center gap-4">
-                            <span class="text-base font-black text-[#6B705C] font-mono">${exp.currency === 'THB' ? '฿' : '$'} ${exp.cost.toLocaleString()}</span>
-                            <button onclick="deleteItem('expenses', '${exp.id}')" class="text-[#DDD] px-1">✕</button>
-                        </div>
-                    </div>`;
-            }).join('');
-            document.getElementById('exp-list').innerHTML = html;
-            document.getElementById('total-twd').innerText = 'NT$ ' + Math.round(total).toLocaleString();
-            document.getElementById('current-rate-display').innerText = `目前匯率 1 ฿ = ${exchangeRate.toFixed(3)} NT$`;
-            document.getElementById('tina-paid').innerText = 'NT$ ' + Math.round(tinaSum).toLocaleString();
-            document.getElementById('darren-paid').innerText = 'NT$ ' + Math.round(darrenSum).toLocaleString();
-        }
+        window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
+        
+        window.addItinerary = async () => {
+            const act = document.getElementById('it-activity').value;
+            if(!act || !currentUser) return;
+            await addDoc(getColl('itinerary'), { 
+                day: document.getElementById('it-day').value || 'Day 1', 
+                time: document.getElementById('it-time').value || '12:00', 
+                activity: act 
+            });
+            document.getElementById('it-activity').value = '';
+            document.activeElement.blur();
+        };
+
+        window.addExpense = async () => {
+            const item = document.getElementById('exp-item').value;
+            const cost = document.getElementById('exp-cost').value;
+            if(!item || !cost || !currentUser) return;
+            await addDoc(getColl('expenses'), { 
+                item, cost: parseFloat(cost), 
+                category: document.getElementById('exp-cat').value, 
+                currency: document.getElementById('exp-currency').value, 
+                payer: document.getElementById('exp-payer').value 
+            });
+            document.getElementById('exp-item').value = '';
+            document.getElementById('exp-cost').value = '';
+        };
+
+        window.addPacking = async () => {
+            const val = document.getElementById('pack-item').value;
+            if(!val || !currentUser) return;
+            await addDoc(getColl('packing'), { item: val, owner: document.getElementById('pack-owner').value, checked: false });
+            document.getElementById('pack-item').value = '';
+        };
+
+        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
+        
+        window.saveMeta = async (k) => { if(currentUser) await setDoc(getMeta(), { [k]: document.getElementById(k+'-text').value }, { merge: true }); };
+
+        window.clearGeminiHistory = () => {
+            document.getElementById('gemini-chat').innerHTML = `
+                <div class="text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">
+                    已清除紀錄。需要幫忙查哪裡的攻略呢？ 🙏
+                </div></div>`;
+        };
+
+        window.smartGuide = (place) => {
+            clearGeminiHistory(); 
+            toggleGemini(true);
+            const input = document.getElementById('gemini-input');
+            input.value = `分析「${place}」的蜜月攻略：景點故事、推薦美食、最佳拍照位置。`;
+            window.askGemini();
+        };
+
+        window.askGemini = async () => {
+            const input = document.getElementById('gemini-input');
+            const chat = document.getElementById('gemini-chat');
+            const btn = document.getElementById('gemini-send-btn');
+            const query = input.value.trim();
+            if(!query || btn.disabled) return;
+            btn.disabled = true;
+            input.value = '';
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-3 rounded-xl rounded-tr-none text-xs font-bold">${query}</span></div>`;
+            
+            const loadingId = 'loading-' + Date.now();
+            chat.innerHTML += `<div id="${loadingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-gray-400 italic">Gemini 正在為妳規劃攻略中... ✨</div></div>`;
+            chat.scrollTop = chat.scrollHeight;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理，請用熱情繁體中文回答 Darren & Tina：${query}` }] }] })
+                });
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text;
+                const loadingEl = document.getElementById(loadingId);
+                if(loadingEl) loadingEl.remove();
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">${text.replace(/\n/g, '<br>')}</div></div>`;
+            } catch (e) { 
+                const loadingEl = document.getElementById(loadingId);
+                if(loadingEl) loadingEl.innerHTML = `<div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-red-400">連線稍慢，請再試一次。</div>`;
+            }
+            finally { btn.disabled = false; chat.scrollTop = chat.scrollHeight; }
+        };
+
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('content-'+id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
+            document.getElementById('btn-'+id).classList.remove('opacity-30');
+        };
+
+        window.toggleSection = (id) => {
+            document.getElementById(id+'-grid').classList.toggle('active');
+        };
+
+        window.toggleGemini = (forceOpen = false) => {
+            const modal = document.getElementById('gemini-modal');
+            if(forceOpen) modal.classList.add('open');
+            else {
+                modal.classList.toggle('open');
+                if (!modal.classList.contains('open')) setTimeout(clearGeminiHistory, 300);
+            }
+        };
+
+        window.closePanel = (id) => {
+            setTimeout(() => { document.getElementById(id+'-grid').classList.remove('active'); }, 200);
+        };
+
+        window.convertCurrency = (type) => {
+            const rate = 0.95; 
+            const thbIn = document.getElementById('calc-thb');
+            const twdIn = document.getElementById('calc-twd');
+            if (type === 'thb') {
+                twdIn.value = Math.round(parseFloat(thbIn.value || 0) * rate);
+            } else {
+                thbIn.value = Math.round(parseFloat(twdIn.value || 0) / rate);
+            }
+        };
     </script>
 </head>
-
-<body class="pb-40">
-    <div class="fixed -top-20 -left-20 w-72 h-72 rounded-full bg-[#E6BEBB] opacity-20 blur-3xl pointer-events-none"></div>
-
-    <header class="bg-white/80 backdrop-blur-xl border-b border-white/50 p-8 sticky top-0 z-30 text-center">
-        <div class="max-w-md mx-auto">
-            <div class="flex justify-center items-center gap-3 mb-1">
-                <span class="heart-icon text-xs">♥</span>
-                <span class="text-[9px] font-black text-[#A5A58D] tracking-[0.5em] uppercase">Sweet Getaway</span>
-                <span class="heart-icon text-xs">♥</span>
-            </div>
-            <h1 class="text-3xl font-black tracking-[0.1em] text-[#4A4E40] uppercase">Darren <span class="text-[#8E9775] font-light">&</span> Tina</h1>
-            <p class="text-[10px] font-bold text-[#8E9775] mt-2 tracking-[0.2em] uppercase">2026 曼谷 + 普吉島 蜜月計畫</p>
-            
-            <div class="flex gap-3 mt-8 overflow-x-auto justify-center no-scrollbar" id="tabs">
-                <button onclick="switchTab('itinerary')" id="tab-itinerary" class="px-7 py-2.5 rounded-full text-[11px] font-black tab-active">🗺️ 行程</button>
-                <button onclick="switchTab('packing')" id="tab-packing" class="px-7 py-2.5 rounded-full text-[11px] font-black bg-white text-[#A5A5A5]">🎒 清單</button>
-                <button onclick="switchTab('budget')" id="tab-budget" class="px-7 py-2.5 rounded-full text-[11px] font-black bg-white text-[#A5A5A5]">💰 預算</button>
-            </div>
-        </div>
+<body class="pb-32">
+    <header class="main-header">
+        <p class="heart-text">♥ SWEET GETAWAY ♥</p>
+        <h1 class="couple-name">DARREN <span class="ampersand">&</span> TINA</h1>
+        <p class="honeymoon-subtitle">2026 曼谷 + 普吉島 蜜月計畫 🏝️✨🥂</p>
     </header>
 
-    <main class="max-w-md mx-auto p-6 space-y-6">
-        <div id="content-itinerary" class="tab-content space-y-6 fade-in">
-            <div class="bg-white rounded-[2rem] card-shadow border border-white/60 overflow-hidden">
-                <button onclick="toggleSection('flight')" class="w-full p-6 flex justify-between items-center bg-[#6B705C] text-white">
-                    <span class="font-black text-xs tracking-[0.2em]">✈️ 航班資訊</span>
-                    <svg id="flight-arrow" class="arrow-rotate w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                </button>
-                <div id="flight-grid" class="grid-collapse"><div class="collapse-inner p-6">
-                    <textarea id="flight-text" oninput="saveMeta('flight')" placeholder="填入航班時間..." class="w-full h-32 bg-[#F9F9F7] p-5 rounded-[1.5rem] text-sm font-bold border-none outline-none shadow-inner"></textarea>
-                </div></div>
+    <main class="max-w-md mx-auto p-5">
+        <!-- 行程 -->
+        <div id="content-itinerary" class="tab-content">
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="toggleSection('flight')" class="app-card p-4 bg-[#6B705C] text-white btn-press font-black text-xs">航班資訊</button>
+                <button onclick="toggleSection('hotel')" class="app-card p-4 bg-[#DDB892] text-white btn-press font-black text-xs">住宿飯店</button>
             </div>
-            
-            <div class="bg-white rounded-[2rem] card-shadow border border-white/60 overflow-hidden">
-                <button onclick="toggleSection('hotel')" class="w-full p-6 flex justify-between items-center bg-[#DDB892] text-white">
-                    <span class="font-black text-xs tracking-[0.2em]">🏨 住宿安排</span>
-                    <svg id="hotel-arrow" class="arrow-rotate w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                </button>
-                <div id="hotel-grid" class="grid-collapse"><div class="collapse-inner p-6">
-                    <textarea id="hotel-text" oninput="saveMeta('hotel')" placeholder="填入飯店資訊..." class="w-full h-32 bg-[#F9F9F7] p-5 rounded-[1.5rem] text-sm font-bold border-none outline-none shadow-inner"></textarea>
-                </div></div>
-            </div>
+            <div id="flight-grid" class="expand-panel"><textarea id="flight-text" onblur="closePanel('flight')" oninput="saveMeta('flight')" class="w-full h-24 app-card p-4 outline-none text-xs" placeholder="航班資訊..."></textarea></div>
+            <div id="hotel-grid" class="expand-panel"><textarea id="hotel-text" onblur="closePanel('hotel')" oninput="saveMeta('hotel')" class="w-full h-24 app-card p-4 outline-none text-xs" placeholder="飯店資訊..."></textarea></div>
 
-            <div class="bg-white p-7 rounded-[2.5rem] card-shadow border border-white">
-                <h2 class="text-[#4A4E40] font-black text-sm mb-6 text-center">下一站去哪？ ✨</h2>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <input type="text" id="it-day" placeholder="Day 1" class="w-full bg-[#F9F9F7] p-4 rounded-2xl text-xs font-bold border-none outline-none">
-                    <input type="time" id="it-time" class="w-full bg-[#F9F9F7] p-4 rounded-2xl text-xs font-black border-none outline-none text-[#6B705C]">
+            <div class="app-card p-6 bg-white/60 mb-6 border-dashed border-2 border-gray-100">
+                <p class="text-[10px] text-center text-[#A5A58D] font-bold italic mb-4 tracking-widest uppercase">泰放鬆出發！去有你/妳的地方 🗺️ ✈️</p>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="text" id="it-day" placeholder="Day 1" class="bg-gray-50 p-3 rounded-xl text-xs outline-none">
+                    <input type="time" id="it-time" class="bg-gray-50 p-3 rounded-xl text-xs outline-none font-bold">
                 </div>
-                <input type="text" id="it-activity" placeholder="例如：普吉島夕陽晚餐 🥂" class="w-full bg-[#F9F9F7] p-4 rounded-2xl text-sm font-bold border-none outline-none shadow-inner mb-6">
-                <button onclick="addItinerary()" class="bg-[#8E9775] text-white w-full py-4 rounded-2xl font-black text-xs tracking-[0.2em] shadow-lg active:scale-95">加入計畫</button>
+                <input type="text" id="it-activity" placeholder="要去哪裡？(例：鄭王廟)" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none mb-3" onblur="window.scrollTo(0,0)">
+                <button onclick="addItinerary()" class="bg-[#4A4E40] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">新增行程</button>
             </div>
-            <div id="it-list" class="space-y-4"></div>
+            <div id="it-list"></div>
         </div>
 
-        <div id="content-packing" class="tab-content hidden space-y-6 fade-in">
-            <div class="bg-white p-6 rounded-[2.5rem] card-shadow space-y-4 border border-white">
-                <div class="flex gap-2">
-                    <input type="text" id="pack-item" placeholder="需要帶什麼..." class="bg-[#F9F9F7] p-4 rounded-2xl flex-1 text-sm font-bold border-none outline-none shadow-inner">
-                    <select id="pack-owner" class="bg-[#F9F9F7] px-4 rounded-2xl text-xs font-black text-[#6B705C] border-none outline-none">
-                        <option value="tina">Tina</option>
-                        <option value="darren">Darren</option>
+        <!-- 記帳 -->
+        <div id="content-budget" class="tab-content hidden">
+            <div class="app-card p-4 mb-4 bg-white/80 border-2 border-[#DDB892]/30">
+                <p class="text-[10px] font-black text-[#A5A58D] mb-3 uppercase tracking-widest text-center">💱 匯率小工具 (1:0.95)</p>
+                <div class="flex items-center gap-2">
+                    <div class="flex-1">
+                        <label class="text-[9px] font-bold block ml-1 mb-1">泰銖 THB</label>
+                        <input type="number" id="calc-thb" oninput="convertCurrency('thb')" class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold" placeholder="฿">
+                    </div>
+                    <div class="pt-4 text-gray-300">⇄</div>
+                    <div class="flex-1">
+                        <label class="text-[9px] font-bold block ml-1 mb-1">台幣 TWD</label>
+                        <input type="number" id="calc-twd" oninput="convertCurrency('twd')" class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold" placeholder="$">
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card bg-[#6B705C] p-8 text-white text-center mb-6">
+                <p class="text-[10px] opacity-70 mb-1 uppercase tracking-widest font-bold italic">Total Balance</p>
+                <h2 id="total-amount" class="text-4xl font-black italic">฿ 0</h2>
+            </div>
+            <div class="app-card p-5 space-y-3">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="exp-cat" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
+                        <option value="food">🍴 美食</option><option value="move">🚗 行程</option>
+                        <option value="stay">🏨 住宿</option><option value="play">🎟️ 購物</option>
+                    </select>
+                    <select id="exp-payer" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
+                        <option value="tina">Tina 霸氣買單 💸</option>
+                        <option value="darren">Darren 護妻神刷 💳</option>
                     </select>
                 </div>
-                <button onclick="addPacking()" class="bg-[#6B705C] text-white w-full py-4 rounded-2xl font-black text-xs active:scale-95">新增</button>
-            </div>
-            <div class="space-y-6">
-                <div><p class="text-[10px] font-black text-[#E6BEBB] tracking-widest uppercase ml-4 mb-3">For Tina</p>
-                    <div id="pk-list-tina" class="bg-white rounded-[2rem] card-shadow border border-[#E6BEBB]/10 overflow-hidden"></div>
+                <input type="text" id="exp-item" placeholder="買了什麼？" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none">
+                <div class="flex gap-2">
+                    <input type="number" id="exp-cost" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-xs outline-none">
+                    <select id="exp-currency" class="bg-gray-50 px-3 rounded-xl text-xs font-bold"><option value="THB">฿</option><option value="TWD">$</option></select>
                 </div>
-                <div><p class="text-[10px] font-black text-morandi-blue tracking-widest uppercase ml-4 mb-3">For Darren</p>
-                    <div id="pk-list-darren" class="bg-white rounded-[2rem] card-shadow border-[#8A9AAB]/10 overflow-hidden"></div>
-                </div>
+                <button onclick="addExpense()" class="bg-[#DDB892] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">儲存支出</button>
             </div>
+            <div id="exp-list" class="mt-6"></div>
         </div>
 
-        <div id="content-budget" class="tab-content hidden space-y-6 fade-in">
-            <div class="bg-gradient-custom rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden text-center">
-                <div class="absolute -top-10 -right-10 text-[10rem] opacity-10 pointer-events-none rotate-12">🥥</div>
-                <p class="text-white/60 text-[10px] tracking-[0.4em] mb-2 uppercase font-black">蜜月總支出</p>
-                <div id="total-twd" class="text-5xl font-black mb-2 tracking-tighter">NT$ 0</div>
-                <p id="current-rate-display" class="text-white/40 text-[8px] font-black mb-10 tracking-widest">載入匯率中...</p>
-                <div class="grid grid-cols-2 gap-4 pt-6 border-t border-white/10">
-                    <div><p class="text-white/40 text-[8px] font-black mb-1 uppercase">Tina 支付</p><p id="tina-paid" class="text-sm font-black font-mono">NT$ 0</p></div>
-                    <div><p class="text-white/40 text-[8px] font-black mb-1 uppercase">Darren 支付</p><p id="darren-paid" class="text-sm font-black font-mono">NT$ 0</p></div>
+        <!-- 行李 -->
+        <div id="content-packing" class="tab-content hidden">
+            <div class="app-card p-5 mb-6">
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="pack-item" placeholder="必備物品..." class="flex-1 bg-gray-50 p-3 rounded-xl text-xs outline-none">
+                    <select id="pack-owner" class="bg-gray-50 px-3 rounded-xl text-xs font-bold"><option value="tina">Tina</option><option value="darren">Darren</option></select>
                 </div>
+                <button onclick="addPacking()" class="bg-[#6B705C] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">加入清單</button>
             </div>
-            <div class="bg-white p-8 rounded-[2.5rem] card-shadow space-y-4 border border-white">
-                <input type="text" id="exp-item" placeholder="消費項目..." class="w-full bg-[#F9F9F7] p-4 rounded-2xl border-none outline-none text-sm font-bold shadow-inner">
-                <div class="flex gap-2">
-                    <input type="number" id="exp-cost" placeholder="金額" class="flex-1 bg-[#F9F9F7] p-4 rounded-2xl border-none font-mono font-black shadow-inner">
-                    <select id="exp-currency" class="bg-[#F9F9F7] px-4 rounded-2xl border-none font-black text-[#6B705C]"><option value="THB">฿ 泰銖</option><option value="TWD">$ 台幣</option></select>
-                    <select id="exp-payer" class="bg-[#F9F9F7] px-4 rounded-2xl border-none font-black text-[#6B705C]"><option value="tina">Tina 刷</option><option value="darren">Darren 刷</option></select>
-                </div>
-                <button onclick="addExpense()" class="bg-[#DDB892] text-white w-full py-4 rounded-2xl font-black text-xs active:scale-95 transition-all">同步花費</button>
+            <div class="grid grid-cols-1 gap-4">
+                <div><p class="text-[10px] font-bold text-[#E6BEBB] mb-2 ml-2 uppercase tracking-widest">For Tina ♥</p><div id="pk-list-tina" class="app-card overflow-hidden"></div></div>
+                <div><p class="text-[10px] font-bold text-[#8A9AAB] mb-2 ml-2 uppercase tracking-widest">For Darren ♠</p><div id="pk-list-darren" class="app-card overflow-hidden"></div></div>
             </div>
-            <div id="exp-list" class="space-y-3"></div>
         </div>
     </main>
 
-    <nav class="fixed bottom-8 left-8 right-8 bg-[#4A4E40]/90 backdrop-blur-2xl rounded-[2.5rem] py-5 px-10 flex justify-around items-center z-50 shadow-2xl border border-white/10">
-        <button onclick="switchTab('itinerary')" class="text-2xl hover:scale-125 transition-all">🗺️</button>
-        <button onclick="switchTab('packing')" class="text-2xl hover:scale-125 transition-all">🎒</button>
-        <button onclick="switchTab('budget')" class="text-2xl hover:scale-125 transition-all">💰</button>
+    <!-- Gemini 視窗 -->
+    <div id="gemini-modal" onclick="if(event.target === this) toggleGemini()">
+        <div id="gemini-panel" onclick="event.stopPropagation()">
+            <div class="p-6 h-full flex flex-col">
+                <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-black text-sm tracking-widest flex items-center gap-2">✨ GEMINI 智慧攻略</h3>
+                    <button onclick="clearGeminiHistory()" class="text-[10px] bg-gray-200 px-3 py-1 rounded-full font-bold">清空對話 🧹</button>
+                    <button onclick="toggleGemini()" class="text-xl">✕</button>
+                </div>
+                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1">
+                    <div class="text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">
+                        Sawadee-ka! 🙏 需要幫忙查哪裡的攻略呢？
+                    </div></div>
+                </div>
+                <div class="flex gap-2 p-2 bg-gray-100 rounded-2xl">
+                    <input type="text" id="gemini-input" placeholder="問問看..." class="flex-1 p-3 text-xs outline-none bg-transparent">
+                    <button id="gemini-send-btn" onclick="askGemini()" class="bg-[#4A4E40] text-white px-4 rounded-xl text-xs font-bold">發送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div onclick="switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press">🗺️</div>
+        <div onclick="switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
+        <div onclick="switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
+        <div class="w-px h-6 bg-white/20 mx-1"></div>
+        <div onclick="toggleGemini()" class="nav-btn btn-press">✨</div>
     </nav>
 
-    <script>
-        function toggleSection(id) { 
-            document.getElementById(id+'-grid').classList.toggle('open'); 
-            document.getElementById(id+'-arrow').classList.toggle('active'); 
-        }
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById('content-'+id).classList.remove('hidden');
-            document.querySelectorAll('#tabs button').forEach(b => b.className = "px-7 py-2.5 rounded-full text-[11px] font-black bg-white text-[#A5A5A5]");
-            document.getElementById('tab-'+id).className = "px-7 py-2.5 rounded-full text-[11px] font-black tab-active";
-        }
-    </script>
+    <script>switchTab('itinerary');</script>
 </body>
 </html>
+
