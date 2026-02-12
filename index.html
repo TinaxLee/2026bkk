@@ -160,6 +160,7 @@
         let currentPayerFilter = 'all'; 
 
         const ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
+        const thbToTWD = 0.95; // 簡單的反向換算匯率（1 THB ≈ 0.95 TWD）
 
         if (firebaseConfig.apiKey) {
             app = initializeApp(firebaseConfig);
@@ -346,7 +347,14 @@
             const val = parseFloat(document.getElementById('conv-input').value) || 0;
             const curr = document.getElementById('conv-curr').value;
             const res = document.getElementById('conv-res');
-            res.innerText = `泰銖 ฿ ${Math.round(val * ratesToTHB[curr]).toLocaleString()}`;
+            
+            if (curr === 'THB') {
+                // 如果輸入泰銖，則顯示換算為台幣的結果
+                res.innerText = `台幣 NT$ ${Math.round(val * thbToTWD).toLocaleString()}`;
+            } else {
+                // 如果輸入台幣或美金，則顯示換算為泰銖的結果
+                res.innerText = `泰銖 ฿ ${Math.round(val * ratesToTHB[curr]).toLocaleString()}`;
+            }
         };
 
         window.addFlight = async () => {
@@ -479,6 +487,7 @@
                     <select id="conv-curr" onchange="calcIndependentRate()" class="bg-white p-2 rounded-lg text-xs font-black outline-none">
                         <option value="TWD">TWD 台幣</option>
                         <option value="USD">USD 美金</option>
+                        <option value="THB">THB 泰銖</option>
                     </select>
                 </div>
                 <div id="conv-res" class="mt-2 text-sm font-black text-[#4A4E40] italic">泰銖 ฿ 0</div>
@@ -529,7 +538,6 @@
                     <input type="text" id="pack-item" placeholder="準備物品..." class="flex-1 bg-gray-50 p-2 rounded-lg text-xs outline-none">
                     <select id="pack-owner" class="bg-gray-50 px-2 rounded-lg text-xs font-bold"><option value="tina">Tina</option><option value="darren">Darren</option></select>
                 </div>
-                <!-- 修改為中文按鈕 -->
                 <button onclick="addPacking()" class="bg-[#6B705C] text-white w-full py-2.5 rounded-lg font-bold text-xs">記 得 記 得 帶 ！</button>
             </div>
             <div class="grid grid-cols-2 gap-3">
