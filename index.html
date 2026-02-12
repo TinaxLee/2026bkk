@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Darren & Tina 2026 Honeymoon</title>
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     
@@ -30,47 +33,42 @@
         .heart-text { color: var(--heart-pink); font-size: 0.8rem; letter-spacing: 0.4em; font-weight: 800; margin-bottom: 0.5rem; }
         .couple-name { 
             font-family: 'Playfair Display', serif; 
-            font-size: 2.5rem; 
+            font-size: 2.2rem; 
             line-height: 1.1; 
             font-weight: 700; 
             color: #2D3128; 
             margin: 0.5rem 0; 
-            letter-spacing: -0.02em; 
         }
-        .ampersand { color: #2D3128; font-family: serif; font-style: italic; }
         
-        .honeymoon-subtitle { font-size: 0.85rem; font-weight: 700; color: var(--morandi-olive); letter-spacing: 0.1em; }
-
         .main-header {
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 2.5rem 1rem;
+            padding: 1.5rem 1rem;
             text-align: center;
             border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 50;
         }
 
         .app-card {
             background: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 4px 15px -5px rgba(0,0,0,0.05);
+            border-radius: 1.2rem;
+            box-shadow: 0 4px 12px -5px rgba(0,0,0,0.05);
             border: 1px solid rgba(255,255,255,0.8);
         }
 
         .bottom-nav {
             background: rgba(74, 78, 64, 0.95);
             backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             position: fixed;
-            bottom: 25px; left: 20px; right: 20px;
+            bottom: 25px; left: 15px; right: 15px;
             border-radius: 2rem;
-            height: 65px;
+            height: 60px;
             z-index: 1000;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .nav-btn { font-size: 1.4rem; cursor: pointer; transition: opacity 0.2s; }
+        .nav-btn { font-size: 1.1rem; cursor: pointer; transition: opacity 0.2s; padding: 10px; }
         .btn-press:active { transform: scale(0.95); }
 
         .expand-panel { display: none; margin-top: 10px; }
@@ -89,7 +87,31 @@
         }
         #gemini-modal.open #gemini-panel { transform: translateY(0); }
 
+        .tag { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; margin-right: 4px; display: inline-block; margin-bottom: 4px; }
+        .tag-food { background: #E9EDC9; color: #6B705C; border: 1px solid #D4D9A1; }
+        .tag-buy { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+        .tag-important { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+        .tag-type { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
+
         input, select, textarea { font-size: 16px !important; } 
+
+        .filter-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            background: white;
+            border: 1px solid #E5E7EB;
+            color: #9CA3AF;
+            transition: all 0.2s;
+        }
+        .filter-chip.active {
+            background: #6B705C;
+            border-color: #6B705C;
+            color: white;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 
     <script type="module">
@@ -97,133 +119,236 @@
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-        // 安全地解析 Firebase 設定
         let firebaseConfig = {};
         try {
             firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        } catch (e) {
-            console.error("Firebase config parse error", e);
-        }
+        } catch (e) { console.error("Firebase config error", e); }
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'darren-tina-honeymoon';
-        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'darren-tina-honeymoon-2026';
         let app, auth, db, currentUser = null;
+        let allExpenses = []; 
+        let currentPayerFilter = 'all'; 
 
-        // 初始化 Firebase
         if (firebaseConfig.apiKey) {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-
             const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (e) {
-                    console.error("Auth error", e);
-                }
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else { await signInAnonymously(auth); }
             };
-
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    currentUser = user;
-                    startSyncing();
-                } else {
-                    initAuth();
-                }
-            });
+            onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; startSyncing(); } else { initAuth(); } });
         }
 
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
-        const getMeta = () => doc(db, 'artifacts', appId, 'public', 'data', 'meta', 'info');
 
         function startSyncing() {
-            if (!db) return;
-            onSnapshot(getMeta(), (d) => {
-                if (d.exists()) {
-                    const data = d.data();
-                    if (document.activeElement.id !== 'flight-text') document.getElementById('flight-text').value = data.flight || '';
-                    if (document.activeElement.id !== 'hotel-text') document.getElementById('hotel-text').value = data.hotel || '';
-                }
-            }, (err) => console.error("Meta sync error", err));
-            
-            onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))), (err) => console.error("Itinerary sync error", err));
-            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))), (err) => console.error("Packing sync error", err));
-            onSnapshot(getColl('expenses'), (s) => renderExpenses(s.docs.map(d => ({id: d.id, ...d.data()}))), (err) => console.error("Expenses sync error", err));
+            onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('expenses'), (s) => {
+                allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderExpenses();
+            });
+            onSnapshot(getColl('flights'), (s) => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('hotels'), (s) => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))));
         }
 
+        // --- 航班管理 ---
+        function renderFlights(items) {
+            const list = document.getElementById('flights-list');
+            if (items.length === 0) {
+                list.innerHTML = `<p class="text-[10px] text-gray-300 text-center py-8 italic">還沒有航班資訊喔 ✈️</p>`;
+                return;
+            }
+            list.innerHTML = items.map(f => `
+                <div class="app-card p-4 mb-3 flex justify-between items-center">
+                    <div>
+                        <div class="text-xs font-black text-[#6B705C]">${f.code} <span class="text-[10px] text-gray-300 ml-1">${f.time}</span></div>
+                        <div class="text-[10px] text-gray-400 font-bold">${f.from} → ${f.to} | Gate: ${f.gate || '--'}</div>
+                    </div>
+                    <button onclick="deleteItem('flights', '${f.id}')" class="text-gray-200 text-xs">✕</button>
+                </div>
+            `).join('');
+        }
+
+        window.addFlight = async () => {
+            const code = document.getElementById('f-code').value;
+            if (!code || !currentUser) return;
+            await addDoc(getColl('flights'), {
+                code, from: document.getElementById('f-from').value,
+                to: document.getElementById('f-to').value,
+                time: document.getElementById('f-time').value,
+                gate: document.getElementById('f-gate').value,
+                seat: document.getElementById('f-seat').value
+            });
+            document.getElementById('f-code').value = '';
+            toggleSection('flight');
+        };
+
+        // --- 飯店管理 ---
+        function renderHotels(items) {
+            const list = document.getElementById('hotels-list');
+            if (items.length === 0) {
+                list.innerHTML = `<p class="text-[10px] text-gray-300 text-center py-8 italic">還沒有住宿資訊喔 🛌</p>`;
+                return;
+            }
+            list.innerHTML = items.map(h => `
+                <div class="app-card p-4 mb-3 flex justify-between items-center">
+                    <div class="flex-1 pr-4">
+                        <div class="text-xs font-black text-[#4A4E40] truncate">${h.name}</div>
+                        <div class="text-[10px] text-gray-400 font-bold">${h.checkin} | ${h.room}</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(h.name)}')" class="text-[10px] text-[#DDB892] font-black underline">地圖</button>
+                        <button onclick="deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.addHotel = async () => {
+            const name = document.getElementById('h-name').value;
+            if (!name || !currentUser) return;
+            await addDoc(getColl('hotels'), {
+                name, room: document.getElementById('h-room').value,
+                checkin: document.getElementById('h-checkin').value
+            });
+            document.getElementById('h-name').value = '';
+            toggleSection('hotel');
+        };
+
+        // --- 行程管理 ---
+        const guideAnalyze = (text) => {
+            let tagsHtml = "";
+            if (/(預約|代號|編號|Code|訂單)/.test(text)) tagsHtml += `<span class="tag tag-important">重要預約 📝</span>`;
+            if (/(吃|餐廳|美食|必吃)/.test(text)) tagsHtml += `<span class="tag tag-food">必點菜單 🍴</span>`;
+            if (/(買|購物|逛|必買)/.test(text)) tagsHtml += `<span class="tag tag-buy">必買清單 🛍️</span>`;
+            return { tagsHtml };
+        };
+
+        const typeToLabel = (type) => {
+            const labels = {
+                'view': '📸 景點',
+                'food': '🍴 美食',
+                'massage': '💆 按摩',
+                'shop': '🛍️ 購物'
+            };
+            return labels[type] || '📍 行程';
+        };
+
         function renderItinerary(items) {
-            const list = document.getElementById('it-list');
-            list.innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => `
-                <div class="app-card p-5 flex gap-4 items-start mb-4">
-                    <div class="flex flex-col items-center bg-[#F5F5F3] p-3 rounded-xl min-w-[60px]">
+            document.getElementById('it-list').innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => {
+                const analysis = guideAnalyze(item.activity);
+                const typeLabel = typeToLabel(item.type);
+                return `
+                <div class="app-card p-4 flex gap-4 items-start mb-3 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div class="flex flex-col items-center bg-[#F5F5F3] p-2 rounded-lg min-w-[55px]">
                         <span class="text-[9px] font-bold text-gray-400">${item.day}</span>
                         <span class="text-sm font-black text-[#6B705C]">${item.time}</span>
                     </div>
                     <div class="flex-1">
-                        <div class="font-bold text-[#4A4E40] text-sm mb-3">${item.activity}</div>
+                        <div class="mb-1">
+                            <span class="tag tag-type">${typeLabel}</span>
+                            ${analysis.tagsHtml}
+                        </div>
+                        <div class="font-bold text-[#4A4E40] text-sm mb-2">${item.activity}</div>
                         <div class="flex gap-2">
-                            <a href="https://www.google.com/maps/search/${encodeURIComponent(item.activity)}" target="_blank" class="flex-1 bg-[#8E9775] text-white text-[11px] font-bold py-2 rounded-lg text-center">導航 📍</a>
-                            <button onclick="smartGuide('${item.activity}')" class="flex-1 bg-[#DDB892] text-white text-[11px] font-bold py-2 rounded-lg text-center">攻略 ✨</button>
+                            <a href="https://www.google.com/maps/search/${encodeURIComponent(item.activity)}" target="_blank" class="flex-1 bg-[#8E9775] text-white text-[10px] py-1.5 rounded-lg text-center">導航</a>
+                            <button onclick="smartGuide('${item.activity.replace(/'/g, "\\'")}')" class="flex-1 bg-[#DDB892] text-white text-[10px] py-1.5 rounded-lg text-center">攻略</button>
                         </div>
                     </div>
-                    <button onclick="deleteItem('itinerary', '${item.id}')" class="text-gray-300 p-1">✕</button>
-                </div>`).join('');
-        }
-
-        function renderExpenses(items) {
-            let total = 0;
-            const payerNicks = { tina: 'Tina 霸氣買單 💸', darren: 'Darren 護妻神刷 💳' };
-            document.getElementById('exp-list').innerHTML = items.map(exp => {
-                total += exp.currency === 'THB' ? exp.cost : exp.cost / 0.95;
-                return `
-                <div class="app-card p-4 flex justify-between items-center mb-2">
-                    <div class="flex items-center gap-3">
-                        <div class="text-lg">${{food:'🍴',move:'🚗',stay:'🏨',play:'🎟️',buy:'🛍️'}[exp.category] || '💰'}</div>
-                        <div>
-                            <div class="text-sm font-bold text-[#4A4E40]">${exp.item}</div>
-                            <div class="text-[10px] text-[#A5A58D] font-bold">${payerNicks[exp.payer] || exp.payer}</div>
-                        </div>
-                    </div>
-                    <div class="text-right flex items-center gap-2">
-                        <div class="text-sm font-black text-[#6B705C]">${exp.currency === 'THB' ? '฿' : '$'}${exp.cost.toLocaleString()}</div>
-                        <button onclick="deleteItem('expenses', '${exp.id}')" class="text-gray-200 ml-1">✕</button>
-                    </div>
+                    <button onclick="deleteItem('itinerary', '${item.id}')" class="text-gray-200">✕</button>
                 </div>`;
             }).join('');
-            document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
         }
 
+        // --- 預算與分帳統計 ---
+        window.setPayerFilter = (payer) => {
+            currentPayerFilter = payer;
+            document.querySelectorAll('.filter-chip').forEach(el => {
+                el.classList.toggle('active', el.id === 'chip-' + payer);
+            });
+            renderExpenses();
+        };
+
+        function renderExpenses() {
+            let totalToDisplay = 0;
+            let filteredExpenses = allExpenses;
+            let tinaTotal = 0;
+            let darrenTotal = 0;
+            
+            // 計算各別總額
+            allExpenses.forEach(exp => {
+                const costVal = exp.currency === 'THB' ? exp.cost : exp.cost / 0.95;
+                if (exp.payer === 'tina') tinaTotal += costVal;
+                else darrenTotal += costVal;
+            });
+
+            // 更新按鈕標籤
+            document.getElementById('chip-tina-amt').innerText = '฿' + Math.round(tinaTotal).toLocaleString();
+            document.getElementById('chip-darren-amt').innerText = '฿' + Math.round(darrenTotal).toLocaleString();
+
+            // 執行過濾
+            if (currentPayerFilter !== 'all') {
+                filteredExpenses = allExpenses.filter(e => e.payer === currentPayerFilter);
+                totalToDisplay = currentPayerFilter === 'tina' ? tinaTotal : darrenTotal;
+                document.getElementById('total-label').innerText = currentPayerFilter === 'tina' ? "Tina's Total" : "Darren's Total";
+            } else {
+                totalToDisplay = tinaTotal + darrenTotal;
+                document.getElementById('total-label').innerText = "Total Honeymoon Budget";
+            }
+
+            document.getElementById('exp-list').innerHTML = filteredExpenses.map(exp => {
+                const payerLabel = exp.payer === 'tina' ? 'Tina 💰' : 'Darren 💳';
+                return `
+                <div class="app-card p-3 flex justify-between items-center mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div class="text-xs font-bold text-[#4A4E40]">${exp.item} <span class="text-[10px] text-gray-300 font-normal ml-1">${payerLabel}</span></div>
+                    <div class="text-xs font-black text-[#6B705C]">${exp.currency === 'THB' ? '฿' : '$'}${exp.cost.toLocaleString()} <button onclick="deleteItem('expenses', '${exp.id}')" class="text-gray-200 ml-2">✕</button></div>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('total-amount').innerText = '฿ ' + Math.round(totalToDisplay).toLocaleString();
+        }
+
+        window.calcExchange = (val) => {
+            const result = document.getElementById('exchange-result');
+            if(!val) { result.innerText = '$ 0'; return; }
+            result.innerText = '$ ' + Math.round(val * 0.95).toLocaleString();
+        };
+
+        // --- 物品準備 ---
         function renderPacking(items) {
             const draw = (owner, tid) => {
+                const el = document.getElementById(tid);
+                if (!el) return;
                 const list = items.filter(i => i.owner === owner);
-                const color = owner === 'tina' ? '#E6BEBB' : '#8A9AAB';
-                document.getElementById(tid).innerHTML = list.map(i => `
-                    <div class="p-4 flex items-center gap-3 border-b border-gray-50 active:bg-gray-50">
-                        <div onclick="togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 cursor-pointer" style="background:${i.checked ? color : 'transparent'}; border-color:${i.checked ? color : '#DDD'}"></div>
-                        <span onclick="togglePack('${i.id}', ${i.checked})" class="flex-1 text-sm cursor-pointer ${i.checked ? 'line-through text-gray-300' : 'font-bold'}">${i.item}</span>
-                        <button onclick="deleteItem('packing', '${i.id}')" class="text-gray-300 p-1">✕</button>
+                el.innerHTML = list.map(i => `
+                    <div class="p-3 flex items-center gap-3 border-b border-gray-50">
+                        <div onclick="togglePack('${i.id}', ${i.checked})" class="w-4 h-4 rounded border cursor-pointer ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'}"></div>
+                        <span class="flex-1 text-xs ${i.checked ? 'line-through text-gray-300' : 'font-bold'}">${i.item}</span>
+                        <button onclick="deleteItem('packing', '${i.id}')" class="text-gray-200">✕</button>
                     </div>`).join('');
             };
             draw('tina', 'pk-list-tina');
             draw('darren', 'pk-list-darren');
         }
 
+        // --- 全域資料操作 ---
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
+        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
         
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value;
+            const type = document.getElementById('it-type').value;
             if(!act || !currentUser) return;
             await addDoc(getColl('itinerary'), { 
                 day: document.getElementById('it-day').value || 'Day 1', 
                 time: document.getElementById('it-time').value || '12:00', 
-                activity: act 
+                activity: act, 
+                type: type 
             });
             document.getElementById('it-activity').value = '';
-            document.activeElement.blur();
         };
 
         window.addExpense = async () => {
@@ -231,12 +356,12 @@
             const cost = document.getElementById('exp-cost').value;
             if(!item || !cost || !currentUser) return;
             await addDoc(getColl('expenses'), { 
-                item, cost: parseFloat(cost), 
-                category: document.getElementById('exp-cat').value, 
+                item, 
+                cost: parseFloat(cost), 
                 currency: document.getElementById('exp-currency').value, 
                 payer: document.getElementById('exp-payer').value 
             });
-            document.getElementById('exp-item').value = '';
+            document.getElementById('exp-item').value = ''; 
             document.getElementById('exp-cost').value = '';
         };
 
@@ -247,54 +372,32 @@
             document.getElementById('pack-item').value = '';
         };
 
-        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
-        
-        window.saveMeta = async (k) => { if(currentUser) await setDoc(getMeta(), { [k]: document.getElementById(k+'-text').value }, { merge: true }); };
-
-        window.clearGeminiHistory = () => {
-            document.getElementById('gemini-chat').innerHTML = `
-                <div class="text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">
-                    已清除紀錄。需要幫忙查哪裡的攻略呢？ 🙏
-                </div></div>`;
-        };
-
+        // --- Gemini AI 整合 ---
         window.smartGuide = (place) => {
-            clearGeminiHistory(); 
-            toggleGemini(true);
-            const input = document.getElementById('gemini-input');
-            input.value = `分析「${place}」的蜜月攻略：景點故事、推薦美食、最佳拍照位置。`;
+            window.toggleGemini(true);
+            document.getElementById('gemini-input').value = `分析「${place}」的蜜月攻略：景點故事、推薦美食、最佳拍照位置。`;
             window.askGemini();
         };
+
+        window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
 
         window.askGemini = async () => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
-            const btn = document.getElementById('gemini-send-btn');
             const query = input.value.trim();
-            if(!query || btn.disabled) return;
-            btn.disabled = true;
+            if(!query) return;
             input.value = '';
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-3 rounded-xl rounded-tr-none text-xs font-bold">${query}</span></div>`;
-            
-            const loadingId = 'loading-' + Date.now();
-            chat.innerHTML += `<div id="${loadingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-gray-400 italic">Gemini 正在規劃攻略中... ✨</div></div>`;
-            chat.scrollTop = chat.scrollHeight;
-
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-2 rounded-lg text-xs">${query}</span></div>`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理，請用熱情繁體中文回答 Darren & Tina：${query}` }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理，請用繁體中文：${query}` }] }] })
                 });
                 const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text;
-                const loadEl = document.getElementById(loadingId);
-                if(loadEl) loadEl.remove();
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-[#4A4E40] leading-relaxed">${text.replace(/\n/g, '<br>')}</div></div>`;
-            } catch (e) { 
-                const loadEl = document.getElementById(loadingId);
-                if(loadEl) loadEl.innerHTML = `<div class="inline-block bg-white p-4 rounded-xl rounded-tl-none text-xs shadow-sm border text-red-400">請再試一次。</div>`;
-            }
-            finally { btn.disabled = false; chat.scrollTop = chat.scrollHeight; }
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理忙線中。";
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border">${text.replace(/\n/g, '<br>')}</div></div>`;
+            } catch (e) { chat.innerHTML += `<div class="text-red-400 text-xs">Error</div>`; }
+            chat.scrollTop = chat.scrollHeight;
         };
 
         window.switchTab = (id) => {
@@ -304,164 +407,184 @@
             document.getElementById('btn-'+id).classList.remove('opacity-30');
         };
 
-        window.toggleSection = (id) => {
-            document.getElementById(id+'-grid').classList.toggle('active');
-        };
-
-        window.toggleGemini = (forceOpen = false) => {
-            const modal = document.getElementById('gemini-modal');
-            if(forceOpen) modal.classList.add('open');
-            else {
-                modal.classList.toggle('open');
-                if (!modal.classList.contains('open')) setTimeout(clearGeminiHistory, 300);
-            }
-        };
-
-        window.closePanel = (id) => {
-            setTimeout(() => { document.getElementById(id+'-grid').classList.remove('active'); }, 200);
-        };
-
-        window.convertCurrency = (type) => {
-            const rate = 0.95; 
-            const thbIn = document.getElementById('calc-thb');
-            const twdIn = document.getElementById('calc-twd');
-            if (type === 'thb') {
-                twdIn.value = Math.round(parseFloat(thbIn.value || 0) * rate);
-            } else {
-                thbIn.value = Math.round(parseFloat(twdIn.value || 0) / rate);
-            }
-        };
+        window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
+        window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
     </script>
 </head>
-<body class="pb-32">
+<body class="pb-24">
     <header class="main-header">
         <p class="heart-text">♥ SWEET GETAWAY ♥</p>
-        <h1 class="couple-name">DARREN <span class="ampersand">&</span> TINA</h1>
-        <p class="honeymoon-subtitle">2026 曼谷 + 普吉島 蜜月計畫 🏝️✨🥂</p>
+        <h1 class="couple-name">DARREN <span class="italic font-serif">&</span> TINA</h1>
+        <p class="text-[10px] font-bold text-[#6B705C] tracking-widest uppercase">2026 Bangkok & Phuket</p>
     </header>
 
-    <main class="max-w-md mx-auto p-5">
-        <!-- 行程 -->
-        <div id="content-itinerary" class="tab-content">
-            <!-- 天氣小工具 -->
-            <div class="app-card mb-6 overflow-hidden bg-gradient-to-br from-[#8E9775] to-[#6B705C] text-white p-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">☀️</span>
-                    <div>
-                        <p class="text-[10px] font-bold opacity-80 uppercase">Bangkok / Phuket</p>
-                        <p class="text-sm font-black">曼谷 32°C | 普吉 29°C</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] opacity-70">今日天氣</p>
-                    <p class="text-xs font-bold">晴朗泰放鬆</p>
-                </div>
+    <main class="max-w-md mx-auto p-4">
+        
+        <!-- 分頁：機票飯店 (Core) -->
+        <div id="content-core" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-3 px-1">
+                <h3 class="text-sm font-black text-[#4A4E40]">航班資訊 ✈️</h3>
+                <button onclick="toggleSection('flight')" class="text-[10px] bg-[#6B705C] text-white px-3 py-1 rounded-full font-bold">＋新增航班</button>
             </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <button onclick="toggleSection('flight')" class="app-card p-4 bg-[#6B705C] text-white btn-press font-black text-xs">航班資訊</button>
-                <button onclick="toggleSection('hotel')" class="app-card p-4 bg-[#DDB892] text-white btn-press font-black text-xs">住宿飯店</button>
-            </div>
-            <div id="flight-grid" class="expand-panel"><textarea id="flight-text" onblur="closePanel('flight')" oninput="saveMeta('flight')" class="w-full h-24 app-card p-4 outline-none text-xs" placeholder="航班資訊..."></textarea></div>
-            <div id="hotel-grid" class="expand-panel"><textarea id="hotel-text" onblur="closePanel('hotel')" oninput="saveMeta('hotel')" class="w-full h-24 app-card p-4 outline-none text-xs" placeholder="飯店資訊..."></textarea></div>
-
-            <div class="app-card p-6 bg-white/60 mb-6 border-dashed border-2 border-gray-100">
-                <p class="text-[14px] text-center text-[#4A4E40] font-black italic mb-4 tracking-wide uppercase">
-                    ✨ 泰放鬆出發！去有你/妳的地方 🗺️ ✈️
-                </p>
+            
+            <div id="flight-grid" class="expand-panel app-card p-4 mb-4 bg-gray-50 border-2 border-dashed border-[#6B705C]">
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <input type="text" id="it-day" placeholder="Day 1" class="bg-gray-50 p-3 rounded-xl text-xs outline-none">
-                    <input type="time" id="it-time" class="bg-gray-50 p-3 rounded-xl text-xs outline-none font-bold">
+                    <input type="text" id="f-code" placeholder="航班號" class="p-2 text-xs rounded-lg border outline-none">
+                    <input type="text" id="f-time" placeholder="摘要時間" class="p-2 text-xs rounded-lg border outline-none">
                 </div>
-                <input type="text" id="it-activity" placeholder="要去哪裡？" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none mb-3">
-                <button onclick="addItinerary()" class="bg-[#4A4E40] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">新增行程</button>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="text" id="f-from" placeholder="出發地" class="p-2 text-xs rounded-lg border outline-none">
+                    <input type="text" id="f-to" placeholder="目的地" class="p-2 text-xs rounded-lg border outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <input type="text" id="f-gate" placeholder="登機門" class="p-2 text-xs rounded-lg border outline-none">
+                    <input type="text" id="f-seat" placeholder="座位" class="p-2 text-xs rounded-lg border outline-none">
+                </div>
+                <button onclick="addFlight()" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
+            </div>
+            <div id="flights-list"></div>
+
+            <div class="h-6"></div>
+
+            <div class="flex justify-between items-center mb-3 px-1">
+                <h3 class="text-sm font-black text-[#4A4E40]">入住飯店 🏨</h3>
+                <button onclick="toggleSection('hotel')" class="text-[10px] bg-[#DDB892] text-white px-3 py-1 rounded-full font-bold">＋新增飯店</button>
+            </div>
+
+            <div id="hotel-grid" class="expand-panel app-card p-4 mb-4 bg-gray-50 border-2 border-dashed border-[#DDB892]">
+                <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-2 text-xs rounded-lg border outline-none mb-2">
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <input type="text" id="h-room" placeholder="房型" class="p-2 text-xs rounded-lg border outline-none">
+                    <input type="date" id="h-checkin" class="p-2 text-xs rounded-lg border outline-none">
+                </div>
+                <button onclick="addHotel()" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold">儲存飯店</button>
+            </div>
+            <div id="hotels-list"></div>
+        </div>
+
+        <!-- 分頁：行程表 (Itinerary) -->
+        <div id="content-itinerary" class="tab-content">
+            <div class="app-card p-4 bg-white/80 mb-4 border-dashed border-2 border-gray-200">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="text" id="it-day" placeholder="Day 1" class="bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold">
+                    <input type="time" id="it-time" class="bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold">
+                </div>
+                <div class="flex gap-2 mb-2">
+                    <select id="it-type" class="w-1/3 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none border-none">
+                        <option value="view">📸 景點</option><option value="food">🍴 美食</option>
+                        <option value="massage">💆 按摩</option><option value="shop">🛍️ 購物</option>
+                    </select>
+                    <input type="text" id="it-activity" placeholder="要去哪裡玩？" class="w-2/3 bg-gray-50 p-2 rounded-lg text-xs outline-none">
+                </div>
+                <button onclick="addItinerary()" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入行程</button>
             </div>
             <div id="it-list"></div>
         </div>
 
-        <!-- 記帳 -->
+        <!-- 分頁：支出統計 (Budget) -->
         <div id="content-budget" class="tab-content hidden">
-            <!-- 匯率轉換工具 -->
-            <div class="app-card p-4 mb-4 bg-white/80 border-2 border-[#DDB892]/30">
-                <p class="text-[10px] font-black text-[#A5A58D] mb-3 uppercase tracking-widest text-center">💱 匯率小工具 (1:0.95)</p>
-                <div class="flex items-center gap-2">
-                    <div class="flex-1">
-                        <label class="text-[9px] font-bold block ml-1 mb-1">泰銖 THB</label>
-                        <input type="number" id="calc-thb" oninput="convertCurrency('thb')" class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold" placeholder="฿">
+            <!-- 總額卡片 -->
+            <div class="app-card bg-[#6B705C] p-5 text-white mb-4">
+                <div class="flex justify-between items-end mb-4">
+                    <div class="text-left">
+                        <p id="total-label" class="text-[9px] opacity-70 uppercase font-bold tracking-widest">Total Spent</p>
+                        <h2 id="total-amount" class="text-3xl font-black italic">฿ 0</h2>
                     </div>
-                    <div class="pt-4 text-gray-300">⇄</div>
+                    <div class="text-right">
+                        <p class="text-[9px] opacity-70 font-bold">估計匯率 0.95</p>
+                    </div>
+                </div>
+                
+                <div class="bg-black/10 rounded-xl p-3 flex items-center gap-3">
                     <div class="flex-1">
-                        <label class="text-[9px] font-bold block ml-1 mb-1">台幣 TWD</label>
-                        <input type="number" id="calc-twd" oninput="convertCurrency('twd')" class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold" placeholder="$">
+                        <p class="text-[8px] opacity-60 font-bold mb-1 uppercase">THB 泰銖</p>
+                        <input type="number" oninput="calcExchange(this.value)" placeholder="輸入泰銖" class="w-full bg-transparent text-sm font-bold border-b border-white/20 outline-none">
+                    </div>
+                    <div class="text-xl opacity-30">→</div>
+                    <div class="flex-1 text-right">
+                        <p class="text-[8px] opacity-60 font-bold mb-1 uppercase">TWD 台幣</p>
+                        <div id="exchange-result" class="text-sm font-black">$ 0</div>
                     </div>
                 </div>
             </div>
 
-            <div class="app-card bg-[#6B705C] p-8 text-white text-center mb-6">
-                <p class="text-[10px] opacity-70 mb-1 uppercase tracking-widest font-bold italic">Total Balance</p>
-                <h2 id="total-amount" class="text-4xl font-black italic">฿ 0</h2>
+            <!-- 付款人過濾切換 -->
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-1 no-scrollbar">
+                <button onclick="setPayerFilter('all')" id="chip-all" class="filter-chip active flex-shrink-0">全部</button>
+                <button onclick="setPayerFilter('tina')" id="chip-tina" class="filter-chip flex-shrink-0 flex items-center gap-1">
+                    Tina 💰 <span id="chip-tina-amt" class="opacity-60 text-[9px]">฿0</span>
+                </button>
+                <button onclick="setPayerFilter('darren')" id="chip-darren" class="filter-chip flex-shrink-0 flex items-center gap-1">
+                    Darren 💳 <span id="chip-darren-amt" class="opacity-60 text-[9px]">฿0</span>
+                </button>
             </div>
-            <div class="app-card p-5 space-y-3">
+
+            <!-- 新增支出 -->
+            <div class="app-card p-4 space-y-2">
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="exp-cat" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
-                        <option value="food">🍴 美食</option><option value="move">🚗 行程</option>
-                        <option value="stay">🏨 住宿</option><option value="buy">🛍️ 購物</option>
+                    <select id="exp-payer" class="bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold">
+                        <option value="tina">Tina 買單 💰</option>
+                        <option value="darren">Darren 買單 💳</option>
                     </select>
-                    <select id="exp-payer" class="bg-gray-50 p-3 rounded-xl text-xs font-bold outline-none">
-                        <option value="tina">Tina 霸氣買單 💸</option><option value="darren">Darren 護妻神刷 💳</option>
-                    </select>
+                    <div class="flex gap-2">
+                        <input type="number" id="exp-cost" placeholder="金額" class="flex-1 bg-gray-50 p-2 rounded-lg text-xs outline-none">
+                        <select id="exp-currency" class="bg-gray-50 px-2 rounded-lg text-xs font-bold"><option value="THB">฿</option><option value="TWD">$</option></select>
+                    </div>
                 </div>
-                <input type="text" id="exp-item" placeholder="品項" class="w-full bg-gray-50 p-3 rounded-xl text-xs outline-none">
-                <div class="flex gap-2">
-                    <input type="number" id="exp-cost" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-xs outline-none">
-                    <select id="exp-currency" class="bg-gray-50 px-3 rounded-xl text-xs font-bold"><option value="THB">฿</option><option value="TWD">$</option></select>
-                </div>
-                <button onclick="addExpense()" class="bg-[#DDB892] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">儲存支出</button>
+                <input type="text" id="exp-item" placeholder="花費項目" class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
+                <button onclick="addExpense()" class="bg-[#DDB892] text-white w-full py-2.5 rounded-lg font-bold text-xs">紀錄支出</button>
             </div>
-            <div id="exp-list" class="mt-6"></div>
+            <div id="exp-list" class="mt-4"></div>
         </div>
 
-        <!-- 行李 -->
+        <!-- 分頁：行李清單 (Packing) -->
         <div id="content-packing" class="tab-content hidden">
-            <div class="app-card p-5 mb-6">
-                <div class="flex gap-2 mb-3">
-                    <input type="text" id="pack-item" placeholder="必備物品..." class="flex-1 bg-gray-50 p-3 rounded-xl text-xs outline-none">
-                    <select id="pack-owner" class="bg-gray-50 px-3 rounded-xl text-xs font-bold"><option value="tina">Tina</option><option value="darren">Darren</option></select>
+            <div class="app-card p-4 mb-4">
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="pack-item" placeholder="準備物品..." class="flex-1 bg-gray-50 p-2 rounded-lg text-xs outline-none">
+                    <select id="pack-owner" class="bg-gray-50 px-2 rounded-lg text-xs font-bold">
+                        <option value="tina">Tina's</option>
+                        <option value="darren">Darren's</option>
+                    </select>
                 </div>
-                <button onclick="addPacking()" class="bg-[#6B705C] text-white w-full py-3 rounded-xl font-bold text-xs btn-press">加入清單</button>
+                <button onclick="addPacking()" class="bg-[#6B705C] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入清單</button>
             </div>
-            <div class="grid grid-cols-1 gap-4">
-                <div><p class="text-[10px] font-bold text-[#E6BEBB] mb-2 ml-2 uppercase tracking-widest">For Tina ♥</p><div id="pk-list-tina" class="app-card overflow-hidden"></div></div>
-                <div><p class="text-[10px] font-bold text-[#8A9AAB] mb-2 ml-2 uppercase tracking-widest">For Darren ♠</p><div id="pk-list-darren" class="app-card overflow-hidden"></div></div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><p class="text-[10px] font-bold text-[#E6BEBB] mb-1 ml-1 uppercase">Tina's Bag</p><div id="pk-list-tina" class="app-card"></div></div>
+                <div><p class="text-[10px] font-bold text-[#8A9AAB] mb-1 ml-1 uppercase">Darren's Bag</p><div id="pk-list-darren" class="app-card"></div></div>
             </div>
         </div>
     </main>
 
-    <!-- Gemini -->
+    <!-- AI 攻略 Modal -->
     <div id="gemini-modal" onclick="if(event.target === this) toggleGemini()">
         <div id="gemini-panel" onclick="event.stopPropagation()">
             <div class="p-6 h-full flex flex-col">
-                <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="font-black text-sm tracking-widest">✨ GEMINI 智慧攻略</h3>
-                    <button onclick="toggleGemini()" class="text-xl">✕</button>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-black text-sm tracking-widest">✨ AI 蜜月助手</h3>
+                    <div class="flex gap-3">
+                        <button onclick="clearGemini()" class="text-[10px] text-gray-400 font-bold border px-2 py-1 rounded-lg">清空</button>
+                        <button onclick="toggleGemini()" class="text-xl">✕</button>
+                    </div>
                 </div>
-                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1"></div>
-                <div class="flex gap-2 p-2 bg-gray-100 rounded-2xl">
-                    <input type="text" id="gemini-input" placeholder="問問看..." class="flex-1 p-3 text-xs outline-none bg-transparent">
-                    <button id="gemini-send-btn" onclick="askGemini()" class="bg-[#4A4E40] text-white px-4 rounded-xl text-xs font-bold">發送</button>
+                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 text-xs"></div>
+                <div class="flex gap-2 p-2 bg-gray-100 rounded-xl">
+                    <input type="text" id="gemini-input" placeholder="問問看景點攻略..." class="flex-1 p-2 text-xs outline-none bg-transparent">
+                    <button onclick="askGemini()" class="bg-[#4A4E40] text-white px-4 rounded-lg text-xs font-bold">發送</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 底部導覽 -->
     <nav class="bottom-nav">
+        <div onclick="switchTab('core')" id="btn-core" class="nav-btn btn-press opacity-30">🛫</div>
         <div onclick="switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press">🗺️</div>
         <div onclick="switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
         <div onclick="switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
-        <div class="w-px h-6 bg-white/20 mx-1"></div>
         <div onclick="toggleGemini()" class="nav-btn btn-press">✨</div>
     </nav>
+
     <script>switchTab('itinerary');</script>
 </body>
 </html>
