@@ -148,7 +148,7 @@
         import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
-        // Firebase 初始化
+        // Firebase Setup
         let firebaseConfig = {};
         try {
             firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
@@ -166,28 +166,43 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
+            
             const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else { await signInAnonymously(auth); }
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else { 
+                        await signInAnonymously(auth); 
+                    }
+                } catch (err) {
+                    console.error("Auth error:", err);
+                }
             };
-            onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; startSyncing(); } else { initAuth(); } });
+
+            onAuthStateChanged(auth, (user) => { 
+                if (user) { 
+                    currentUser = user; 
+                    startSyncing(); 
+                } else { 
+                    initAuth(); 
+                } 
+            });
         }
 
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
 
         function startSyncing() {
-            onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))));
-            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))), (e) => console.error(e));
+            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))), (e) => console.error(e));
             onSnapshot(getColl('expenses'), (s) => {
                 allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
                 renderExpenses();
-            });
-            onSnapshot(getColl('flights'), (s) => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))));
-            onSnapshot(getColl('hotels'), (s) => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            }, (e) => console.error(e));
+            onSnapshot(getColl('flights'), (s) => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))), (e) => console.error(e));
+            onSnapshot(getColl('hotels'), (s) => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))), (e) => console.error(e));
         }
 
-        // --- 渲染函數 ---
+        // --- Render Functions ---
         function renderItinerary(items) {
             document.getElementById('it-list').innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => `
                 <div class="app-card p-4 flex flex-col gap-3 mb-3">
@@ -204,7 +219,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-50">
                         <button onclick="window.askGemini('幫我規劃前往 ${item.activity} 的交通路線與導航建議')" class="action-link">📍 路線導航</button>
-                        <button onclick="window.askGemini('請針對 ${item.activity} 規劃詳細攻略，內容必須包含：1.必拍機位 2.必吃美食 3.必買清單 4.必逛重點 5.關於這裡的小故事')" class="action-link">💡 查看攻略</button>
+                        <button onclick="window.askGemini('請針對 ${item.activity} 規劃詳細攻略')" class="action-link">💡 查看攻略</button>
                     </div>
                 </div>`).join('');
         }
@@ -230,10 +245,6 @@
                             <div class="text-xs font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
                         </div>
                     </div>
-                    <div class="text-[9px] text-gray-400 font-bold border-t pt-2 flex justify-between">
-                        <span>機場報到: ${f.checkinTime || '--:--'}</span>
-                        <span class="text-[#8E9775]">預計抵達: ${f.arrTime || '--:--'}</span>
-                    </div>
                 </div>`).join('');
         }
 
@@ -251,6 +262,7 @@
         function renderExpenses() {
             let totalsByPayer = { tina: {}, darren: {} };
             allExpenses.forEach(e => { 
+                if(!totalsByPayer[e.payer]) totalsByPayer[e.payer] = {};
                 if(!totalsByPayer[e.payer][e.currency]) totalsByPayer[e.payer][e.currency] = 0;
                 totalsByPayer[e.payer][e.currency] += e.cost;
             });
@@ -262,15 +274,15 @@
             document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina');
             document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
             const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
-            const totalSum = filtered.reduce((s, e) => s + (e.cost * ratesToTHB[e.currency]), 0);
+            const totalSum = filtered.reduce((s, e) => s + (e.cost * (ratesToTHB[e.currency] || 1)), 0);
             document.getElementById('total-amount').innerText = '฿ ' + Math.round(totalSum).toLocaleString();
             document.getElementById('exp-list').innerHTML = filtered.map(exp => `
                 <div class="app-card p-3 flex justify-between items-center mb-2 border-l-4 ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
                     <div class="flex-1 pr-4">
                         <div class="text-xs font-bold text-[#4A4E40]">${exp.item}</div>
-                        <div class="text-[9px] text-gray-400 mt-0.5 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 霸氣買單 💰':'Darren 護妻神刷 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
+                        <div class="text-[9px] text-gray-400 mt-0.5 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
                     </div>
-                    <div class="text-right"><div class="text-sm font-black text-[#2D3128]">฿ ${Math.round(exp.cost * ratesToTHB[exp.currency]).toLocaleString()}</div></div>
+                    <div class="text-right"><div class="text-sm font-black text-[#2D3128]">฿ ${Math.round(exp.cost * (ratesToTHB[exp.currency] || 1)).toLocaleString()}</div></div>
                     <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-100 ml-3 text-[10px]">✕</button>
                 </div>`).join('');
         }
@@ -287,7 +299,7 @@
             draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
         }
 
-        // --- 把函數掛載到 window，解決 type="module" 按鈕失效的問題 ---
+        // --- 全域方法掛載 ---
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
             await addDoc(getColl('itinerary'), { day: document.getElementById('it-day').value || 'Day 1', time: document.getElementById('it-time').value || '12:00', activity: act, type: document.getElementById('it-type').value });
@@ -307,12 +319,31 @@
         };
 
         window.addExpense = async () => {
-            const item = document.getElementById('exp-item').value; 
-            const cost = document.getElementById('exp-cost').value; 
+            const itemInput = document.getElementById('exp-item');
+            const costInput = document.getElementById('exp-cost');
+            const item = itemInput.value.trim();
+            const costRaw = costInput.value;
             const payer = document.getElementById('exp-payer').value;
-            if(!item || !cost || !currentUser) return;
-            await addDoc(getColl('expenses'), { item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, payer });
-            document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = '';
+            const currency = document.getElementById('exp-currency').value;
+
+            if (!item || !costRaw || isNaN(parseFloat(costRaw)) || !currentUser) {
+                return;
+            }
+
+            try {
+                await addDoc(getColl('expenses'), { 
+                    item, 
+                    cost: parseFloat(costRaw), 
+                    currency, 
+                    payer,
+                    createdAt: Date.now()
+                });
+                itemInput.value = '';
+                costInput.value = '';
+                document.getElementById('exchange-hint').innerText = '';
+            } catch (err) {
+                console.error("Add expense error:", err);
+            }
         };
 
         window.addPacking = async () => {
@@ -341,12 +372,10 @@
                 });
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
-                const thinkingEl = document.getElementById(thinkingId);
-                if(thinkingEl) thinkingEl.remove();
+                document.getElementById(thinkingId)?.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border leading-relaxed text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { 
-                const thinkingEl = document.getElementById(thinkingId);
-                if(thinkingEl) thinkingEl.remove();
+                document.getElementById(thinkingId)?.remove();
             }
             chat.scrollTop = chat.scrollHeight;
         };
@@ -358,8 +387,15 @@
             if (curr === 'THB') {
                 res.innerText = `台幣 NT$ ${Math.round(val * thbToTWD).toLocaleString()}`;
             } else {
-                res.innerText = `泰銖 ฿ ${Math.round(val * ratesToTHB[curr]).toLocaleString()}`;
+                res.innerText = `泰銖 ฿ ${Math.round(val * (ratesToTHB[curr] || 1)).toLocaleString()}`;
             }
+        };
+
+        window.updateExchangePreview = () => {
+            const cost = parseFloat(document.getElementById('exp-cost').value) || 0;
+            const curr = document.getElementById('exp-currency').value;
+            const hint = document.getElementById('exchange-hint');
+            hint.innerText = curr === 'THB' ? '' : `≈ ฿ ${Math.round(cost * (ratesToTHB[curr] || 1)).toLocaleString()}`;
         };
 
         window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); renderExpenses(); };
@@ -372,12 +408,9 @@
             document.getElementById('btn-'+id).classList.remove('opacity-30');
         };
         window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
-        window.updateExchangePreview = () => {
-            const cost = parseFloat(document.getElementById('exp-cost').value) || 0;
-            const curr = document.getElementById('exp-currency').value;
-            const hint = document.getElementById('exchange-hint');
-            hint.innerText = curr === 'THB' ? '' : `≈ ฿ ${Math.round(cost * ratesToTHB[curr]).toLocaleString()}`;
-        };
+
+        // 預設頁面切換
+        window.switchTab('itinerary');
     </script>
 </head>
 <body class="pb-24">
@@ -391,7 +424,7 @@
         
         <!-- 行程表 -->
         <div id="content-itinerary" class="tab-content">
-            <div class="weather-card flex justify-between items-center shadow-lg" onclick="window.askGemini('請告訴我曼谷與普吉島今天的即時天氣動態，並給 Darren & Tina 穿搭建議。')">
+            <div class="weather-card flex justify-between items-center shadow-lg" onclick="window.askGemini('幫我查曼谷今天的即時天氣動態，並給 Darren & Tina 穿搭建議。')">
                 <div>
                     <div class="text-[10px] font-bold opacity-80 uppercase tracking-widest mb-1">Current Weather</div>
                     <div class="text-lg font-black">曼谷 31°C / 普吉 29°C</div>
@@ -426,12 +459,12 @@
                     <input type="text" id="f-to" placeholder="目的地" class="p-2 text-xs rounded-lg border">
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <div class="flex flex-col gap-1"><label class="text-[8px] font-bold text-gray-400 pl-1">機場報到</label><input type="time" id="f-checkinTime" class="p-2 text-xs rounded-lg border"></div>
-                    <div class="flex flex-col gap-1"><label class="text-[8px] font-bold text-gray-400 pl-1">座位</label><input type="text" id="f-seat" placeholder="如 12A" class="p-2 text-xs rounded-lg border"></div>
+                    <input type="time" id="f-checkinTime" class="p-2 text-xs rounded-lg border">
+                    <input type="text" id="f-seat" placeholder="座位" class="p-2 text-xs rounded-lg border">
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-3">
-                    <div class="flex flex-col gap-1"><label class="text-[8px] font-bold text-gray-400 pl-1">起飛時間</label><input type="time" id="f-depTime" class="p-2 text-xs rounded-lg border"></div>
-                    <div class="flex flex-col gap-1"><label class="text-[8px] font-bold text-gray-400 pl-1">降落時間</label><input type="time" id="f-arrTime" class="p-2 text-xs rounded-lg border"></div>
+                    <input type="time" id="f-depTime" class="p-2 text-xs rounded-lg border">
+                    <input type="time" id="f-arrTime" class="p-2 text-xs rounded-lg border">
                 </div>
                 <button onclick="window.addFlight()" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
             </div>
@@ -548,14 +581,5 @@
         <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
         <div onclick="window.toggleGemini()" class="nav-btn btn-press">✨</div>
     </nav>
-
-    <script>
-        // 初始化第一個分頁
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof window.switchTab === 'function') {
-                window.switchTab('itinerary');
-            }
-        });
-    </script>
 </body>
 </html>
