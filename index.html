@@ -11,11 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs (Compat version for simplified logic) -->
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
-
     <style>
         :root {
             --morandi-olive: #6B705C;
@@ -146,169 +141,59 @@
             60% { content: '...'; }
             80%, 100% { content: ''; }
         }
-        .hidden { display: none; }
     </style>
 
-    <script>
-        // 全域變數與初始化
-        let db, auth, currentUser = null;
-        let allExpenses = [];
-        let currentPayerFilter = 'all';
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'darren-tina-honeymoon-2026';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+
+        // --- Firebase 配置 ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxcDDn80ScpW35TdJdeXOAkfJbHM0DyD0",
+            authDomain: "honeymoon-2026.firebaseapp.com",
+            projectId: "honeymoon-2026",
+            storageBucket: "honeymoon-2026.firebasestorage.app",
+            messagingSenderId: "639168649822",
+            appId: "1:639168649822:web:20399eff7d34144277f2cf",
+            measurementId: "G-5MDQVLDS7P"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = "honeymoon-2026";
+        let currentUser = null;
+        let allExpenses = []; 
+        let currentPayerFilter = 'all'; 
+
         const ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
-        const thbToTWD = 0.95;
+        const thbToTWD = 0.95; 
 
-        // --- 全域方法掛載 (由 onclick 調用) ---
-        window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            const target = document.getElementById('content-' + id);
-            if (target) target.classList.remove('hidden');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
-            document.getElementById('btn-' + id).classList.remove('opacity-30');
-        };
+        // 登入狀態監聽
+        onAuthStateChanged(auth, async (user) => { 
+            if (user) { 
+                currentUser = user; 
+                startSyncing(); 
+            } else { 
+                await signInAnonymously(auth); 
+            } 
+        });
 
-        window.toggleSection = (id) => {
-            document.getElementById(id + '-grid').classList.toggle('active');
-        };
+        const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
 
-        window.toggleGemini = (forceOpen = false) => {
-            const m = document.getElementById('gemini-modal');
-            if (forceOpen === true) m.classList.add('open');
-            else m.classList.toggle('open');
-        };
-
-        window.clearGemini = () => {
-            document.getElementById('gemini-chat').innerHTML = '';
-        };
-
-        window.calcIndependentRate = () => {
-            const val = parseFloat(document.getElementById('conv-input').value) || 0;
-            const curr = document.getElementById('conv-curr').value;
-            const res = document.getElementById('conv-res');
-            if (curr === 'THB') {
-                res.innerText = `台幣 NT$ ${Math.round(val * thbToTWD).toLocaleString()}`;
-            } else {
-                res.innerText = `泰銖 ฿ ${Math.round(val * (ratesToTHB[curr] || 1)).toLocaleString()}`;
-            }
-        };
-
-        window.updateExchangePreview = () => {
-            const cost = parseFloat(document.getElementById('exp-cost').value) || 0;
-            const curr = document.getElementById('exp-currency').value;
-            const hint = document.getElementById('exchange-hint');
-            hint.innerText = curr === 'THB' ? '' : `≈ ฿ ${Math.round(cost * (ratesToTHB[curr] || 1)).toLocaleString()}`;
-        };
-
-        window.setPayerFilter = (p) => {
-            currentPayerFilter = p;
-            document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-' + p));
-            renderExpenses();
-        };
-
-        // --- 資料庫操作 ---
-        const getColl = (name) => db.collection('artifacts').doc(appId).collection('public').doc('data').collection(name);
-
-        window.addItinerary = async () => {
-            const act = document.getElementById('it-activity').value;
-            if (!act || !currentUser) return;
-            await getColl('itinerary').add({
-                day: document.getElementById('it-day').value || 'Day 1',
-                time: document.getElementById('it-time').value || '12:00',
-                activity: act,
-                type: document.getElementById('it-type').value
+        function startSyncing() {
+            onSnapshot(getColl('itinerary'), (s) => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('expenses'), (s) => {
+                allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderExpenses();
             });
-            document.getElementById('it-activity').value = '';
-        };
+            onSnapshot(getColl('flights'), (s) => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('hotels'), (s) => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))));
+        }
 
-        window.addFlight = async () => {
-            const code = document.getElementById('f-code').value;
-            if (!code || !currentUser) return;
-            await getColl('flights').add({
-                code,
-                from: document.getElementById('f-from').value,
-                to: document.getElementById('f-to').value,
-                depTime: document.getElementById('f-depTime').value,
-                arrTime: document.getElementById('f-arrTime').value,
-                checkinTime: document.getElementById('f-checkinTime').value,
-                seat: document.getElementById('f-seat').value
-            });
-            document.getElementById('f-code').value = '';
-            window.toggleSection('flight');
-        };
-
-        window.addHotel = async () => {
-            const name = document.getElementById('h-name').value;
-            if (!name || !currentUser) return;
-            await getColl('hotels').add({
-                name,
-                room: document.getElementById('h-room').value,
-                checkin: document.getElementById('h-checkin').value
-            });
-            document.getElementById('h-name').value = '';
-            window.toggleSection('hotel');
-        };
-
-        window.addExpense = async () => {
-            const item = document.getElementById('exp-item').value;
-            const cost = parseFloat(document.getElementById('exp-cost').value);
-            if (!item || isNaN(cost) || !currentUser) return;
-            await getColl('expenses').add({
-                item, cost,
-                currency: document.getElementById('exp-currency').value,
-                payer: document.getElementById('exp-payer').value,
-                createdAt: Date.now()
-            });
-            document.getElementById('exp-item').value = '';
-            document.getElementById('exp-cost').value = '';
-            document.getElementById('exchange-hint').innerText = '';
-        };
-
-        window.addPacking = async () => {
-            const val = document.getElementById('pack-item').value;
-            if (!val || !currentUser) return;
-            await getColl('packing').add({
-                item: val,
-                owner: document.getElementById('pack-owner').value,
-                checked: false
-            });
-            document.getElementById('pack-item').value = '';
-        };
-
-        window.deleteItem = async (c, id) => {
-            if (currentUser) await getColl(c).doc(id).delete();
-        };
-
-        window.togglePack = async (id, s) => {
-            if (currentUser) await getColl('packing').doc(id).update({ checked: !s });
-        };
-
-        window.askGemini = async (q = null) => {
-            const input = document.getElementById('gemini-input');
-            const chat = document.getElementById('gemini-chat');
-            const query = q || input.value.trim();
-            if (!query) return;
-            window.toggleGemini(true);
-            if (!q) input.value = '';
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-2 rounded-lg text-xs font-bold shadow-sm">${query}</span></div>`;
-            const thinkingId = 'think-' + Date.now();
-            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
-            chat.scrollTop = chat.scrollHeight;
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] })
-                });
-                const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理暫時無法回應，請稍後再試。";
-                document.getElementById(thinkingId)?.remove();
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border leading-relaxed text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
-            } catch (e) { 
-                document.getElementById(thinkingId)?.remove();
-            }
-            chat.scrollTop = chat.scrollHeight;
-        };
-
-        // --- 渲染畫面函式 ---
+        // --- Render Functions ---
         function renderItinerary(items) {
             document.getElementById('it-list').innerHTML = items.sort((a,b)=>a.day.localeCompare(b.day)||a.time.localeCompare(b.time)).map(item => `
                 <div class="app-card p-4 flex flex-col gap-3 mb-3">
@@ -405,41 +290,101 @@
             draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
         }
 
-        // --- 初始化 ---
-        window.onload = async () => {
-            const firebaseConfig = JSON.parse(__firebase_config);
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-
-            const initAuth = async () => {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await auth.signInWithCustomToken(__initial_auth_token);
-                } else {
-                    await auth.signInAnonymously();
-                }
-            };
-
-            auth.onAuthStateChanged(user => {
-                currentUser = user;
-                if (user) {
-                    // Start Syncing
-                    getColl('itinerary').onSnapshot(s => renderItinerary(s.docs.map(d => ({id: d.id, ...d.data()}))));
-                    getColl('flights').onSnapshot(s => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))));
-                    getColl('hotels').onSnapshot(s => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))));
-                    getColl('expenses').onSnapshot(s => {
-                        allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
-                        renderExpenses();
-                    });
-                    getColl('packing').onSnapshot(s => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
-                } else {
-                    initAuth();
-                }
-            });
-            
-            // 預設切換至行程分頁
-            window.switchTab('itinerary');
+        // --- 全域方法掛載 ---
+        window.addItinerary = async () => {
+            const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
+            await addDoc(getColl('itinerary'), { day: document.getElementById('it-day').value || 'Day 1', time: document.getElementById('it-time').value || '12:00', activity: act, type: document.getElementById('it-type').value });
+            document.getElementById('it-activity').value = '';
         };
+
+        window.addFlight = async () => {
+            const code = document.getElementById('f-code').value; if (!code || !currentUser) return;
+            await addDoc(getColl('flights'), { code, from: document.getElementById('f-from').value, to: document.getElementById('f-to').value, depTime: document.getElementById('f-depTime').value, arrTime: document.getElementById('f-arrTime').value, checkinTime: document.getElementById('f-checkinTime').value, seat: document.getElementById('f-seat').value });
+            document.getElementById('f-code').value = ''; window.toggleSection('flight');
+        };
+
+        window.addHotel = async () => {
+            const name = document.getElementById('h-name').value; if (!name || !currentUser) return;
+            await addDoc(getColl('hotels'), { name, room: document.getElementById('h-room').value, checkin: document.getElementById('h-checkin').value });
+            document.getElementById('h-name').value = ''; window.toggleSection('hotel');
+        };
+
+        window.addExpense = async () => {
+            const itemInput = document.getElementById('exp-item');
+            const costInput = document.getElementById('exp-cost');
+            const item = itemInput.value.trim();
+            const costRaw = costInput.value;
+            const payer = document.getElementById('exp-payer').value;
+            const currency = document.getElementById('exp-currency').value;
+            if (!item || !costRaw || isNaN(parseFloat(costRaw)) || !currentUser) return;
+            await addDoc(getColl('expenses'), { item, cost: parseFloat(costRaw), currency, payer, createdAt: Date.now() });
+            itemInput.value = ''; costInput.value = '';
+            document.getElementById('exchange-hint').innerText = '';
+        };
+
+        window.addPacking = async () => {
+            const val = document.getElementById('pack-item').value; if(!val || !currentUser) return;
+            await addDoc(getColl('packing'), { item: val, owner: document.getElementById('pack-owner').value, checked: false });
+            document.getElementById('pack-item').value = '';
+        };
+
+        window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
+        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
+
+        window.askGemini = async (q = null) => {
+            const input = document.getElementById('gemini-input');
+            const chat = document.getElementById('gemini-chat');
+            const query = q || input.value.trim(); if(!query) return;
+            window.toggleGemini(true);
+            if(!q) input.value = '';
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-2 rounded-lg text-xs font-bold shadow-sm">${query}</span></div>`;
+            const thinkingId = 'think-' + Date.now();
+            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
+            chat.scrollTop = chat.scrollHeight;
+            try {
+                const apiKey = ""; // Runtime provides this
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] })
+                });
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
+                document.getElementById(thinkingId)?.remove();
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border leading-relaxed text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
+            } catch (e) { document.getElementById(thinkingId)?.remove(); }
+            chat.scrollTop = chat.scrollHeight;
+        };
+
+        window.calcIndependentRate = () => {
+            const val = parseFloat(document.getElementById('conv-input').value) || 0;
+            const curr = document.getElementById('conv-curr').value;
+            const res = document.getElementById('conv-res');
+            if (curr === 'THB') {
+                res.innerText = `台幣 NT$ ${Math.round(val * thbToTWD).toLocaleString()}`;
+            } else {
+                res.innerText = `泰銖 ฿ ${Math.round(val * (ratesToTHB[curr] || 1)).toLocaleString()}`;
+            }
+        };
+
+        window.updateExchangePreview = () => {
+            const cost = parseFloat(document.getElementById('exp-cost').value) || 0;
+            const curr = document.getElementById('exp-currency').value;
+            const hint = document.getElementById('exchange-hint');
+            hint.innerText = curr === 'THB' ? '' : `≈ ฿ ${Math.round(cost * (ratesToTHB[curr] || 1)).toLocaleString()}`;
+        };
+
+        window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); renderExpenses(); };
+        window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
+        window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
+        window.switchTab = (id) => {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById('content-'+id).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
+            document.getElementById('btn-'+id).classList.remove('opacity-30');
+        };
+        window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
+
+        window.switchTab('itinerary');
     </script>
 </head>
 <body class="pb-24">
