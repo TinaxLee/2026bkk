@@ -182,6 +182,27 @@
         .timeline-shop::before { background: #DDB892; }
         .timeline-note { border-left-color: #A5A58D; }
         .timeline-note::before { background: #A5A58D; }
+        /* New Categories */
+        .timeline-massage { border-left-color: #B5838D; }
+        .timeline-massage::before { background: #B5838D; }
+        .timeline-play { border-left-color: #CB997E; }
+        .timeline-play::before { background: #CB997E; }
+
+        /* Packing Filter Tabs */
+        .pack-filter-btn {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .pack-filter-btn.active {
+            background: #6B705C; border-color: #6B705C; color: white; transform: scale(1.1);
+        }
+        .pack-filter-btn-tina.active { background: #F8AD9D; border-color: #F8AD9D; }
     </style>
 
     <script type="module">
@@ -206,9 +227,22 @@
         let currentUser = null;
         let allExpenses = []; 
         let currentPayerFilter = 'all'; 
-        let currentDayFilter = 'Day 1'; // 預設 Day 1
-        let itineraryData = []; // Store locally to filter
-        let dayDates = {}; // Store date mappings
+        let currentDayFilter = 'Day 1'; 
+        let itineraryData = []; 
+        let dayDates = {}; 
+        let packingData = []; // Store raw packing data
+        
+        // Default packing filters
+        let packFilters = { tina: 'cloth', darren: 'cloth' };
+        
+        const packCategories = [
+            { id: 'cloth', icon: '👔', label: '衣物' },
+            { id: 'wash', icon: '🧼', label: '盥洗' },
+            { id: 'tech', icon: '📱', label: '3C' },
+            { id: 'med', icon: '💊', label: '藥品' },
+            { id: 'doc', icon: '📄', label: '文件' },
+            { id: 'other', icon: '🎒', label: '其他' }
+        ];
 
         const ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
         const thbToTWD = 0.95; 
@@ -237,8 +271,12 @@
                     renderDayTabs(); // Re-render tabs with dates
                 }
             });
+            // Packing
+            onSnapshot(getColl('packing'), (s) => {
+                packingData = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderPacking(); // Re-render with new data
+            });
             
-            onSnapshot(getColl('packing'), (s) => renderPacking(s.docs.map(d => ({id: d.id, ...d.data()}))));
             onSnapshot(getColl('expenses'), (s) => {
                 allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
                 renderExpenses();
@@ -256,7 +294,6 @@
                 const dateStr = dayDates[dayStr] || ''; 
                 const isActive = currentDayFilter === dayStr;
                 
-                // Active tab has a date picker input if active, otherwise text
                 let dateDisplay = dateStr ? dateStr : '日期';
                 
                 html += `
@@ -275,24 +312,19 @@
             currentDayFilter = day;
             renderDayTabs(); // Update active state
             renderItinerary(); // Filter list
-            // Update dropdown in Add Section
             document.getElementById('it-day').value = day;
         };
 
         window.saveDate = async (day, dateVal) => {
             if(!currentUser) return;
             const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates');
-            // Merge update
             await setDoc(configRef, { [day]: dateVal }, { merge: true });
         };
 
         // --- Render Itinerary with Filter ---
         function renderItinerary() {
             const list = document.getElementById('it-list');
-            // Filter by current Day
             const filtered = itineraryData.filter(item => item.day === currentDayFilter);
-            
-            // Sort by time
             const sorted = filtered.sort((a,b) => a.time.localeCompare(b.time));
             
             if (sorted.length === 0) {
@@ -305,54 +337,43 @@
                 let typeLabel = '';
                 let aiButton = '';
 
-                // Escape function to prevent JS errors with quotes
-                // Replace ' with \' (for JS strings)
                 const safeText = item.activity.replace(/'/g, "\\'"); 
-
-                // Google Maps URL (URL Encoded)
                 const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity)}`;
 
-                // Logic for Type and AI Buttons
                 switch(item.type) {
                     case 'food': 
-                        typeClass = 'timeline-food'; 
-                        typeLabel = '🍴 美食'; 
+                        typeClass = 'timeline-food'; typeLabel = '🍴 美食'; 
                         aiButton = `<button onclick="window.askGemini('請推薦 ${safeText} 的必點菜單與特色美食 🍤')" class="action-link ai-btn">必點菜單 🍤</button>`;
                         break;
                     case 'shop': 
-                        typeClass = 'timeline-shop'; 
-                        typeLabel = '🛍️ 購物'; 
+                        typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; 
                         aiButton = `<button onclick="window.askGemini('在 ${safeText} 有什麼必買的伴手禮或推薦品牌？🎁')" class="action-link ai-btn">必買伴手禮 🎁</button>`;
                         break;
-                    case 'view': 
-                        typeClass = 'timeline-view'; 
-                        typeLabel = '📸 景點'; 
+                    case 'view': typeClass = 'timeline-view'; typeLabel = '📸 景點'; break;
+                    case 'massage': 
+                        typeClass = 'timeline-massage'; typeLabel = '💆 按摩'; 
+                        aiButton = `<button onclick="window.askGemini('請推薦 ${safeText} 附近的按摩 SPA 與價位資訊 💆')" class="action-link ai-btn">按摩推薦 💆</button>`;
                         break;
-                    case 'note': 
-                        typeClass = 'timeline-note'; 
-                        typeLabel = '📝 備註'; 
+                    case 'play': 
+                        typeClass = 'timeline-play'; typeLabel = '🎢 玩樂'; 
+                        aiButton = `<button onclick="window.askGemini('請介紹 ${safeText} 的好玩設施與遊玩攻略 🎢')" class="action-link ai-btn">怎麼玩 🎢</button>`;
                         break;
-                    case 'alert': 
-                        typeClass = 'timeline-food'; // Borrow red color
-                        typeLabel = '🔔 提示'; 
-                        break;
-                    default: 
-                        typeClass = 'timeline-view'; 
-                        typeLabel = '📍 行程';
+                    case 'note': typeClass = 'timeline-note'; typeLabel = '📝 備註'; break;
+                    case 'alert': typeClass = 'timeline-food'; typeLabel = '🔔 提示'; break;
+                    default: typeClass = 'timeline-view'; typeLabel = '📍 行程';
                 }
 
                 return `
                 <div class="app-card p-4 flex flex-col gap-2 mb-3 ${typeClass} timeline-item relative">
                     <div class="flex justify-between items-start">
                         <div>
-                            <!-- Time & Tag in same line -->
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">${item.time}</span>
+                                <!-- UPDATED: text-xs -> text-sm for better balance -->
+                                <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">${item.time}</span>
                                 <span class="tag tag-type">${typeLabel}</span>
                             </div>
                             <!-- Activity Title -->
                             <div class="font-black text-[#4A4E40] text-lg leading-tight">${item.activity}</div>
-                            <!-- Display Note if exists -->
                             ${item.note ? `<div class="text-xs text-gray-500 font-bold mt-1">📝 ${item.note}</div>` : ''}
                         </div>
                         <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-200 p-2 -mt-2 -mr-2">✕</button>
@@ -360,52 +381,95 @@
                     
                     ${item.type !== 'note' && item.type !== 'alert' ? `
                     <div class="flex flex-wrap gap-2 pt-2 mt-1 border-t border-gray-50/50">
-                        <!-- Navigation Link (Use <a> for reliability) -->
                         <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
-                        
-                        <!-- Strategy Guide to Gemini -->
                         <button onclick="window.askGemini('請告訴我關於 ${safeText} 的詳細旅遊攻略、參觀重點與注意事項')" class="action-link">💡 攻略</button>
-                        
-                        <!-- Extra Contextual Button -->
                         ${aiButton}
                     </div>` : ''}
                 </div>`;
             }).join('');
         }
 
-        // --- Other Renders (Existing Logic) ---
+        // --- Packing with Categories ---
+        window.setPackFilter = (owner, cat) => {
+            packFilters[owner] = cat;
+            renderPacking();
+        };
+
+        function renderPacking() {
+            const draw = (owner, containerId) => {
+                const currentCat = packFilters[owner];
+                const filteredItems = packingData.filter(i => i.owner === owner && i.category === currentCat);
+                const activeColorClass = owner === 'tina' ? 'pack-filter-btn-tina' : '';
+
+                // Generate Tabs HTML
+                let tabsHtml = `<div class="flex overflow-x-auto gap-2 mb-3 no-scrollbar pb-1 px-1">`;
+                packCategories.forEach(c => {
+                    const isActive = c.id === currentCat;
+                    tabsHtml += `<button onclick="window.setPackFilter('${owner}', '${c.id}')" class="pack-filter-btn ${activeColorClass} ${isActive ? 'active' : ''}">${c.icon}</button>`;
+                });
+                tabsHtml += `</div>`;
+
+                // Generate List HTML
+                const itemsHtml = filteredItems.length > 0 ? filteredItems.map(i => `
+                    <div class="p-3 flex items-center gap-3 border-b border-gray-50 last:border-0">
+                        <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-4 h-4 rounded border ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer"></div>
+                        <!-- Increased Item Name Font -->
+                        <span class="flex-1 text-sm ${i.checked ? 'line-through text-gray-300' : 'font-bold text-[#4A4E40]'}">${i.item}</span>
+                        <button onclick="window.deleteItem('packing', '${i.id}')" class="text-gray-200 text-lg leading-none">×</button>
+                    </div>`).join('') : `<div class="text-center text-gray-300 text-[10px] py-4 font-bold italic">此分類還沒有物品 🦗</div>`;
+
+                document.getElementById(containerId).innerHTML = tabsHtml + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${itemsHtml}</div>`;
+            };
+
+            draw('tina', 'pk-list-tina'); 
+            draw('darren', 'pk-list-darren');
+        }
+
+        // --- Other Renders ---
         function renderFlights(items) {
             document.getElementById('flights-list').innerHTML = items.map(f => `
                 <div class="app-card p-5 mb-3">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="bg-[#6B705C] text-white text-[9px] px-2 py-0.5 rounded font-black">${f.code}</span>
+                        <!-- Increased Flight Code Font -->
+                        <span class="bg-[#6B705C] text-white text-xs px-2 py-0.5 rounded font-black">${f.code}</span>
                         <div class="flex gap-2">
-                             <span class="text-[9px] font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
+                             <!-- Increased Seat Font -->
+                             <span class="text-xs font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
                              <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 text-xs">✕</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mb-3">
                         <div class="text-center flex-1">
-                            <div class="text-lg font-black text-[#2D3128]">${f.from}</div>
-                            <div class="text-xs font-bold text-[#6B705C]">${f.depTime || '--:--'}</div>
+                            <div class="text-2xl font-black text-[#2D3128]">${f.from}</div>
+                            <div class="text-sm font-bold text-[#6B705C]">${f.depTime || '--:--'}</div>
                         </div>
                         <div class="flight-path"></div>
                         <div class="text-center flex-1">
-                            <div class="text-lg font-black text-[#2D3128]">${f.to}</div>
-                            <div class="text-xs font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
+                            <div class="text-2xl font-black text-[#2D3128]">${f.to}</div>
+                            <div class="text-sm font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
                         </div>
                     </div>
+                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-2">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
+                        <div class="text-xs font-bold text-[#4A4E40]">${f.note}</div>
+                    </div>` : ''}
                 </div>`).join('');
         }
 
         function renderHotels(items) {
             document.getElementById('hotels-list').innerHTML = items.map(h => `
-                <div class="app-card p-4 mb-3 flex justify-between items-center">
-                    <div class="flex-1">
-                        <div class="text-xs font-black text-[#4A4E40]">${h.name}</div>
-                        <div class="text-[10px] text-gray-400 font-bold mt-1">房號: ${h.room || '--'} | 入住: ${h.checkin || '--'}</div>
+                <div class="app-card p-4 mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex-1">
+                            <div class="text-base font-black text-[#4A4E40]">${h.name}</div>
+                            <div class="text-xs text-gray-400 font-bold mt-1">房號: ${h.room || '--'} | 入住: ${h.checkin || '--'}</div>
+                        </div>
+                        <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs pl-4 self-start">✕</button>
                     </div>
-                    <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs pl-4">✕</button>
+                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-1">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
+                        <div class="text-xs font-bold text-[#4A4E40]">${h.note}</div>
+                    </div>` : ''}
                 </div>`).join('');
         }
 
@@ -437,62 +501,54 @@
                 </div>`).join('');
         }
 
-        function renderPacking(items) {
-            const getIcon = (cat) => {
-                const map = { 'cloth': '👔', 'wash': '🧼', 'tech': '📱', 'med': '💊', 'doc': '📄', 'other': '🎒' };
-                return map[cat] || '🎒';
-            };
-
-            const draw = (o, t) => {
-                document.getElementById(t).innerHTML = items.filter(i => i.owner === o).map(i => `
-                    <div class="p-3 flex items-center gap-3 border-b border-gray-50">
-                        <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-4 h-4 rounded border ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'}"></div>
-                        <span class="text-sm">${getIcon(i.category)}</span>
-                        <span class="flex-1 text-xs ${i.checked ? 'line-through text-gray-300' : 'font-bold'}">${i.item}</span>
-                        <button onclick="window.deleteItem('packing', '${i.id}')" class="text-gray-200">✕</button>
-                    </div>`).join('');
-            };
-            draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
-        }
-
         // --- Actions ---
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
             const dayVal = document.getElementById('it-day').value;
-            const noteVal = document.getElementById('it-note').value; // Get note value
-            
-            // Handle Time Range Logic
+            const noteVal = document.getElementById('it-note').value; 
             const startTime = document.getElementById('it-time-start').value || '12:00';
             const endTime = document.getElementById('it-time-end').value;
             const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
 
             await addDoc(getColl('itinerary'), { 
-                day: dayVal, 
-                time: timeVal, 
-                activity: act, 
-                note: noteVal, // Save note
-                type: document.getElementById('it-type').value 
+                day: dayVal, time: timeVal, activity: act, note: noteVal, type: document.getElementById('it-type').value 
             });
-            
-            // Clear inputs
             document.getElementById('it-activity').value = '';
             document.getElementById('it-time-end').value = '';
             document.getElementById('it-note').value = '';
-            
-            // Switch to that day to see result
             window.setDayFilter(dayVal);
         };
 
         window.addFlight = async () => {
             const code = document.getElementById('f-code').value; if (!code || !currentUser) return;
-            await addDoc(getColl('flights'), { code, from: document.getElementById('f-from').value, to: document.getElementById('f-to').value, depTime: document.getElementById('f-depTime').value, arrTime: document.getElementById('f-arrTime').value, checkinTime: document.getElementById('f-checkinTime').value, seat: document.getElementById('f-seat').value });
-            document.getElementById('f-code').value = ''; window.toggleSection('flight');
+            const note = document.getElementById('f-note').value;
+            await addDoc(getColl('flights'), { 
+                code, 
+                from: document.getElementById('f-from').value, 
+                to: document.getElementById('f-to').value, 
+                depTime: document.getElementById('f-depTime').value, 
+                arrTime: document.getElementById('f-arrTime').value, 
+                checkinTime: document.getElementById('f-checkinTime').value, 
+                seat: document.getElementById('f-seat').value,
+                note: note
+            });
+            document.getElementById('f-code').value = ''; 
+            document.getElementById('f-note').value = '';
+            window.toggleSection('flight');
         };
 
         window.addHotel = async () => {
             const name = document.getElementById('h-name').value; if (!name || !currentUser) return;
-            await addDoc(getColl('hotels'), { name, room: document.getElementById('h-room').value, checkin: document.getElementById('h-checkin').value });
-            document.getElementById('h-name').value = ''; window.toggleSection('hotel');
+            const note = document.getElementById('h-note').value;
+            await addDoc(getColl('hotels'), { 
+                name, 
+                room: document.getElementById('h-room').value, 
+                checkin: document.getElementById('h-checkin').value,
+                note: note
+            });
+            document.getElementById('h-name').value = ''; 
+            document.getElementById('h-note').value = '';
+            window.toggleSection('hotel');
         };
 
         window.addExpense = async () => {
@@ -511,7 +567,12 @@
         window.addPacking = async () => {
             const val = document.getElementById('pack-item').value; if(!val || !currentUser) return;
             const cat = document.getElementById('pack-category').value || 'other';
-            await addDoc(getColl('packing'), { item: val, owner: document.getElementById('pack-owner').value, checked: false, category: cat });
+            const owner = document.getElementById('pack-owner').value;
+            
+            await addDoc(getColl('packing'), { item: val, owner: owner, checked: false, category: cat });
+            
+            // Auto switch filter to new category
+            window.setPackFilter(owner, cat);
             document.getElementById('pack-item').value = '';
         };
 
@@ -537,7 +598,6 @@
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
                 document.getElementById(thinkingId)?.remove();
-                // Increased font size for AI response (text-base)
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border leading-7 text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { document.getElementById(thinkingId)?.remove(); }
             chat.scrollTop = chat.scrollHeight;
@@ -561,24 +621,17 @@
             hint.innerText = curr === 'THB' ? '' : `≈ ฿ ${Math.round(cost * (ratesToTHB[curr] || 1)).toLocaleString()}`;
         };
         
-        // Auto Weather Fetch
         window.getWeather = async () => {
             try {
-                // Fetch Bangkok (13.75, 100.50) and Phuket (7.88, 98.39)
                 const url = "https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m,weather_code&timezone=Asia%2FBangkok";
                 const res = await fetch(url);
                 const data = await res.json();
-                
                 const bkkTemp = Math.round(data[0].current.temperature_2m);
                 const hktTemp = Math.round(data[1].current.temperature_2m);
-                
                 document.getElementById('weather-display').innerHTML = `
                     <div class="text-lg font-black">曼谷 ${bkkTemp}°C / 普吉 ${hktTemp}°C</div>
-                    <div class="text-[9px] mt-1 font-bold opacity-60">即時氣溫已更新 • 點擊查看 AI 穿搭建議 ✨</div>
-                `;
-            } catch(e) {
-                console.log("Weather error", e);
-            }
+                    <div class="text-[9px] mt-1 font-bold opacity-60">即時氣溫已更新 • 點擊查看 AI 穿搭建議 ✨</div>`;
+            } catch(e) { console.log("Weather error", e); }
         };
 
         window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); renderExpenses(); };
@@ -592,10 +645,9 @@
         };
         window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
 
-        // Init
         window.switchTab('itinerary');
-        window.renderDayTabs(); // Initial render
-        window.getWeather(); // Fetch weather
+        window.renderDayTabs(); 
+        window.getWeather(); 
     </script>
 </head>
 <body>
@@ -609,7 +661,6 @@
         
         <!-- 行程表 -->
         <div id="content-itinerary" class="tab-content">
-            <!-- Weather Widget (Auto) -->
             <div class="weather-card flex justify-between items-center shadow-lg" onclick="window.askGemini('幫我查曼谷今天的即時天氣動態，並給 Darren & Tina 穿搭建議。')">
                 <div>
                     <div class="text-[10px] font-bold opacity-80 uppercase tracking-widest mb-1">Current Weather</div>
@@ -621,10 +672,7 @@
                 <div class="text-3xl">☀️</div>
             </div>
 
-            <!-- Day Selector Bar -->
-            <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-2 mb-2">
-                <!-- JS Injected Tabs -->
-            </div>
+            <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-2 mb-2"></div>
 
             <div class="app-card p-4 bg-white/80 mb-4 border-dashed border-2 border-gray-200">
                 <div class="flex gap-2 mb-2">
@@ -637,7 +685,6 @@
                         <option value="Day 6">Day 6</option>
                         <option value="Day 7">Day 7</option>
                     </select>
-                    <!-- Enhanced Time Input Section: Start Time - End Time -->
                     <div class="flex-1 flex gap-1 items-center bg-gray-50 rounded-lg px-2 border border-transparent focus-within:border-[#6B705C]">
                         <input type="time" id="it-time-start" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-[#4A4E40]" aria-label="開始時間">
                         <span class="text-gray-400 font-bold text-xs">~</span>
@@ -649,12 +696,13 @@
                         <option value="view">📸 景點</option>
                         <option value="food">🍴 美食</option>
                         <option value="shop">🛍️ 購物</option>
+                        <option value="massage">💆 按摩</option>
+                        <option value="play">🎢 玩樂</option>
                         <option value="note">📝 備註</option>
                         <option value="alert">🔔 提示</option>
                     </select>
                     <input type="text" id="it-activity" placeholder="行程名稱..." class="w-2/3 bg-gray-50 p-2 rounded-lg text-xs outline-none">
                 </div>
-                <!-- Note Input -->
                 <div class="mb-2">
                     <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
                 </div>
@@ -684,6 +732,7 @@
                     <input type="time" id="f-depTime" class="p-2 text-xs rounded-lg border">
                     <input type="time" id="f-arrTime" class="p-2 text-xs rounded-lg border">
                 </div>
+                <input type="text" id="f-note" placeholder="備註 (例如: 需提早到機場)..." class="w-full p-2 text-xs rounded-lg border mb-2">
                 <button onclick="window.addFlight()" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
             </div>
             <div id="flights-list"></div>
@@ -698,6 +747,7 @@
                     <input type="text" id="h-room" placeholder="房號" class="p-2 text-xs rounded-lg border">
                     <input type="date" id="h-checkin" class="p-2 text-xs rounded-lg border">
                 </div>
+                <input type="text" id="h-note" placeholder="備註 (例如: 需付押金)..." class="w-full p-2 text-xs rounded-lg border mb-2">
                 <button onclick="window.addHotel()" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold">儲存飯店</button>
             </div>
             <div id="hotels-list"></div>
@@ -776,8 +826,14 @@
                 <button onclick="window.addPacking()" class="bg-[#6B705C] text-white w-full py-2.5 rounded-lg font-bold text-xs">記 得 記 得 帶 ！</button>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <div><p class="text-[10px] font-bold text-[#F8AD9D] mb-1 ml-1 uppercase">Tina's</p><div id="pk-list-tina" class="app-card min-h-[50px]"></div></div>
-                <div><p class="text-[10px] font-bold text-[#6B705C] mb-1 ml-1 uppercase">Darren's</p><div id="pk-list-darren" class="app-card min-h-[50px]"></div></div>
+                <div>
+                    <p class="text-[10px] font-bold text-[#F8AD9D] mb-1 ml-1 uppercase">Tina's</p>
+                    <div id="pk-list-tina" class="app-card min-h-[50px]"></div>
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold text-[#6B705C] mb-1 ml-1 uppercase">Darren's</p>
+                    <div id="pk-list-darren" class="app-card min-h-[50px]"></div>
+                </div>
             </div>
         </div>
     </main>
