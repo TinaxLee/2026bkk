@@ -99,7 +99,7 @@
         }
         #gemini-modal.open #gemini-panel { transform: translateY(0); }
 
-        .tag { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; margin-right: 4px; display: inline-block; margin-bottom: 4px; }
+        .tag { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; display: inline-block; }
         .tag-type { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
 
         input, select, textarea { font-size: 16px !important; } 
@@ -345,9 +345,15 @@
                 <div class="app-card p-4 flex flex-col gap-2 mb-3 ${typeClass} timeline-item relative">
                     <div class="flex justify-between items-start">
                         <div>
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">${item.time}</span>
-                            <div class="font-bold text-[#4A4E40] text-sm mt-0.5">${item.activity}</div>
-                            <span class="tag tag-type mt-1">${typeLabel}</span>
+                            <!-- Time & Tag in same line -->
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-xs font-black text-gray-400 uppercase tracking-widest">${item.time}</span>
+                                <span class="tag tag-type">${typeLabel}</span>
+                            </div>
+                            <!-- Activity Title -->
+                            <div class="font-black text-[#4A4E40] text-lg leading-tight">${item.activity}</div>
+                            <!-- Display Note if exists -->
+                            ${item.note ? `<div class="text-xs text-gray-500 font-bold mt-1">📝 ${item.note}</div>` : ''}
                         </div>
                         <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-200 p-2 -mt-2 -mr-2">✕</button>
                     </div>
@@ -453,22 +459,25 @@
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
             const dayVal = document.getElementById('it-day').value;
+            const noteVal = document.getElementById('it-note').value; // Get note value
             
             // Handle Time Range Logic
             const startTime = document.getElementById('it-time-start').value || '12:00';
             const endTime = document.getElementById('it-time-end').value;
-            
-            // If End Time is provided, construct range string. Else use single time.
             const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
 
             await addDoc(getColl('itinerary'), { 
                 day: dayVal, 
                 time: timeVal, 
                 activity: act, 
+                note: noteVal, // Save note
                 type: document.getElementById('it-type').value 
             });
+            
+            // Clear inputs
             document.getElementById('it-activity').value = '';
-            document.getElementById('it-time-end').value = ''; // Clear end time specifically
+            document.getElementById('it-time-end').value = '';
+            document.getElementById('it-note').value = '';
             
             // Switch to that day to see result
             window.setDayFilter(dayVal);
@@ -515,9 +524,9 @@
             const query = q || input.value.trim(); if(!query) return;
             window.toggleGemini(true);
             if(!q) input.value = '';
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-2 rounded-lg text-xs font-bold shadow-sm">${query}</span></div>`;
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-3 rounded-2xl text-sm font-bold shadow-sm">${query}</span></div>`;
             const thinkingId = 'think-' + Date.now();
-            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
+            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-2xl text-sm shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
             chat.scrollTop = chat.scrollHeight;
             try {
                 const apiKey = ""; // Runtime provides this
@@ -528,7 +537,8 @@
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
                 document.getElementById(thinkingId)?.remove();
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-lg text-xs shadow-sm border leading-relaxed text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
+                // Increased font size for AI response (text-base)
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border leading-7 text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { document.getElementById(thinkingId)?.remove(); }
             chat.scrollTop = chat.scrollHeight;
         };
@@ -643,6 +653,10 @@
                         <option value="alert">🔔 提示</option>
                     </select>
                     <input type="text" id="it-activity" placeholder="行程名稱..." class="w-2/3 bg-gray-50 p-2 rounded-lg text-xs outline-none">
+                </div>
+                <!-- Note Input -->
+                <div class="mb-2">
+                    <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
                 </div>
                 <button onclick="window.addItinerary()" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入行程</button>
             </div>
@@ -774,15 +788,17 @@
             <div class="p-5 h-full flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
-                        <h3 class="font-black text-sm text-[#4A4E40]">✨ 蜜月助理</h3>
-                        <button onclick="window.clearGemini()" class="text-[9px] bg-gray-200 px-2 py-0.5 rounded-full text-gray-500 font-bold">清除紀錄</button>
+                        <!-- Increased header size -->
+                        <h3 class="font-black text-lg text-[#4A4E40]">✨ 蜜月助理</h3>
+                        <button onclick="window.clearGemini()" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full text-gray-500 font-bold">清除紀錄</button>
                     </div>
-                    <button onclick="window.toggleGemini()" class="text-xl text-gray-300">✕</button>
+                    <button onclick="window.toggleGemini()" class="text-2xl text-gray-300">✕</button>
                 </div>
-                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 text-xs"></div>
-                <div class="flex gap-2 p-2 bg-white rounded-xl shadow-inner border">
-                    <input type="text" id="gemini-input" placeholder="問問助理..." class="flex-1 p-2 text-xs outline-none bg-transparent">
-                    <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-4 rounded-lg text-xs font-bold">發送</button>
+                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 text-sm"></div>
+                <div class="flex gap-2 p-2 bg-white rounded-2xl shadow-inner border">
+                    <!-- Increased input size -->
+                    <input type="text" id="gemini-input" placeholder="問問助理..." class="flex-1 p-3 text-base outline-none bg-transparent">
+                    <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-5 rounded-xl text-sm font-bold">發送</button>
                 </div>
             </div>
         </div>
