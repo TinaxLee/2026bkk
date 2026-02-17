@@ -452,15 +452,24 @@
         // --- Actions ---
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
-            // Use selected Day from dropdown
             const dayVal = document.getElementById('it-day').value;
+            
+            // Handle Time Range Logic
+            const startTime = document.getElementById('it-time-start').value || '12:00';
+            const endTime = document.getElementById('it-time-end').value;
+            
+            // If End Time is provided, construct range string. Else use single time.
+            const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
+
             await addDoc(getColl('itinerary'), { 
                 day: dayVal, 
-                time: document.getElementById('it-time').value || '12:00', 
+                time: timeVal, 
                 activity: act, 
                 type: document.getElementById('it-type').value 
             });
             document.getElementById('it-activity').value = '';
+            document.getElementById('it-time-end').value = ''; // Clear end time specifically
+            
             // Switch to that day to see result
             window.setDayFilter(dayVal);
         };
@@ -609,7 +618,7 @@
 
             <div class="app-card p-4 bg-white/80 mb-4 border-dashed border-2 border-gray-200">
                 <div class="flex gap-2 mb-2">
-                    <select id="it-day" class="w-1/3 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-[#6B705C]">
+                    <select id="it-day" class="w-1/4 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-[#6B705C]">
                         <option value="Day 1">Day 1</option>
                         <option value="Day 2">Day 2</option>
                         <option value="Day 3">Day 3</option>
@@ -618,7 +627,12 @@
                         <option value="Day 6">Day 6</option>
                         <option value="Day 7">Day 7</option>
                     </select>
-                    <input type="time" id="it-time" class="w-2/3 bg-gray-50 p-2 rounded-lg text-xs outline-none font-bold">
+                    <!-- Enhanced Time Input Section: Start Time - End Time -->
+                    <div class="flex-1 flex gap-1 items-center bg-gray-50 rounded-lg px-2 border border-transparent focus-within:border-[#6B705C]">
+                        <input type="time" id="it-time-start" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-[#4A4E40]" aria-label="開始時間">
+                        <span class="text-gray-400 font-bold text-xs">~</span>
+                        <input type="time" id="it-time-end" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-gray-500" aria-label="結束時間 (選填)">
+                    </div>
                 </div>
                 <div class="flex gap-2 mb-2">
                     <select id="it-type" class="w-1/3 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none">
