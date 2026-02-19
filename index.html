@@ -182,7 +182,6 @@
         .timeline-shop::before { background: #DDB892; }
         .timeline-note { border-left-color: #A5A58D; }
         .timeline-note::before { background: #A5A58D; }
-        /* New Categories */
         .timeline-massage { border-left-color: #B5838D; }
         .timeline-massage::before { background: #B5838D; }
         .timeline-play { border-left-color: #CB997E; }
@@ -228,10 +227,20 @@
         let allExpenses = []; 
         let currentPayerFilter = 'all'; 
         let currentDayFilter = 'Day 1'; 
-        let itineraryData = []; 
-        let dayDates = {}; 
-        let packingData = []; // Store raw packing data
         
+        // Data Stores
+        let itineraryData = []; 
+        let flightsData = [];
+        let hotelsData = [];
+        let packingData = []; 
+        let dayDates = {}; 
+        
+        // Edit State
+        let editingItineraryId = null;
+        let editingFlightId = null;
+        let editingHotelId = null;
+        let editingExpenseId = null;
+
         // Default packing filters
         let packFilters = { tina: 'cloth', darren: 'cloth' };
         
@@ -268,21 +277,26 @@
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
                 if (docSnap.exists()) {
                     dayDates = docSnap.data();
-                    renderDayTabs(); // Re-render tabs with dates
+                    renderDayTabs();
                 }
             });
             // Packing
             onSnapshot(getColl('packing'), (s) => {
                 packingData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderPacking(); // Re-render with new data
+                renderPacking();
             });
-            
             onSnapshot(getColl('expenses'), (s) => {
                 allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
                 renderExpenses();
             });
-            onSnapshot(getColl('flights'), (s) => renderFlights(s.docs.map(d => ({id: d.id, ...d.data()}))));
-            onSnapshot(getColl('hotels'), (s) => renderHotels(s.docs.map(d => ({id: d.id, ...d.data()}))));
+            onSnapshot(getColl('flights'), (s) => {
+                flightsData = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderFlights();
+            });
+            onSnapshot(getColl('hotels'), (s) => {
+                hotelsData = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderHotels();
+            });
         }
 
         // --- Render Day Tabs ---
@@ -293,7 +307,6 @@
                 const dayStr = `Day ${i}`;
                 const dateStr = dayDates[dayStr] || ''; 
                 const isActive = currentDayFilter === dayStr;
-                
                 let dateDisplay = dateStr ? dateStr : '日期';
                 
                 html += `
@@ -310,9 +323,12 @@
 
         window.setDayFilter = (day) => {
             currentDayFilter = day;
-            renderDayTabs(); // Update active state
-            renderItinerary(); // Filter list
-            document.getElementById('it-day').value = day;
+            renderDayTabs();
+            renderItinerary();
+            // Only update dropdown if not in edit mode to avoid confusion
+            if (!editingItineraryId) {
+                document.getElementById('it-day').value = day;
+            }
         };
 
         window.saveDate = async (day, dateVal) => {
@@ -321,7 +337,74 @@
             await setDoc(configRef, { [day]: dateVal }, { merge: true });
         };
 
-        // --- Render Itinerary with Filter ---
+        // --- Itinerary Logic (Edit/Add) ---
+        window.editItinerary = (id) => {
+            const item = itineraryData.find(i => i.id === id);
+            if (!item) return;
+            
+            editingItineraryId = id;
+            
+            document.getElementById('it-day').value = item.day;
+            document.getElementById('it-type').value = item.type;
+            document.getElementById('it-activity').value = item.activity;
+            document.getElementById('it-note').value = item.note || '';
+            
+            // Handle time split
+            if (item.time.includes('-')) {
+                const times = item.time.split('-').map(t => t.trim());
+                document.getElementById('it-time-start').value = times[0];
+                document.getElementById('it-time-end').value = times[1];
+            } else {
+                document.getElementById('it-time-start').value = item.time;
+                document.getElementById('it-time-end').value = '';
+            }
+
+            // UI Update
+            document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅';
+            document.getElementById('btn-cancel-itinerary').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelEditItinerary = () => {
+            editingItineraryId = null;
+            document.getElementById('it-activity').value = '';
+            document.getElementById('it-time-end').value = '';
+            document.getElementById('it-note').value = '';
+            document.getElementById('it-day').value = currentDayFilter; // Reset to current view
+            
+            document.getElementById('btn-add-itinerary').innerText = '加入行程';
+            document.getElementById('btn-cancel-itinerary').classList.add('hidden');
+        };
+
+        window.addItinerary = async () => {
+            const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
+            const dayVal = document.getElementById('it-day').value;
+            const noteVal = document.getElementById('it-note').value; 
+            const startTime = document.getElementById('it-time-start').value || '12:00';
+            const endTime = document.getElementById('it-time-end').value;
+            const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
+            const typeVal = document.getElementById('it-type').value;
+
+            if (editingItineraryId) {
+                // Update
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), {
+                    day: dayVal, time: timeVal, activity: act, note: noteVal, type: typeVal
+                });
+                window.cancelEditItinerary(); // Reset UI
+            } else {
+                // Add
+                await addDoc(getColl('itinerary'), { 
+                    day: dayVal, time: timeVal, activity: act, note: noteVal, type: typeVal 
+                });
+                // Clear inputs
+                document.getElementById('it-activity').value = '';
+                document.getElementById('it-time-end').value = '';
+                document.getElementById('it-note').value = '';
+            }
+            
+            window.setDayFilter(dayVal);
+        };
+
         function renderItinerary() {
             const list = document.getElementById('it-list');
             const filtered = itineraryData.filter(item => item.day === currentDayFilter);
@@ -366,17 +449,18 @@
                 return `
                 <div class="app-card p-4 flex flex-col gap-2 mb-3 ${typeClass} timeline-item relative">
                     <div class="flex justify-between items-start">
-                        <div>
+                        <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
-                                <!-- UPDATED: text-xs -> text-sm for better balance -->
                                 <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">${item.time}</span>
                                 <span class="tag tag-type">${typeLabel}</span>
                             </div>
-                            <!-- Activity Title -->
                             <div class="font-black text-[#4A4E40] text-lg leading-tight">${item.activity}</div>
                             ${item.note ? `<div class="text-xs text-gray-500 font-bold mt-1">📝 ${item.note}</div>` : ''}
                         </div>
-                        <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-200 p-2 -mt-2 -mr-2">✕</button>
+                        <div class="flex flex-col gap-2 ml-2">
+                            <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-200 text-sm">✕</button>
+                            <button onclick="window.editItinerary('${item.id}')" class="text-gray-300 text-sm hover:text-[#6B705C]">✎</button>
+                        </div>
                     </div>
                     
                     ${item.type !== 'note' && item.type !== 'alert' ? `
@@ -387,6 +471,159 @@
                     </div>` : ''}
                 </div>`;
             }).join('');
+        }
+
+        // --- Flights Logic (Edit/Add) ---
+        window.editFlight = (id) => {
+            const item = flightsData.find(f => f.id === id);
+            if (!item) return;
+            editingFlightId = id;
+            
+            document.getElementById('f-code').value = item.code;
+            document.getElementById('f-from').value = item.from;
+            document.getElementById('f-to').value = item.to;
+            document.getElementById('f-depTime').value = item.depTime;
+            document.getElementById('f-arrTime').value = item.arrTime;
+            document.getElementById('f-checkinTime').value = item.checkinTime;
+            document.getElementById('f-seat').value = item.seat;
+            document.getElementById('f-note').value = item.note || '';
+
+            document.getElementById('btn-add-flight').innerText = '確認修改 ✅';
+            document.getElementById('btn-cancel-flight').classList.remove('hidden');
+            if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight');
+        };
+
+        window.cancelEditFlight = () => {
+            editingFlightId = null;
+            document.getElementById('f-code').value = '';
+            document.getElementById('f-from').value = '';
+            document.getElementById('f-to').value = '';
+            document.getElementById('f-depTime').value = '';
+            document.getElementById('f-arrTime').value = '';
+            document.getElementById('f-checkinTime').value = '';
+            document.getElementById('f-seat').value = '';
+            document.getElementById('f-note').value = '';
+            
+            document.getElementById('btn-add-flight').innerText = '儲存航班';
+            document.getElementById('btn-cancel-flight').classList.add('hidden');
+        };
+
+        window.addFlight = async () => {
+            const code = document.getElementById('f-code').value; if (!code || !currentUser) return;
+            const flightData = { 
+                code, 
+                from: document.getElementById('f-from').value, 
+                to: document.getElementById('f-to').value, 
+                depTime: document.getElementById('f-depTime').value, 
+                arrTime: document.getElementById('f-arrTime').value, 
+                checkinTime: document.getElementById('f-checkinTime').value, 
+                seat: document.getElementById('f-seat').value,
+                note: document.getElementById('f-note').value
+            };
+
+            if (editingFlightId) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'flights', editingFlightId), flightData);
+                window.cancelEditFlight();
+            } else {
+                await addDoc(getColl('flights'), flightData);
+                window.cancelEditFlight(); // Clears inputs
+            }
+            window.toggleSection('flight');
+        };
+
+        function renderFlights() {
+            document.getElementById('flights-list').innerHTML = flightsData.map(f => `
+                <div class="app-card p-5 mb-3">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="bg-[#6B705C] text-white text-xs px-2 py-0.5 rounded font-black">${f.code}</span>
+                        <div class="flex gap-3">
+                             <span class="text-xs font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
+                             <button onclick="window.editFlight('${f.id}')" class="text-gray-300 text-xs hover:text-[#6B705C]">✎</button>
+                             <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 text-xs">✕</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="text-center flex-1">
+                            <div class="text-2xl font-black text-[#2D3128]">${f.from}</div>
+                            <div class="text-sm font-bold text-[#6B705C]">${f.depTime || '--:--'}</div>
+                        </div>
+                        <div class="flight-path"></div>
+                        <div class="text-center flex-1">
+                            <div class="text-2xl font-black text-[#2D3128]">${f.to}</div>
+                            <div class="text-sm font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
+                        </div>
+                    </div>
+                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-2">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
+                        <div class="text-xs font-bold text-[#4A4E40]">${f.note}</div>
+                    </div>` : ''}
+                </div>`).join('');
+        }
+
+        // --- Hotels Logic (Edit/Add) ---
+        window.editHotel = (id) => {
+            const item = hotelsData.find(h => h.id === id);
+            if (!item) return;
+            editingHotelId = id;
+            
+            document.getElementById('h-name').value = item.name;
+            document.getElementById('h-room').value = item.room;
+            document.getElementById('h-checkin').value = item.checkin;
+            document.getElementById('h-note').value = item.note || '';
+
+            document.getElementById('btn-add-hotel').innerText = '確認修改 ✅';
+            document.getElementById('btn-cancel-hotel').classList.remove('hidden');
+            if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel');
+        };
+
+        window.cancelEditHotel = () => {
+            editingHotelId = null;
+            document.getElementById('h-name').value = '';
+            document.getElementById('h-room').value = '';
+            document.getElementById('h-checkin').value = '';
+            document.getElementById('h-note').value = '';
+            
+            document.getElementById('btn-add-hotel').innerText = '儲存飯店';
+            document.getElementById('btn-cancel-hotel').classList.add('hidden');
+        };
+
+        window.addHotel = async () => {
+            const name = document.getElementById('h-name').value; if (!name || !currentUser) return;
+            const hotelData = { 
+                name, 
+                room: document.getElementById('h-room').value, 
+                checkin: document.getElementById('h-checkin').value,
+                note: document.getElementById('h-note').value
+            };
+
+            if (editingHotelId) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'hotels', editingHotelId), hotelData);
+                window.cancelEditHotel();
+            } else {
+                await addDoc(getColl('hotels'), hotelData);
+                window.cancelEditHotel(); // Clears inputs
+            }
+            window.toggleSection('hotel');
+        };
+
+        function renderHotels() {
+            document.getElementById('hotels-list').innerHTML = hotelsData.map(h => `
+                <div class="app-card p-4 mb-3">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex-1">
+                            <div class="text-base font-black text-[#4A4E40]">${h.name}</div>
+                            <div class="text-xs text-gray-400 font-bold mt-1">房號: ${h.room || '--'} | 入住: ${h.checkin || '--'}</div>
+                        </div>
+                        <div class="flex gap-3 pl-2">
+                            <button onclick="window.editHotel('${h.id}')" class="text-gray-300 text-xs hover:text-[#6B705C]">✎</button>
+                            <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs">✕</button>
+                        </div>
+                    </div>
+                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-1">
+                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
+                        <div class="text-xs font-bold text-[#4A4E40]">${h.note}</div>
+                    </div>` : ''}
+                </div>`).join('');
         }
 
         // --- Packing with Categories ---
@@ -413,7 +650,6 @@
                 const itemsHtml = filteredItems.length > 0 ? filteredItems.map(i => `
                     <div class="p-3 flex items-center gap-3 border-b border-gray-50 last:border-0">
                         <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-4 h-4 rounded border ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer"></div>
-                        <!-- Increased Item Name Font -->
                         <span class="flex-1 text-sm ${i.checked ? 'line-through text-gray-300' : 'font-bold text-[#4A4E40]'}">${i.item}</span>
                         <button onclick="window.deleteItem('packing', '${i.id}')" class="text-gray-200 text-lg leading-none">×</button>
                     </div>`).join('') : `<div class="text-center text-gray-300 text-[10px] py-4 font-bold italic">此分類還沒有物品 🦗</div>`;
@@ -425,53 +661,33 @@
             draw('darren', 'pk-list-darren');
         }
 
-        // --- Other Renders ---
-        function renderFlights(items) {
-            document.getElementById('flights-list').innerHTML = items.map(f => `
-                <div class="app-card p-5 mb-3">
-                    <div class="flex justify-between items-center mb-4">
-                        <!-- Increased Flight Code Font -->
-                        <span class="bg-[#6B705C] text-white text-xs px-2 py-0.5 rounded font-black">${f.code}</span>
-                        <div class="flex gap-2">
-                             <!-- Increased Seat Font -->
-                             <span class="text-xs font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
-                             <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 text-xs">✕</button>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="text-center flex-1">
-                            <div class="text-2xl font-black text-[#2D3128]">${f.from}</div>
-                            <div class="text-sm font-bold text-[#6B705C]">${f.depTime || '--:--'}</div>
-                        </div>
-                        <div class="flight-path"></div>
-                        <div class="text-center flex-1">
-                            <div class="text-2xl font-black text-[#2D3128]">${f.to}</div>
-                            <div class="text-sm font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
-                        </div>
-                    </div>
-                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-2">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
-                        <div class="text-xs font-bold text-[#4A4E40]">${f.note}</div>
-                    </div>` : ''}
-                </div>`).join('');
-        }
+        // --- Expenses Logic (Edit/Add) ---
+        window.editExpense = (id) => {
+            const item = allExpenses.find(e => e.id === id);
+            if (!item) return;
+            editingExpenseId = id;
+            
+            document.getElementById('exp-item').value = item.item;
+            document.getElementById('exp-cost').value = item.cost;
+            document.getElementById('exp-payer').value = item.payer;
+            document.getElementById('exp-currency').value = item.currency;
+            document.getElementById('exp-date').value = item.date;
 
-        function renderHotels(items) {
-            document.getElementById('hotels-list').innerHTML = items.map(h => `
-                <div class="app-card p-4 mb-3">
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="flex-1">
-                            <div class="text-base font-black text-[#4A4E40]">${h.name}</div>
-                            <div class="text-xs text-gray-400 font-bold mt-1">房號: ${h.room || '--'} | 入住: ${h.checkin || '--'}</div>
-                        </div>
-                        <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs pl-4 self-start">✕</button>
-                    </div>
-                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-1">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
-                        <div class="text-xs font-bold text-[#4A4E40]">${h.note}</div>
-                    </div>` : ''}
-                </div>`).join('');
-        }
+            document.getElementById('btn-add-expense').innerText = '確認修改 ✅';
+            document.getElementById('btn-cancel-expense').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelEditExpense = () => {
+            editingExpenseId = null;
+            document.getElementById('exp-item').value = '';
+            document.getElementById('exp-cost').value = '';
+            document.getElementById('exp-date').valueAsDate = new Date(); // Reset date to today
+            document.getElementById('exchange-hint').innerText = '';
+            
+            document.getElementById('btn-add-expense').innerText = '新 增 記 帳';
+            document.getElementById('btn-cancel-expense').classList.add('hidden');
+        };
 
         function renderExpenses() {
             let totalsByPayer = { tina: {}, darren: {} };
@@ -487,81 +703,77 @@
             };
             document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina');
             document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
-            const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
+            
+            // Sort by date descending
+            const sortedExpenses = [...allExpenses].sort((a, b) => {
+                return new Date(b.date || 0) - new Date(a.date || 0);
+            });
+
+            const filtered = currentPayerFilter === 'all' ? sortedExpenses : sortedExpenses.filter(e => e.payer === currentPayerFilter);
             const totalSum = filtered.reduce((s, e) => s + (e.cost * (ratesToTHB[e.currency] || 1)), 0);
+            
             document.getElementById('total-amount').innerText = '฿ ' + Math.round(totalSum).toLocaleString();
-            document.getElementById('exp-list').innerHTML = filtered.map(exp => `
+            
+            document.getElementById('exp-list').innerHTML = filtered.map(exp => {
+                let dateStr = '';
+                if(exp.date) {
+                    const d = new Date(exp.date);
+                    dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                }
+
+                return `
                 <div class="app-card p-3 flex justify-between items-center mb-2 border-l-4 ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
                     <div class="flex-1 pr-4">
-                        <div class="text-xs font-bold text-[#4A4E40]">${exp.item}</div>
+                        <div class="flex items-center gap-2">
+                            ${dateStr ? `<span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 rounded">${dateStr}</span>` : ''}
+                            <div class="text-xs font-bold text-[#4A4E40]">${exp.item}</div>
+                        </div>
                         <div class="text-[9px] text-gray-400 mt-0.5 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
                     </div>
                     <div class="text-right"><div class="text-sm font-black text-[#2D3128]">฿ ${Math.round(exp.cost * (ratesToTHB[exp.currency] || 1)).toLocaleString()}</div></div>
-                    <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-100 ml-3 text-[10px]">✕</button>
-                </div>`).join('');
+                    <div class="flex flex-col gap-1 ml-3">
+                        <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-200 text-[10px]">✕</button>
+                        <button onclick="window.editExpense('${exp.id}')" class="text-gray-300 text-[10px] hover:text-[#6B705C]">✎</button>
+                    </div>
+                </div>`;
+            }).join('');
         }
-
-        // --- Actions ---
-        window.addItinerary = async () => {
-            const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
-            const dayVal = document.getElementById('it-day').value;
-            const noteVal = document.getElementById('it-note').value; 
-            const startTime = document.getElementById('it-time-start').value || '12:00';
-            const endTime = document.getElementById('it-time-end').value;
-            const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
-
-            await addDoc(getColl('itinerary'), { 
-                day: dayVal, time: timeVal, activity: act, note: noteVal, type: document.getElementById('it-type').value 
-            });
-            document.getElementById('it-activity').value = '';
-            document.getElementById('it-time-end').value = '';
-            document.getElementById('it-note').value = '';
-            window.setDayFilter(dayVal);
-        };
-
-        window.addFlight = async () => {
-            const code = document.getElementById('f-code').value; if (!code || !currentUser) return;
-            const note = document.getElementById('f-note').value;
-            await addDoc(getColl('flights'), { 
-                code, 
-                from: document.getElementById('f-from').value, 
-                to: document.getElementById('f-to').value, 
-                depTime: document.getElementById('f-depTime').value, 
-                arrTime: document.getElementById('f-arrTime').value, 
-                checkinTime: document.getElementById('f-checkinTime').value, 
-                seat: document.getElementById('f-seat').value,
-                note: note
-            });
-            document.getElementById('f-code').value = ''; 
-            document.getElementById('f-note').value = '';
-            window.toggleSection('flight');
-        };
-
-        window.addHotel = async () => {
-            const name = document.getElementById('h-name').value; if (!name || !currentUser) return;
-            const note = document.getElementById('h-note').value;
-            await addDoc(getColl('hotels'), { 
-                name, 
-                room: document.getElementById('h-room').value, 
-                checkin: document.getElementById('h-checkin').value,
-                note: note
-            });
-            document.getElementById('h-name').value = ''; 
-            document.getElementById('h-note').value = '';
-            window.toggleSection('hotel');
-        };
 
         window.addExpense = async () => {
             const itemInput = document.getElementById('exp-item');
             const costInput = document.getElementById('exp-cost');
+            const dateInput = document.getElementById('exp-date');
+            
             const item = itemInput.value.trim();
             const costRaw = costInput.value;
+            const dateVal = dateInput.value;
             const payer = document.getElementById('exp-payer').value;
             const currency = document.getElementById('exp-currency').value;
+            
             if (!item || !costRaw || isNaN(parseFloat(costRaw)) || !currentUser) return;
-            await addDoc(getColl('expenses'), { item, cost: parseFloat(costRaw), currency, payer, createdAt: Date.now() });
-            itemInput.value = ''; costInput.value = '';
-            document.getElementById('exchange-hint').innerText = '';
+            
+            const expenseData = { 
+                item, 
+                cost: parseFloat(costRaw), 
+                currency, 
+                payer, 
+                date: dateVal,
+                createdAt: Date.now() 
+            };
+
+            if (editingExpenseId) {
+                // Update existing expense
+                // Keep createdAt to maintain sort order if date is same, or update if needed
+                // Here we just update fields
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), {
+                    item, cost: parseFloat(costRaw), currency, payer, date: dateVal
+                });
+                window.cancelEditExpense();
+            } else {
+                // Add new expense
+                await addDoc(getColl('expenses'), expenseData);
+                window.cancelEditExpense(); // Clears inputs
+            }
         };
 
         window.addPacking = async () => {
@@ -570,8 +782,6 @@
             const owner = document.getElementById('pack-owner').value;
             
             await addDoc(getColl('packing'), { item: val, owner: owner, checked: false, category: cat });
-            
-            // Auto switch filter to new category
             window.setPackFilter(owner, cat);
             document.getElementById('pack-item').value = '';
         };
@@ -590,7 +800,7 @@
             chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-2xl text-sm shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
             chat.scrollTop = chat.scrollHeight;
             try {
-                const apiKey = ""; // Runtime provides this
+                const apiKey = ""; 
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] })
@@ -644,6 +854,11 @@
             document.getElementById('btn-'+id).classList.remove('opacity-30');
         };
         window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
+
+        // Set default date for expense
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('exp-date').valueAsDate = new Date();
+        });
 
         window.switchTab('itinerary');
         window.renderDayTabs(); 
@@ -706,7 +921,10 @@
                 <div class="mb-2">
                     <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
                 </div>
-                <button onclick="window.addItinerary()" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入行程</button>
+                <div class="flex gap-2">
+                    <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入行程</button>
+                    <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-300 text-white px-4 py-2.5 rounded-lg font-bold text-xs hidden">取消</button>
+                </div>
             </div>
             
             <div id="it-list"></div>
@@ -733,7 +951,10 @@
                     <input type="time" id="f-arrTime" class="p-2 text-xs rounded-lg border">
                 </div>
                 <input type="text" id="f-note" placeholder="備註 (例如: 需提早到機場)..." class="w-full p-2 text-xs rounded-lg border mb-2">
-                <button onclick="window.addFlight()" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
+                <div class="flex gap-2">
+                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
+                    <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
+                </div>
             </div>
             <div id="flights-list"></div>
             
@@ -748,7 +969,10 @@
                     <input type="date" id="h-checkin" class="p-2 text-xs rounded-lg border">
                 </div>
                 <input type="text" id="h-note" placeholder="備註 (例如: 需付押金)..." class="w-full p-2 text-xs rounded-lg border mb-2">
-                <button onclick="window.addHotel()" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold">儲存飯店</button>
+                <div class="flex gap-2">
+                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold">儲存飯店</button>
+                    <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
+                </div>
             </div>
             <div id="hotels-list"></div>
         </div>
@@ -787,6 +1011,12 @@
             </div>
 
             <div class="app-card p-4 space-y-3">
+                <!-- Date Input -->
+                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
+                    <span class="text-xs font-bold text-gray-400 pl-1">日期</span>
+                    <input type="date" id="exp-date" class="bg-transparent text-xs font-bold text-[#4A4E40] outline-none flex-1">
+                </div>
+
                 <div class="flex flex-col gap-2">
                     <input type="text" id="exp-item" placeholder="這是花了什麼？" class="w-full bg-gray-50 p-2.5 rounded-xl text-xs outline-none">
                     <select id="exp-payer" class="w-full bg-gray-100 p-2.5 rounded-xl text-[10px] font-black">
@@ -801,7 +1031,10 @@
                         <div id="exchange-hint" class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 font-bold italic"></div>
                     </div>
                 </div>
-                <button onclick="window.addExpense()" class="w-full bg-[#2D3128] text-white py-3 rounded-xl text-xs font-black tracking-widest mt-2">新 增 記 帳</button>
+                <div class="flex gap-2">
+                    <button onclick="window.addExpense()" id="btn-add-expense" class="w-full bg-[#2D3128] text-white py-3 rounded-xl text-xs font-black tracking-widest mt-2">新 增 記 帳</button>
+                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="bg-gray-300 text-white px-4 py-3 rounded-xl text-xs font-bold mt-2 hidden">取消</button>
+                </div>
             </div>
             <div id="exp-list" class="mt-4"></div>
         </div>
