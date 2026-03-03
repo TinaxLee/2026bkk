@@ -86,18 +86,26 @@
         .nav-btn { font-size: 1.1rem; cursor: pointer; transition: opacity 0.2s; padding: 10px; }
         .btn-press:active { transform: scale(0.95); }
 
-        #gemini-modal {
+        #gemini-modal, .custom-modal {
             position: fixed; inset: 0; z-index: 2000;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             visibility: hidden; opacity: 0; transition: opacity 0.3s ease;
         }
-        #gemini-modal.open { visibility: visible; opacity: 1; }
-        #gemini-panel {
+        #gemini-modal.open, .custom-modal.open { visibility: visible; opacity: 1; }
+        #gemini-panel, .modal-panel {
             position: absolute; bottom: 0; left: 0; right: 0;
             height: 85%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
         }
-        #gemini-modal.open #gemini-panel { transform: translateY(0); }
+        #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
+        
+        /* Centered Modal Content */
+        .centered-modal-content {
+            background: white; border-radius: 1.5rem; width: 90%; max-width: 320px;
+            margin: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+        }
+        .custom-modal.open .centered-modal-content { transform: scale(1); }
 
         .tag { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; display: inline-block; }
         .tag-type { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
@@ -130,7 +138,7 @@
             display: inline-flex; align-items: center; gap: 4px;
             background: white; transition: all 0.2s;
             cursor: pointer;
-            text-decoration: none; /* For <a> tags */
+            text-decoration: none; 
             line-height: 1.2;
         }
         .action-link:active { background: #f0f0f0; transform: scale(0.98); }
@@ -160,7 +168,7 @@
             min-width: 65px; height: 75px;
             background: white; border: 1px solid #E5E7EB; border-radius: 12px;
             margin-right: 8px; transition: all 0.3s;
-            flex-shrink: 0; /* 禁止變形 */
+            flex-shrink: 0; 
             cursor: pointer;
         }
         .day-tab.active {
@@ -233,6 +241,9 @@
         let flightsData = [];
         let hotelsData = [];
         let packingData = []; 
+        
+        // Day Management State
+        let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; // Default fallback
         let dayDates = {}; 
         
         // Edit State
@@ -268,11 +279,22 @@
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
 
         function startSyncing() {
-            // Itinerary
-            onSnapshot(getColl('itinerary'), (s) => {
-                itineraryData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderItinerary();
+            // Days List (Custom Days)
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().list) {
+                    dayList = docSnap.data().list;
+                }
+                // Verify current day filter is still valid
+                if (!dayList.includes(currentDayFilter) && dayList.length > 0) {
+                    currentDayFilter = dayList[0];
+                }
+                renderDayTabs();
+                renderDayDropdown();
+                if(document.getElementById('day-manage-modal').classList.contains('open')) {
+                    renderDayManagerList();
+                }
             });
+
             // Trip Config (Dates)
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
                 if (docSnap.exists()) {
@@ -280,7 +302,11 @@
                     renderDayTabs();
                 }
             });
-            // Packing
+
+            onSnapshot(getColl('itinerary'), (s) => {
+                itineraryData = s.docs.map(d => ({id: d.id, ...d.data()}));
+                renderItinerary();
+            });
             onSnapshot(getColl('packing'), (s) => {
                 packingData = s.docs.map(d => ({id: d.id, ...d.data()}));
                 renderPacking();
@@ -299,35 +325,53 @@
             });
         }
 
-        // --- Render Day Tabs ---
+        // --- Render Day Tabs & Dropdowns ---
         window.renderDayTabs = () => {
             const container = document.getElementById('day-tabs-container');
-            let html = '';
-            for (let i = 1; i <= 7; i++) {
-                const dayStr = `Day ${i}`;
+            let html = dayList.map(dayStr => {
                 const dateStr = dayDates[dayStr] || ''; 
                 const isActive = currentDayFilter === dayStr;
                 let dateDisplay = dateStr ? dateStr : '日期';
                 
-                html += `
+                return `
                 <div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}">
                     <div class="day-tab-num">${dayStr}</div>
-                    ${isActive 
+                    ${isActive && !document.getElementById('day-manage-modal').classList.contains('open')
                         ? `<input type="text" value="${dateStr}" onclick="event.stopPropagation()" onchange="window.saveDate('${dayStr}', this.value)" placeholder="10/20" class="bg-white/20 text-center w-10 text-[9px] rounded text-white font-bold outline-none placeholder-white/50" style="background:rgba(255,255,255,0.2);">`
                         : `<div class="day-tab-date text-[9px]">${dateDisplay}</div>`
                     }
                 </div>`;
-            }
+            }).join('');
+
+            // Add Manage Button
+            html += `
+                <div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100">
+                    <div class="text-xl font-black text-gray-400">⚙️</div>
+                    <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase tracking-widest">管理</div>
+                </div>
+            `;
             container.innerHTML = html;
+        };
+
+        window.renderDayDropdown = () => {
+            const select = document.getElementById('it-day');
+            if(!select) return;
+            const currentVal = select.value;
+            select.innerHTML = dayList.map(d => `<option value="${d}">${d}</option>`).join('');
+            if (dayList.includes(currentVal)) {
+                select.value = currentVal;
+            } else if(dayList.length > 0) {
+                select.value = dayList[0];
+            }
         };
 
         window.setDayFilter = (day) => {
             currentDayFilter = day;
             renderDayTabs();
             renderItinerary();
-            // Only update dropdown if not in edit mode to avoid confusion
             if (!editingItineraryId) {
-                document.getElementById('it-day').value = day;
+                const sel = document.getElementById('it-day');
+                if(sel) sel.value = day;
             }
         };
 
@@ -335,6 +379,104 @@
             if(!currentUser) return;
             const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates');
             await setDoc(configRef, { [day]: dateVal }, { merge: true });
+        };
+
+        // --- Day Management Modals ---
+        window.toggleDayManager = () => {
+            const modal = document.getElementById('day-manage-modal');
+            modal.classList.toggle('open');
+            if (modal.classList.contains('open')) {
+                window.renderDayManagerList();
+            }
+        };
+
+        window.renderDayManagerList = () => {
+            const container = document.getElementById('day-manager-list');
+            container.innerHTML = dayList.map(d => `
+                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm mb-2">
+                    <span class="font-bold text-sm text-[#4A4E40]">${d}</span>
+                    <div class="flex gap-2">
+                        <button onclick="window.openRenameModal('${d}')" class="text-gray-400 hover:text-[#6B705C] bg-gray-50 p-2 rounded-lg text-sm">✎</button>
+                        <button onclick="window.openDeleteModal('${d}')" class="text-gray-400 hover:text-red-400 bg-gray-50 p-2 rounded-lg text-sm">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.addNewDay = async () => {
+            const input = document.getElementById('new-day-input');
+            const newDay = input.value.trim();
+            if (!newDay) return;
+            if (dayList.includes(newDay)) {
+                input.value = '';
+                input.placeholder = '名稱已存在！請換一個';
+                return;
+            }
+            const updatedList = [...dayList, newDay];
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
+            input.value = '';
+            input.placeholder = '例如: Day 8 或 普吉島第一天';
+        };
+
+        window.openRenameModal = (oldName) => {
+            document.getElementById('rename-day-old').value = oldName;
+            document.getElementById('rename-day-input').value = oldName;
+            document.getElementById('rename-day-modal').classList.add('open');
+        };
+        
+        window.closeRenameModal = () => {
+            document.getElementById('rename-day-modal').classList.remove('open');
+        };
+
+        window.confirmRenameDay = async () => {
+            const oldName = document.getElementById('rename-day-old').value;
+            const newName = document.getElementById('rename-day-input').value.trim();
+            
+            if (!newName || newName === oldName || dayList.includes(newName)) {
+                window.closeRenameModal();
+                return;
+            }
+
+            const updatedList = dayList.map(d => d === oldName ? newName : d);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
+
+            // Migrate dates config
+            if (dayDates[oldName]) {
+                const newDates = { ...dayDates };
+                newDates[newName] = newDates[oldName];
+                delete newDates[oldName]; // Optional clean up locally, but easiest is just merge new key
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [newName]: dayDates[oldName] }, { merge: true });
+            }
+
+            // Migrate itinerary items
+            const itemsToUpdate = itineraryData.filter(i => i.day === oldName);
+            for (let item of itemsToUpdate) {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', item.id), { day: newName });
+            }
+
+            if(currentDayFilter === oldName) currentDayFilter = newName;
+            window.closeRenameModal();
+        };
+
+        window.openDeleteModal = (dayName) => {
+            document.getElementById('delete-day-target').value = dayName;
+            document.getElementById('delete-day-name-display').innerText = dayName;
+            document.getElementById('delete-day-modal').classList.add('open');
+        };
+
+        window.closeDeleteModal = () => {
+            document.getElementById('delete-day-modal').classList.remove('open');
+        };
+
+        window.confirmDeleteDay = async () => {
+            const dayName = document.getElementById('delete-day-target').value;
+            const updatedList = dayList.filter(d => d !== dayName);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
+            
+            if (currentDayFilter === dayName) {
+                currentDayFilter = updatedList.length > 0 ? updatedList[0] : '';
+            }
+            window.closeDeleteModal();
         };
 
         // --- Itinerary Logic (Edit/Add) ---
@@ -762,15 +904,11 @@
             };
 
             if (editingExpenseId) {
-                // Update existing expense
-                // Keep createdAt to maintain sort order if date is same, or update if needed
-                // Here we just update fields
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), {
                     item, cost: parseFloat(costRaw), currency, payer, date: dateVal
                 });
                 window.cancelEditExpense();
             } else {
-                // Add new expense
                 await addDoc(getColl('expenses'), expenseData);
                 window.cancelEditExpense(); // Clears inputs
             }
@@ -846,7 +984,13 @@
 
         window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); renderExpenses(); };
         window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
-        window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
+        
+        window.toggleGemini = (f = false) => { 
+            const m = document.getElementById('gemini-modal'); 
+            if(f) m.classList.add('open'); 
+            else m.classList.toggle('open'); 
+        };
+        
         window.switchTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById('content-'+id).classList.remove('hidden');
@@ -861,7 +1005,7 @@
         });
 
         window.switchTab('itinerary');
-        window.renderDayTabs(); 
+        // renderDayTabs() is now called from startSyncing -> onSnapshot
         window.getWeather(); 
     </script>
 </head>
@@ -887,18 +1031,12 @@
                 <div class="text-3xl">☀️</div>
             </div>
 
-            <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-2 mb-2"></div>
+            <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-2 mb-2 items-center gap-2"></div>
 
             <div class="app-card p-4 bg-white/80 mb-4 border-dashed border-2 border-gray-200">
                 <div class="flex gap-2 mb-2">
                     <select id="it-day" class="w-1/4 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-[#6B705C]">
-                        <option value="Day 1">Day 1</option>
-                        <option value="Day 2">Day 2</option>
-                        <option value="Day 3">Day 3</option>
-                        <option value="Day 4">Day 4</option>
-                        <option value="Day 5">Day 5</option>
-                        <option value="Day 6">Day 6</option>
-                        <option value="Day 7">Day 7</option>
+                        <!-- Dynamic options -->
                     </select>
                     <div class="flex-1 flex gap-1 items-center bg-gray-50 rounded-lg px-2 border border-transparent focus-within:border-[#6B705C]">
                         <input type="time" id="it-time-start" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-[#4A4E40]" aria-label="開始時間">
@@ -922,7 +1060,7 @@
                     <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs">加入行程</button>
+                    <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs transition-colors">加入行程</button>
                     <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-300 text-white px-4 py-2.5 rounded-lg font-bold text-xs hidden">取消</button>
                 </div>
             </div>
@@ -952,7 +1090,7 @@
                 </div>
                 <input type="text" id="f-note" placeholder="備註 (例如: 需提早到機場)..." class="w-full p-2 text-xs rounded-lg border mb-2">
                 <div class="flex gap-2">
-                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold">儲存航班</button>
+                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold transition-colors">儲存航班</button>
                     <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
                 </div>
             </div>
@@ -970,7 +1108,7 @@
                 </div>
                 <input type="text" id="h-note" placeholder="備註 (例如: 需付押金)..." class="w-full p-2 text-xs rounded-lg border mb-2">
                 <div class="flex gap-2">
-                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold">儲存飯店</button>
+                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold transition-colors">儲存飯店</button>
                     <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
                 </div>
             </div>
@@ -1011,12 +1149,10 @@
             </div>
 
             <div class="app-card p-4 space-y-3">
-                <!-- Date Input -->
                 <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
                     <span class="text-xs font-bold text-gray-400 pl-1">日期</span>
                     <input type="date" id="exp-date" class="bg-transparent text-xs font-bold text-[#4A4E40] outline-none flex-1">
                 </div>
-
                 <div class="flex flex-col gap-2">
                     <input type="text" id="exp-item" placeholder="這是花了什麼？" class="w-full bg-gray-50 p-2.5 rounded-xl text-xs outline-none">
                     <select id="exp-payer" class="w-full bg-gray-100 p-2.5 rounded-xl text-[10px] font-black">
@@ -1032,8 +1168,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="window.addExpense()" id="btn-add-expense" class="w-full bg-[#2D3128] text-white py-3 rounded-xl text-xs font-black tracking-widest mt-2">新 增 記 帳</button>
-                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="bg-gray-300 text-white px-4 py-3 rounded-xl text-xs font-bold mt-2 hidden">取消</button>
+                    <button onclick="window.addExpense()" id="btn-add-expense" class="flex-1 bg-[#2D3128] text-white py-3 rounded-xl text-xs font-black tracking-widest transition-colors">新 增 記 帳</button>
+                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="bg-gray-300 text-white px-4 py-3 rounded-xl text-xs font-bold hidden">取消</button>
                 </div>
             </div>
             <div id="exp-list" class="mt-4"></div>
@@ -1071,13 +1207,57 @@
         </div>
     </main>
 
+    <!-- Custom Modals for Day Management -->
+    <div id="day-manage-modal" class="custom-modal" onclick="if(event.target === this) window.toggleDayManager()">
+        <div class="modal-panel flex flex-col p-5" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-lg text-[#4A4E40]">⚙️ 管理天數</h3>
+                <button onclick="window.toggleDayManager()" class="text-2xl text-gray-300">✕</button>
+            </div>
+            <div id="day-manager-list" class="flex-1 overflow-y-auto pb-4">
+                <!-- Managed via JS -->
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mt-2">
+                <div class="text-xs font-bold text-gray-400 mb-2">新增天數</div>
+                <div class="flex gap-2">
+                    <input type="text" id="new-day-input" placeholder="如: Day 8 或 普吉島第一天" class="flex-1 p-2.5 bg-gray-50 rounded-lg text-sm font-bold outline-none border border-gray-200">
+                    <button onclick="window.addNewDay()" class="bg-[#6B705C] text-white px-4 rounded-lg text-sm font-bold">新增</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rename-day-modal" class="custom-modal">
+        <div class="centered-modal-content">
+            <h3 class="font-black text-lg text-[#4A4E40] mb-4">修改名稱</h3>
+            <input type="hidden" id="rename-day-old">
+            <input type="text" id="rename-day-input" class="w-full p-3 bg-gray-50 rounded-xl text-base font-bold outline-none mb-4 border border-gray-200 focus:border-[#6B705C]">
+            <div class="flex gap-3">
+                <button onclick="window.closeRenameModal()" class="flex-1 bg-gray-200 text-gray-600 py-3 rounded-xl text-sm font-bold">取消</button>
+                <button onclick="window.confirmRenameDay()" class="flex-1 bg-[#6B705C] text-white py-3 rounded-xl text-sm font-bold">確認修改</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-day-modal" class="custom-modal">
+        <div class="centered-modal-content text-center">
+            <div class="text-4xl mb-3">🗑️</div>
+            <h3 class="font-black text-lg text-[#4A4E40] mb-2">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
+            <p class="text-xs text-gray-500 font-bold mb-6">這將移除該天數標籤，但<br><span class="text-red-400">不會刪除</span>已綁定的行程資料。</p>
+            <input type="hidden" id="delete-day-target">
+            <div class="flex gap-3">
+                <button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-200 text-gray-600 py-3 rounded-xl text-sm font-bold">取消</button>
+                <button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-400 text-white py-3 rounded-xl text-sm font-bold">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
     <!-- AI 助理 -->
     <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
         <div id="gemini-panel" onclick="event.stopPropagation()">
             <div class="p-5 h-full flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
-                        <!-- Increased header size -->
                         <h3 class="font-black text-lg text-[#4A4E40]">✨ 蜜月助理</h3>
                         <button onclick="window.clearGemini()" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full text-gray-500 font-bold">清除紀錄</button>
                     </div>
@@ -1085,7 +1265,6 @@
                 </div>
                 <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 text-sm"></div>
                 <div class="flex gap-2 p-2 bg-white rounded-2xl shadow-inner border">
-                    <!-- Increased input size -->
                     <input type="text" id="gemini-input" placeholder="問問助理..." class="flex-1 p-3 text-base outline-none bg-transparent">
                     <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-5 rounded-xl text-sm font-bold">發送</button>
                 </div>
