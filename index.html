@@ -27,7 +27,8 @@
             color: var(--morandi-text); 
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
-            padding-bottom: 100px; /* Space for bottom nav */
+            /* 針對 Pro Max / XL 等全螢幕機型，確保底部不被 Safe Area 遮擋 */
+            padding-bottom: calc(110px + env(safe-area-inset-bottom)); 
         }
 
         /* 隱藏捲軸但保留功能 */
@@ -47,18 +48,19 @@
         }
         .couple-name { 
             font-family: 'Playfair Display', serif; 
-            font-size: 2.2rem; 
+            font-size: 2.4rem; /* 大螢幕字體微調加大 */
             line-height: 1.1; 
             font-weight: 700; 
             color: #2D3128; 
             letter-spacing: 0.05em;
             margin: 0.5rem 0; 
         }
-        .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 4px; }
+        .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
         
         .main-header {
             background: white;
-            padding: 2.5rem 1rem 1.5rem;
+            /* 頂部也考慮瀏海/動態島的 Safe Area */
+            padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 1.5rem;
             text-align: center;
             border-bottom: 1px solid rgba(0,0,0,0.03);
         }
@@ -75,16 +77,21 @@
             background: rgba(74, 78, 64, 0.95);
             backdrop-filter: blur(15px);
             position: fixed;
-            bottom: 25px; left: 15px; right: 15px;
+            /* 避開 iPhone / Pixel 底部的系統導航條 */
+            bottom: calc(20px + env(safe-area-inset-bottom)); 
+            /* 在大螢幕置中並限制寬度，避免按鈕間距過大 */
+            left: 50%; transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 416px; /* max-w-md (448px) 減去兩側 margin */
             border-radius: 2rem;
-            height: 60px;
+            height: 65px; /* 加高一點點讓點擊更舒適 */
             z-index: 1000;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        .nav-btn { font-size: 1.1rem; cursor: pointer; transition: opacity 0.2s; padding: 10px; }
-        .btn-press:active { transform: scale(0.95); }
+        .nav-btn { font-size: 1.25rem; cursor: pointer; transition: opacity 0.2s; padding: 12px; }
+        .btn-press:active { transform: scale(0.92); }
 
         #gemini-modal, .custom-modal {
             position: fixed; inset: 0; z-index: 2000;
@@ -96,45 +103,46 @@
             position: absolute; bottom: 0; left: 0; right: 0;
             height: 85%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+            padding-bottom: env(safe-area-inset-bottom); /* 面板內容避開底部 */
         }
         #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
         
         /* Centered Modal Content */
         .centered-modal-content {
-            background: white; border-radius: 1.5rem; width: 90%; max-width: 320px;
+            background: white; border-radius: 1.5rem; width: 90%; max-width: 340px;
             margin: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transform: scale(0.9); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
         }
         .custom-modal.open .centered-modal-content { transform: scale(1); }
 
-        .tag { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; display: inline-block; }
+        .tag { font-size: 11px; font-weight: 900; padding: 3px 10px; border-radius: 8px; display: inline-block; }
         .tag-type { background: #F3F4F6; color: #4B5563; border: 1px solid #E5E7EB; }
 
-        input, select, textarea { font-size: 16px !important; } 
+        input, select, textarea { font-size: 16px !important; } /* iOS 防自動縮放 */
 
         .filter-chip {
-            padding: 10px 14px; border-radius: 1.2rem; font-size: 10px; font-weight: 700;
+            padding: 12px 16px; border-radius: 1.2rem; font-size: 11px; font-weight: 700;
             background: white; border: 1px solid #E5E7EB; color: #9CA3AF; transition: all 0.2s;
-            text-align: left; min-width: 110px;
+            text-align: left; min-width: 120px;
         }
         .filter-chip.active { background: #6B705C; border-color: #6B705C; color: white; }
         
-        .expand-panel { display: none; margin-top: 10px; }
+        .expand-panel { display: none; margin-top: 12px; }
         .expand-panel.active { display: block; }
 
-        .flight-path { position: relative; height: 1px; background: #E5E7EB; flex: 1; margin: 0 10px; }
-        .flight-path::after { content: '✈️'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px; }
+        .flight-path { position: relative; height: 1.5px; background: #E5E7EB; flex: 1; margin: 0 12px; }
+        .flight-path::after { content: '✈️'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
 
         .weather-card {
             background: linear-gradient(135deg, #8E9775 0%, #6B705C 100%);
-            color: white; border-radius: 1.2rem; padding: 1.2rem; margin-bottom: 1.5rem;
+            color: white; border-radius: 1.2rem; padding: 1.5rem; margin-bottom: 1.5rem;
             position: relative; overflow: hidden;
         }
 
         /* Action Link Button Style */
         .action-link {
-            font-size: 10px; font-weight: 800; color: #8E9775;
-            padding: 6px 12px; border: 1.5px solid #E5E7EB; border-radius: 20px;
+            font-size: 11px; font-weight: 800; color: #8E9775;
+            padding: 8px 14px; border: 1.5px solid #E5E7EB; border-radius: 20px;
             display: inline-flex; align-items: center; gap: 4px;
             background: white; transition: all 0.2s;
             cursor: pointer;
@@ -146,8 +154,8 @@
 
         .converter-box {
             background: #f1f3ef;
-            border-radius: 1rem;
-            padding: 1rem;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
             border: 1px dashed #B7B7A4;
         }
 
@@ -165,23 +173,23 @@
         /* Day Tabs Styling */
         .day-tab {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-width: 65px; height: 75px;
-            background: white; border: 1px solid #E5E7EB; border-radius: 12px;
-            margin-right: 8px; transition: all 0.3s;
+            min-width: 75px; height: 85px; /* 加大觸控面積 */
+            background: white; border: 1px solid #E5E7EB; border-radius: 16px;
+            margin-right: 10px; transition: all 0.3s;
             flex-shrink: 0; 
             cursor: pointer;
             position: relative;
         }
         .day-tab.active {
-            background: #6B705C; border-color: #6B705C; color: white; box-shadow: 0 4px 10px rgba(107, 112, 92, 0.3);
+            background: #6B705C; border-color: #6B705C; color: white; box-shadow: 0 6px 16px rgba(107, 112, 92, 0.3);
         }
-        .day-tab-num { font-size: 12px; font-weight: 900; }
-        .day-tab-date { font-size: 9px; margin-top: 4px; opacity: 0.8; font-weight: 600; }
+        .day-tab-num { font-size: 14px; font-weight: 900; }
+        .day-tab-date { font-size: 10px; margin-top: 4px; opacity: 0.8; font-weight: 600; padding: 0 4px; }
         
         /* Timeline styling */
-        .timeline-item { border-left: 3px solid #E5E7EB; margin-left: 10px; padding-left: 15px; position: relative; }
+        .timeline-item { border-left: 3px solid #E5E7EB; margin-left: 12px; padding-left: 18px; position: relative; }
         .timeline-item::before {
-            content: ''; position: absolute; left: -6px; top: 15px; width: 9px; height: 9px; border-radius: 50%; background: #E5E7EB; border: 2px solid white;
+            content: ''; position: absolute; left: -7px; top: 16px; width: 11px; height: 11px; border-radius: 50%; background: #E5E7EB; border: 2.5px solid white;
         }
         .timeline-food { border-left-color: #F8AD9D; }
         .timeline-food::before { background: #F8AD9D; }
@@ -198,10 +206,10 @@
 
         /* Packing Filter Tabs */
         .pack-filter-btn {
-            width: 32px; height: 32px;
+            width: 36px; height: 36px; /* 加大 */
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
             background: #f3f4f6;
             border: 1px solid #e5e7eb;
             transition: all 0.2s;
@@ -211,6 +219,9 @@
             background: #6B705C; border-color: #6B705C; color: white; transform: scale(1.1);
         }
         .pack-filter-btn-tina.active { background: #F8AD9D; border-color: #F8AD9D; }
+        
+        /* Input & Button Base Paddings for Large Phones */
+        .input-base { padding: 0.6rem 0.75rem; }
     </style>
 
     <script type="module">
@@ -295,7 +306,6 @@
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
 
         function startSyncing() {
-            // Days List (Custom Days)
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
                 if (docSnap.exists() && docSnap.data().list) {
                     dayList = docSnap.data().list;
@@ -310,7 +320,6 @@
                 }
             });
 
-            // Trip Config (Dates)
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
                 if (docSnap.exists()) {
                     dayDates = docSnap.data();
@@ -353,11 +362,11 @@
                 <div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}">
                     <div class="day-tab-num">${dayStr}</div>
                     ${isActive && !document.getElementById('day-manage-modal').classList.contains('open')
-                        ? `<div class="relative mt-1 w-full flex justify-center">
-                             <div class="bg-white/20 text-center px-1.5 py-0.5 text-[9px] rounded text-white font-bold whitespace-nowrap">${formattedDate || '選日期 📅'}</div>
+                        ? `<div class="relative mt-1.5 w-full flex justify-center">
+                             <div class="bg-white/20 text-center px-2 py-0.5 text-[10px] rounded-md text-white font-bold whitespace-nowrap tracking-wide">${formattedDate || '選日期 📅'}</div>
                              <input type="date" value="${dateStr}" onclick="event.stopPropagation()" onchange="window.saveDate('${dayStr}', this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                            </div>`
-                        : `<div class="day-tab-date text-[9px] truncate w-full text-center px-1">${dateDisplay}</div>`
+                        : `<div class="day-tab-date truncate w-full text-center px-1">${dateDisplay}</div>`
                     }
                 </div>`;
             }).join('');
@@ -365,8 +374,8 @@
             // Add Manage Button
             html += `
                 <div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100">
-                    <div class="text-xl font-black text-gray-400">⚙️</div>
-                    <div class="text-[8px] font-bold text-gray-400 mt-1 uppercase tracking-widest">管理</div>
+                    <div class="text-2xl font-black text-gray-400">⚙️</div>
+                    <div class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">管理</div>
                 </div>
             `;
             container.innerHTML = html;
@@ -412,11 +421,11 @@
         window.renderDayManagerList = () => {
             const container = document.getElementById('day-manager-list');
             container.innerHTML = dayList.map(d => `
-                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm mb-2">
-                    <span class="font-bold text-sm text-[#4A4E40]">${d}</span>
+                <div class="flex justify-between items-center bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
+                    <span class="font-bold text-base text-[#4A4E40]">${d}</span>
                     <div class="flex gap-2">
-                        <button onclick="window.openRenameModal('${d}')" class="text-gray-400 hover:text-[#6B705C] bg-gray-50 p-2 rounded-lg text-sm">✎</button>
-                        <button onclick="window.openDeleteModal('${d}')" class="text-gray-400 hover:text-red-400 bg-gray-50 p-2 rounded-lg text-sm">✕</button>
+                        <button onclick="window.openRenameModal('${d}')" class="text-gray-400 hover:text-[#6B705C] bg-gray-50 p-2.5 rounded-lg text-base">✎</button>
+                        <button onclick="window.openDeleteModal('${d}')" class="text-gray-400 hover:text-red-400 bg-gray-50 p-2.5 rounded-lg text-base">✕</button>
                     </div>
                 </div>
             `).join('');
@@ -564,7 +573,7 @@
             const sorted = filtered.sort((a,b) => a.time.localeCompare(b.time));
             
             if (sorted.length === 0) {
-                list.innerHTML = `<div class="text-center text-gray-400 text-xs py-10 font-bold">這天還沒有行程喔 💤</div>`;
+                list.innerHTML = `<div class="text-center text-gray-400 text-sm py-12 font-bold">這天還沒有行程喔 💤</div>`;
                 return;
             }
 
@@ -600,24 +609,24 @@
                 }
 
                 return `
-                <div class="app-card p-4 flex flex-col gap-2 mb-3 ${typeClass} timeline-item relative">
+                <div class="app-card p-4 mb-4 ${typeClass} timeline-item relative">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-sm font-bold text-gray-400 uppercase tracking-widest">${item.time}</span>
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-[15px] font-bold text-gray-500 uppercase tracking-widest">${item.time}</span>
                                 <span class="tag tag-type">${typeLabel}</span>
                             </div>
-                            <div class="font-black text-[#4A4E40] text-lg leading-tight">${item.activity}</div>
-                            ${item.note ? `<div class="text-xs text-gray-500 font-bold mt-1">📝 ${item.note}</div>` : ''}
+                            <div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>
+                            ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5">📝 ${item.note}</div>` : ''}
                         </div>
-                        <div class="flex flex-col gap-2 ml-2">
-                            <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-200 text-sm">✕</button>
-                            <button onclick="window.editItinerary('${item.id}')" class="text-gray-300 text-sm hover:text-[#6B705C]">✎</button>
+                        <div class="flex flex-col gap-3 ml-2">
+                            <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
+                            <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
                         </div>
                     </div>
                     
                     ${item.type !== 'note' && item.type !== 'alert' ? `
-                    <div class="flex flex-wrap gap-2 pt-2 mt-1 border-t border-gray-50/50">
+                    <div class="flex flex-wrap gap-2 pt-3 mt-2 border-t border-gray-50/50">
                         <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
                         <button onclick="window.askGemini('請告訴我關於 ${safeText} 的詳細旅遊攻略、參觀重點與注意事項')" class="action-link">💡 攻略</button>
                         ${aiButton}
@@ -691,32 +700,32 @@
             document.getElementById('flights-list').innerHTML = flightsData.map(f => {
                 const dateDisplay = f.date ? window.formatDisplayDate(f.date) : '';
                 return `
-                <div class="app-card p-5 mb-3">
+                <div class="app-card p-5 mb-4">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-2">
-                            <span class="bg-[#6B705C] text-white text-xs px-2 py-0.5 rounded font-black">${f.code}</span>
-                            ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${dateDisplay}</span>` : ''}
+                            <span class="bg-[#6B705C] text-white text-sm px-2 py-1 rounded font-black">${f.code}</span>
+                            ${dateDisplay ? `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateDisplay}</span>` : ''}
                         </div>
-                        <div class="flex gap-3">
-                             <span class="text-xs font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
-                             <button onclick="window.editFlight('${f.id}')" class="text-gray-300 text-xs hover:text-[#6B705C]">✎</button>
-                             <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 text-xs">✕</button>
+                        <div class="flex gap-4">
+                             <span class="text-sm font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
+                             <button onclick="window.editFlight('${f.id}')" class="text-gray-400 text-sm hover:text-[#6B705C]">✎</button>
+                             <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-300 text-sm">✕</button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mb-3">
                         <div class="text-center flex-1">
-                            <div class="text-2xl font-black text-[#2D3128]">${f.from}</div>
-                            <div class="text-sm font-bold text-[#6B705C]">${f.depTime || '--:--'}</div>
+                            <div class="text-3xl font-black text-[#2D3128]">${f.from}</div>
+                            <div class="text-base font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div>
                         </div>
-                        <div class="flight-path"></div>
+                        <div class="flight-path mx-4"></div>
                         <div class="text-center flex-1">
-                            <div class="text-2xl font-black text-[#2D3128]">${f.to}</div>
-                            <div class="text-sm font-bold text-[#6B705C]">${f.arrTime || '--:--'}</div>
+                            <div class="text-3xl font-black text-[#2D3128]">${f.to}</div>
+                            <div class="text-base font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div>
                         </div>
                     </div>
-                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-2">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
-                        <div class="text-xs font-bold text-[#4A4E40]">${f.note}</div>
+                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-3">
+                        <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div>
+                        <div class="text-sm font-bold text-[#4A4E40]">${f.note}</div>
                     </div>` : ''}
                 </div>`;
             }).join('');
@@ -777,20 +786,20 @@
                 if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`;
 
                 return `
-                <div class="app-card p-4 mb-3">
-                    <div class="flex justify-between items-center mb-2">
-                        <div class="flex-1">
-                            <div class="text-base font-black text-[#4A4E40]">${h.name}</div>
-                            <div class="text-xs text-gray-400 font-bold mt-1">房號: ${h.room || '--'} | 入住: ${dateStr}</div>
+                <div class="app-card p-5 mb-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex-1 pr-4">
+                            <div class="text-lg font-black text-[#4A4E40] leading-tight">${h.name}</div>
+                            <div class="text-sm text-gray-500 font-bold mt-1.5">房號: <span class="text-[#6B705C]">${h.room || '--'}</span> | 入住: ${dateStr}</div>
                         </div>
-                        <div class="flex gap-3 pl-2">
-                            <button onclick="window.editHotel('${h.id}')" class="text-gray-300 text-xs hover:text-[#6B705C]">✎</button>
-                            <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 text-xs">✕</button>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-300 text-lg self-end">✕</button>
+                            <button onclick="window.editHotel('${h.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
                         </div>
                     </div>
-                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-lg p-2 mt-1">
-                        <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Note</div>
-                        <div class="text-xs font-bold text-[#4A4E40]">${h.note}</div>
+                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2">
+                        <div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div>
+                        <div class="text-sm font-bold text-[#4A4E40]">${h.note}</div>
                     </div>` : ''}
                 </div>`;
             }).join('');
@@ -808,7 +817,7 @@
                 const filteredItems = packingData.filter(i => i.owner === owner && i.category === currentCat);
                 const activeColorClass = owner === 'tina' ? 'pack-filter-btn-tina' : '';
 
-                let tabsHtml = `<div class="flex overflow-x-auto gap-2 mb-3 no-scrollbar pb-1 px-1">`;
+                let tabsHtml = `<div class="flex overflow-x-auto gap-2.5 mb-3 no-scrollbar pb-1 px-1">`;
                 packCategories.forEach(c => {
                     const isActive = c.id === currentCat;
                     tabsHtml += `<button onclick="window.setPackFilter('${owner}', '${c.id}')" class="pack-filter-btn ${activeColorClass} ${isActive ? 'active' : ''}">${c.icon}</button>`;
@@ -816,11 +825,11 @@
                 tabsHtml += `</div>`;
 
                 const itemsHtml = filteredItems.length > 0 ? filteredItems.map(i => `
-                    <div class="p-3 flex items-center gap-3 border-b border-gray-50 last:border-0">
-                        <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-4 h-4 rounded border ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer"></div>
-                        <span class="flex-1 text-sm ${i.checked ? 'line-through text-gray-300' : 'font-bold text-[#4A4E40]'}">${i.item}</span>
-                        <button onclick="window.deleteItem('packing', '${i.id}')" class="text-gray-200 text-lg leading-none">×</button>
-                    </div>`).join('') : `<div class="text-center text-gray-300 text-[10px] py-4 font-bold italic">此分類還沒有物品 🦗</div>`;
+                    <div class="p-3.5 flex items-center gap-4 border-b border-gray-50 last:border-0">
+                        <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 ${i.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-300'} cursor-pointer flex-shrink-0 transition-colors"></div>
+                        <span class="flex-1 text-base ${i.checked ? 'line-through text-gray-300' : 'font-bold text-[#4A4E40]'}">${i.item}</span>
+                        <button onclick="window.deleteItem('packing', '${i.id}')" class="text-gray-300 text-xl leading-none px-2">×</button>
+                    </div>`).join('') : `<div class="text-center text-gray-400 text-xs py-6 font-bold italic">此分類還沒有物品 🦗</div>`;
 
                 document.getElementById(containerId).innerHTML = tabsHtml + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${itemsHtml}</div>`;
             };
@@ -885,18 +894,18 @@
                 let dateStr = window.formatDisplayDate(exp.date); 
 
                 return `
-                <div class="app-card p-3 flex justify-between items-center mb-2 border-l-4 ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
+                <div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
                     <div class="flex-1 pr-4">
-                        <div class="flex items-center gap-2 mb-0.5">
-                            ${dateStr ? `<span class="text-[9px] font-bold text-gray-400 bg-gray-100 px-1.5 rounded">${dateStr}</span>` : ''}
-                            <div class="text-xs font-bold text-[#4A4E40]">${exp.item}</div>
+                        <div class="flex items-center gap-2 mb-1">
+                            ${dateStr ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${dateStr}</span>` : ''}
+                            <div class="text-sm font-bold text-[#4A4E40]">${exp.item}</div>
                         </div>
-                        <div class="text-[9px] text-gray-400 mt-0.5 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
+                        <div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
                     </div>
-                    <div class="text-right"><div class="text-sm font-black text-[#2D3128]">฿ ${Math.round(exp.cost * (ratesToTHB[exp.currency] || 1)).toLocaleString()}</div></div>
-                    <div class="flex flex-col gap-1 ml-3">
-                        <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-200 text-[10px]">✕</button>
-                        <button onclick="window.editExpense('${exp.id}')" class="text-gray-300 text-[10px] hover:text-[#6B705C]">✎</button>
+                    <div class="text-right"><div class="text-base font-black text-[#2D3128]">฿ ${Math.round(exp.cost * (ratesToTHB[exp.currency] || 1)).toLocaleString()}</div></div>
+                    <div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3">
+                        <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button>
+                        <button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button>
                     </div>
                 </div>`;
             }).join('');
@@ -954,9 +963,9 @@
             const query = q || input.value.trim(); if(!query) return;
             window.toggleGemini(true);
             if(!q) input.value = '';
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-3 rounded-2xl text-sm font-bold shadow-sm">${query}</span></div>`;
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${query}</span></div>`;
             const thinkingId = 'think-' + Date.now();
-            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-3 rounded-2xl text-sm shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
+            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">助理思考中<span class="thinking-dots"></span></div></div>`;
             chat.scrollTop = chat.scrollHeight;
             try {
                 const apiKey = ""; 
@@ -967,7 +976,7 @@
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "...";
                 document.getElementById(thinkingId)?.remove();
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border leading-7 text-[#4A4E40]">${text.replace(/\n/g, '<br>')}</div></div>`;
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { document.getElementById(thinkingId)?.remove(); }
             chat.scrollTop = chat.scrollHeight;
         };
@@ -998,8 +1007,8 @@
                 const bkkTemp = Math.round(data[0].current.temperature_2m);
                 const hktTemp = Math.round(data[1].current.temperature_2m);
                 document.getElementById('weather-display').innerHTML = `
-                    <div class="text-lg font-black">曼谷 ${bkkTemp}°C / 普吉 ${hktTemp}°C</div>
-                    <div class="text-[9px] mt-1 font-bold opacity-60">即時氣溫已更新 • 點擊查看 AI 穿搭建議 ✨</div>`;
+                    <div class="text-xl font-black">曼谷 ${bkkTemp}°C / 普吉 ${hktTemp}°C</div>
+                    <div class="text-[11px] mt-1 font-bold opacity-70">即時氣溫已更新 • 點擊查看 AI 穿搭建議 ✨</div>`;
             } catch(e) { console.log("Weather error", e); }
         };
 
@@ -1017,6 +1026,7 @@
             document.getElementById('content-'+id).classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
             document.getElementById('btn-'+id).classList.remove('opacity-30');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; };
 
@@ -1029,153 +1039,155 @@
         window.getWeather(); 
     </script>
 </head>
-<body>
-    <header class="main-header">
-        <div class="heart-text"><span>♥</span> SWEET GETAWAY <span>♥</span></div>
-        <h1 class="couple-name">DARREN <span class="ampersand">&</span> TINA</h1>
-        <p class="text-[9px] font-black text-[#8E9775] mt-1 tracking-[0.2em] uppercase">2026 Bangkok Phuket 🇹🇭✈️</p>
-    </header>
+<body class="max-w-md mx-auto md:max-w-lg lg:max-w-xl relative bg-white md:bg-gray-100 min-h-screen">
+    <!-- Wrap everything in a mobile-sized container for desktop viewing, but fluid for large phones -->
+    <div class="bg-[var(--bg-light)] min-h-screen shadow-2xl relative">
+        <header class="main-header">
+            <div class="heart-text"><span>♥</span> SWEET GETAWAY <span>♥</span></div>
+            <h1 class="couple-name">DARREN <span class="ampersand">&</span> TINA</h1>
+            <p class="text-[11px] font-black text-[#8E9775] mt-1 tracking-[0.2em] uppercase">2026 Bangkok Phuket 🇹🇭✈️</p>
+        </header>
 
-    <main class="max-w-md mx-auto p-4">
-        
-        <!-- 行程表 -->
-        <div id="content-itinerary" class="tab-content hidden">
-            <div class="weather-card flex justify-between items-center shadow-lg" onclick="window.askGemini('幫我查曼谷今天的即時天氣動態，並給 Darren & Tina 穿搭建議。')">
-                <div>
-                    <div class="text-[10px] font-bold opacity-80 uppercase tracking-widest mb-1">Current Weather</div>
-                    <div id="weather-display">
-                        <div class="text-lg font-black">曼谷 --°C / 普吉 --°C</div>
-                        <div class="text-[9px] mt-1 font-bold opacity-60">正在抓取天氣資訊...</div>
+        <main class="p-4 md:p-6">
+            
+            <!-- 行程表 -->
+            <div id="content-itinerary" class="tab-content hidden">
+                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer" onclick="window.askGemini('幫我查曼谷今天的即時天氣動態，並給 Darren & Tina 穿搭建議。')">
+                    <div>
+                        <div class="text-xs font-bold opacity-80 uppercase tracking-widest mb-1.5">Current Weather</div>
+                        <div id="weather-display">
+                            <div class="text-xl font-black">曼谷 --°C / 普吉 --°C</div>
+                            <div class="text-[10px] mt-1 font-bold opacity-60">正在抓取天氣資訊...</div>
+                        </div>
+                    </div>
+                    <div class="text-4xl">☀️</div>
+                </div>
+
+                <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
+
+                <div class="app-card p-5 bg-white/80 mb-5 border-dashed border-2 border-gray-200">
+                    <div class="flex gap-3 mb-3">
+                        <select id="it-day" class="w-1/4 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none border border-transparent focus:border-[#6B705C]">
+                            <!-- Dynamic options -->
+                        </select>
+                        <div class="flex-1 flex gap-2 items-center bg-gray-50 rounded-xl px-3 border border-transparent focus-within:border-[#6B705C]">
+                            <input type="time" id="it-time-start" class="w-full bg-transparent py-2.5 text-sm outline-none font-bold text-center text-[#4A4E40]" aria-label="開始時間">
+                            <span class="text-gray-400 font-bold text-sm">~</span>
+                            <input type="time" id="it-time-end" class="w-full bg-transparent py-2.5 text-sm outline-none font-bold text-center text-gray-500" aria-label="結束時間 (選填)">
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mb-3">
+                        <select id="it-type" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none">
+                            <option value="view">📸 景點</option>
+                            <option value="food">🍴 美食</option>
+                            <option value="shop">🛍️ 購物</option>
+                            <option value="massage">💆 按摩</option>
+                            <option value="play">🎢 玩樂</option>
+                            <option value="note">📝 備註</option>
+                            <option value="alert">🔔 提示</option>
+                        </select>
+                        <input type="text" id="it-activity" placeholder="行程名稱..." class="w-2/3 bg-gray-50 input-base rounded-xl text-sm outline-none">
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 input-base rounded-xl text-sm outline-none">
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-3.5 rounded-xl font-bold text-sm transition-transform active:scale-[0.98]">加入行程</button>
+                        <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-200 text-gray-600 px-6 py-3.5 rounded-xl font-bold text-sm hidden transition-transform active:scale-[0.98]">取消</button>
                     </div>
                 </div>
-                <div class="text-3xl">☀️</div>
-            </div>
-
-            <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-2 mb-2 items-center gap-2"></div>
-
-            <div class="app-card p-4 bg-white/80 mb-4 border-dashed border-2 border-gray-200">
-                <div class="flex gap-2 mb-2">
-                    <select id="it-day" class="w-1/4 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none border border-transparent focus:border-[#6B705C]">
-                        <!-- Dynamic options -->
-                    </select>
-                    <div class="flex-1 flex gap-1 items-center bg-gray-50 rounded-lg px-2 border border-transparent focus-within:border-[#6B705C]">
-                        <input type="time" id="it-time-start" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-[#4A4E40]" aria-label="開始時間">
-                        <span class="text-gray-400 font-bold text-xs">~</span>
-                        <input type="time" id="it-time-end" class="w-full bg-transparent p-1 text-xs outline-none font-bold text-center text-gray-500" aria-label="結束時間 (選填)">
-                    </div>
-                </div>
-                <div class="flex gap-2 mb-2">
-                    <select id="it-type" class="w-1/3 bg-gray-50 p-2 rounded-lg text-xs font-bold outline-none">
-                        <option value="view">📸 景點</option>
-                        <option value="food">🍴 美食</option>
-                        <option value="shop">🛍️ 購物</option>
-                        <option value="massage">💆 按摩</option>
-                        <option value="play">🎢 玩樂</option>
-                        <option value="note">📝 備註</option>
-                        <option value="alert">🔔 提示</option>
-                    </select>
-                    <input type="text" id="it-activity" placeholder="行程名稱..." class="w-2/3 bg-gray-50 p-2 rounded-lg text-xs outline-none">
-                </div>
-                <div class="mb-2">
-                    <input type="text" id="it-note" placeholder="備註 (例如: 記得訂位、必點螃蟹咖哩)..." class="w-full bg-gray-50 p-2 rounded-lg text-xs outline-none">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-2.5 rounded-lg font-bold text-xs transition-colors">加入行程</button>
-                    <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-300 text-white px-4 py-2.5 rounded-lg font-bold text-xs hidden">取消</button>
-                </div>
-            </div>
-            
-            <div id="it-list"></div>
-        </div>
-
-        <!-- 交通住宿 (Core) -->
-        <div id="content-core" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-sm font-black text-[#4A4E40]">航班資訊 ✈️</h3>
-                <button onclick="window.toggleSection('flight')" class="text-[10px] bg-[#6B705C] text-white px-3 py-1 rounded-full font-bold">＋新增</button>
-            </div>
-            
-            <!-- FLIGHT GRID UPDATED -->
-            <div id="flight-grid" class="expand-panel app-card p-4 mb-4 bg-gray-50">
-                <input type="text" id="f-code" placeholder="航班號 (如 TG635)" class="w-full p-2.5 text-sm rounded-lg border mb-3 font-black">
                 
-                <div class="grid grid-cols-2 gap-3 mb-2">
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">出發地</div>
-                        <input type="text" id="f-from" placeholder="出發地" class="w-full p-2 text-xs rounded-lg border">
-                    </div>
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">目的地</div>
-                        <input type="text" id="f-to" placeholder="目的地" class="w-full p-2 text-xs rounded-lg border">
-                    </div>
-                </div>
+                <div id="it-list"></div>
+            </div>
 
-                <!-- 出發日期獨立一行，解決重疊 -->
-                <div class="mb-2">
-                    <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">出發日期</div>
-                    <input type="date" id="f-date" class="w-full p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
-                </div>
-
-                <!-- 時間 2等分，解決擁擠 -->
-                <div class="grid grid-cols-2 gap-3 mb-2">
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">起飛時間</div>
-                        <input type="time" id="f-depTime" class="w-full p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
-                    </div>
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">抵達時間</div>
-                        <input type="time" id="f-arrTime" class="w-full p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
-                    </div>
-                </div>
-
+            <!-- 交通住宿 (Core) -->
+        <div id="content-core" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h3 class="text-base font-black text-[#4A4E40]">航班資訊 ✈️</h3>
+                <button onclick="window.toggleSection('flight')" class="text-xs bg-[#6B705C] text-white px-4 py-1.5 rounded-full font-bold shadow-sm transition-transform active:scale-95">＋新增</button>
+            </div>
+            
+            <!-- FLIGHT GRID UPDATED FOR LARGE PHONES -->
+            <div id="flight-grid" class="expand-panel app-card p-4 md:p-5 mb-5 bg-gray-50 border border-gray-100">
+                <input type="text" id="f-code" placeholder="航班號 (如 TG635)" class="w-full box-border p-3 text-base rounded-xl border border-gray-200 mb-4 font-black focus:border-[#6B705C] outline-none">
+                
                 <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">報到時間</div>
-                        <input type="time" id="f-checkinTime" class="w-full p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
+                    <div class="min-w-0">
+                        <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">出發地</div>
+                        <input type="text" id="f-from" placeholder="出發地" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 focus:border-[#6B705C] outline-none">
                     </div>
-                    <div>
-                        <div class="text-[9px] text-gray-400 font-bold mb-0.5 ml-1">座位</div>
-                        <input type="text" id="f-seat" placeholder="如: 12A" class="w-full p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
+                    <div class="min-w-0">
+                        <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">目的地</div>
+                        <input type="text" id="f-to" placeholder="目的地" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 focus:border-[#6B705C] outline-none">
                     </div>
                 </div>
 
-                <input type="text" id="f-note" placeholder="備註 (例如: 需提早到機場)..." class="w-full p-2 text-xs rounded-lg border mb-3">
-                <div class="flex gap-2">
-                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-2 rounded-lg text-xs font-bold transition-colors">儲存航班</button>
-                    <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
+                <!-- 獨立一行：出發日期 (加入 overflow-hidden 與 box-border 防溢出) -->
+                <div class="mb-3 overflow-hidden">
+                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">出發日期</div>
+                    <input type="date" id="f-date" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                </div>
+
+                <!-- 獨立一行：起飛時間 -->
+                <div class="mb-3 overflow-hidden">
+                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">起飛時間</div>
+                    <input type="time" id="f-depTime" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                </div>
+
+                <!-- 獨立一行：抵達時間 -->
+                <div class="mb-3 overflow-hidden">
+                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">抵達時間</div>
+                    <input type="time" id="f-arrTime" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                </div>
+
+                <!-- 獨立一行：報到時間 -->
+                <div class="mb-3 overflow-hidden">
+                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">報到時間</div>
+                    <input type="time" id="f-checkinTime" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                </div>
+
+                <!-- 獨立一行：座位 -->
+                <div class="mb-4 overflow-hidden">
+                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">座位</div>
+                    <input type="text" id="f-seat" placeholder="如: 12A" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none">
+                </div>
+
+                <input type="text" id="f-note" placeholder="備註 (例如: 需提早到機場)..." class="w-full box-border p-3 text-sm rounded-xl border border-gray-200 mb-4 focus:border-[#6B705C] outline-none">
+                <div class="flex gap-3">
+                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold transition-transform active:scale-[0.98]">儲存航班</button>
+                    <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="bg-gray-200 text-gray-600 px-6 py-3.5 rounded-xl text-sm font-bold hidden transition-transform active:scale-[0.98]">取消</button>
                 </div>
             </div>
             <div id="flights-list"></div>
             
-            <div class="flex justify-between items-center mt-6 mb-3">
-                <h3 class="text-sm font-black text-[#4A4E40]">入住飯店 🏨</h3>
-                <button onclick="window.toggleSection('hotel')" class="text-[10px] bg-[#DDB892] text-white px-3 py-1 rounded-full font-bold">＋新增</button>
+            <div class="flex justify-between items-center mt-8 mb-4 px-1">
+                <h3 class="text-base font-black text-[#4A4E40]">入住飯店 🏨</h3>
+                <button onclick="window.toggleSection('hotel')" class="text-xs bg-[#DDB892] text-white px-4 py-1.5 rounded-full font-bold shadow-sm transition-transform active:scale-95">＋新增</button>
             </div>
             
-            <!-- HOTEL GRID UPDATED -->
-            <div id="hotel-grid" class="expand-panel app-card p-4 mb-4 bg-gray-50">
-                <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-2.5 text-sm rounded-lg border mb-3 font-black">
+            <!-- HOTEL GRID UPDATED FOR LARGE PHONES -->
+            <div id="hotel-grid" class="expand-panel app-card p-4 md:p-5 mb-5 bg-gray-50 border border-gray-100">
+                <input type="text" id="h-name" placeholder="飯店名稱" class="w-full box-border p-3 text-base rounded-xl border border-gray-200 mb-4 font-black focus:border-[#DDB892] outline-none">
                 
-                <!-- 上下排列，絕對不重疊 -->
-                <div class="flex flex-col gap-2 mb-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-[50px] text-[10px] text-gray-400 font-bold text-right">入住</div>
-                        <input type="date" id="h-checkin" class="flex-1 p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
+                <div class="flex flex-col gap-3 mb-3">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-[50px] text-[11px] text-gray-500 font-bold text-right uppercase tracking-widest flex-shrink-0">入住</div>
+                        <input type="date" id="h-checkin" class="flex-1 w-full min-w-0 box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#DDB892] outline-none appearance-none">
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-[50px] text-[10px] text-gray-400 font-bold text-right">退房</div>
-                        <input type="date" id="h-checkout" class="flex-1 p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-[50px] text-[11px] text-gray-500 font-bold text-right uppercase tracking-widest flex-shrink-0">退房</div>
+                        <input type="date" id="h-checkout" class="flex-1 w-full min-w-0 box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#DDB892] outline-none appearance-none">
                     </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-[50px] text-[10px] text-gray-400 font-bold text-right">房號</div>
-                        <input type="text" id="h-room" placeholder="如: 812" class="flex-1 p-2 text-xs rounded-lg border font-bold text-[#4A4E40]">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-[50px] text-[11px] text-gray-500 font-bold text-right uppercase tracking-widest flex-shrink-0">房號</div>
+                        <input type="text" id="h-room" placeholder="如: 812" class="flex-1 w-full min-w-0 box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#DDB892] outline-none">
                     </div>
                 </div>
 
-                <input type="text" id="h-note" placeholder="備註 (例如: 需付押金)..." class="w-full p-2 text-xs rounded-lg border mt-1 mb-3">
-                <div class="flex gap-2">
-                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-2 rounded-lg text-xs font-bold transition-colors">儲存飯店</button>
-                    <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="bg-gray-300 text-white px-4 py-2 rounded-lg text-xs font-bold hidden">取消</button>
+                <input type="text" id="h-note" placeholder="備註 (例如: 需付押金)..." class="w-full box-border p-3 text-sm rounded-xl border border-gray-200 mt-2 mb-4 focus:border-[#DDB892] outline-none">
+                <div class="flex gap-3">
+                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold transition-transform active:scale-[0.98]">儲存飯店</button>
+                    <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="bg-gray-200 text-gray-600 px-6 py-3.5 rounded-xl text-sm font-bold hidden transition-transform active:scale-[0.98]">取消</button>
                 </div>
             </div>
             
@@ -1183,171 +1195,170 @@
         </div>
 
         <!-- 支出統計 (Budget) -->
-        <div id="content-budget" class="tab-content hidden">
-            <div class="converter-box mb-6">
-                <p class="text-[10px] font-black text-[#6B705C] mb-2 uppercase tracking-widest">⚡ 快速匯率換算</p>
-                <div class="flex gap-2 items-center">
-                    <input type="number" id="conv-input" placeholder="輸入金額" oninput="window.calcIndependentRate()" class="flex-1 bg-white p-2 rounded-lg text-xs outline-none font-bold">
-                    <select id="conv-curr" onchange="window.calcIndependentRate()" class="bg-white p-2 rounded-lg text-xs font-black outline-none">
-                        <option value="TWD">TWD 台幣</option>
-                        <option value="USD">USD 美金</option>
-                        <option value="THB">THB 泰銖</option>
-                    </select>
+            <div id="content-budget" class="tab-content hidden">
+                <div class="converter-box mb-6">
+                    <p class="text-[11px] font-black text-[#6B705C] mb-3 uppercase tracking-widest">⚡ 快速匯率換算</p>
+                    <div class="flex gap-3 items-center">
+                        <input type="number" id="conv-input" placeholder="輸入金額" oninput="window.calcIndependentRate()" class="flex-1 bg-white input-base rounded-xl text-base outline-none font-bold shadow-sm">
+                        <select id="conv-curr" onchange="window.calcIndependentRate()" class="bg-white input-base rounded-xl text-base font-black outline-none shadow-sm">
+                            <option value="TWD">TWD 台幣</option>
+                            <option value="USD">USD 美金</option>
+                            <option value="THB">THB 泰銖</option>
+                        </select>
+                    </div>
+                    <div id="conv-res" class="mt-3 text-base font-black text-[#4A4E40] italic px-1">泰銖 ฿ 0</div>
                 </div>
-                <div id="conv-res" class="mt-2 text-sm font-black text-[#4A4E40] italic">泰銖 ฿ 0</div>
-            </div>
 
-            <div class="app-card bg-[#6B705C] p-5 text-white mb-4 relative overflow-hidden">
-                <p class="text-[9px] opacity-70 uppercase font-bold tracking-widest">Honeymoon Total (THB)</p>
-                <h2 id="total-amount" class="text-3xl font-black italic">฿ 0</h2>
-                <div class="absolute right-[-10px] bottom-[-10px] text-6xl opacity-10">💰</div>
-            </div>
-            
-            <div class="flex gap-3 mb-4 overflow-x-auto pb-1 no-scrollbar">
-                <button onclick="window.setPayerFilter('all')" id="chip-all" class="filter-chip active flex-shrink-0">全部支出</button>
-                <button onclick="window.setPayerFilter('tina')" id="chip-tina" class="filter-chip flex-shrink-0">
-                    <div class="font-black">Tina</div>
-                    <div id="chip-tina-amt" class="text-[8px] font-bold mt-1 opacity-70"></div>
-                </button>
-                <button onclick="window.setPayerFilter('darren')" id="chip-darren" class="filter-chip flex-shrink-0">
-                    <div class="font-black">Darren</div>
-                    <div id="chip-darren-amt" class="text-[8px] font-bold mt-1 opacity-70"></div>
-                </button>
-            </div>
+                <div class="app-card bg-[#6B705C] p-6 text-white mb-5 relative overflow-hidden shadow-lg">
+                    <p class="text-[10px] opacity-80 uppercase font-bold tracking-widest mb-1">Honeymoon Total (THB)</p>
+                    <h2 id="total-amount" class="text-4xl font-black italic">฿ 0</h2>
+                    <div class="absolute right-[-15px] bottom-[-15px] text-7xl opacity-10 pointer-events-none">💰</div>
+                </div>
+                
+                <div class="flex gap-3 mb-5 overflow-x-auto pb-2 no-scrollbar">
+                    <button onclick="window.setPayerFilter('all')" id="chip-all" class="filter-chip active flex-shrink-0 shadow-sm">全部支出</button>
+                    <button onclick="window.setPayerFilter('tina')" id="chip-tina" class="filter-chip flex-shrink-0 shadow-sm">
+                        <div class="font-black text-sm">Tina</div>
+                        <div id="chip-tina-amt" class="text-[10px] font-bold mt-1 opacity-80"></div>
+                    </button>
+                    <button onclick="window.setPayerFilter('darren')" id="chip-darren" class="filter-chip flex-shrink-0 shadow-sm">
+                        <div class="font-black text-sm">Darren</div>
+                        <div id="chip-darren-amt" class="text-[10px] font-bold mt-1 opacity-80"></div>
+                    </button>
+                </div>
 
-            <div class="app-card p-4 space-y-3">
-                <!-- Date Input -->
-                <div class="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
-                    <span class="text-xs font-bold text-gray-400 pl-1">日期</span>
-                    <input type="date" id="exp-date" class="bg-transparent text-xs font-bold text-[#4A4E40] outline-none flex-1">
-                </div>
-                <div class="flex flex-col gap-2">
-                    <input type="text" id="exp-item" placeholder="這是花了什麼？" class="w-full bg-gray-50 p-2.5 rounded-xl text-xs outline-none">
-                    <select id="exp-payer" class="w-full bg-gray-100 p-2.5 rounded-xl text-[10px] font-black">
-                        <option value="tina">Tina 霸氣買單 💰</option>
-                        <option value="darren">Darren 護妻神刷 💳</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 items-center">
-                    <select id="exp-currency" onchange="window.updateExchangePreview()" class="bg-gray-50 p-2.5 rounded-xl text-xs font-bold outline-none"><option value="THB">THB</option><option value="TWD">TWD</option><option value="USD">USD</option></select>
-                    <div class="flex-1 relative">
-                        <input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="w-full bg-gray-50 p-2.5 rounded-xl text-xs outline-none font-bold">
-                        <div id="exchange-hint" class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-gray-400 font-bold italic"></div>
+                <div class="app-card p-5 space-y-4 shadow-sm border border-gray-100">
+                    <!-- Date Input -->
+                    <div class="flex gap-3 items-center bg-gray-50 p-2.5 rounded-xl border border-gray-200 focus-within:border-gray-400 transition-colors">
+                        <span class="text-sm font-bold text-gray-500 pl-2">日期</span>
+                        <input type="date" id="exp-date" class="bg-transparent text-sm font-bold text-[#4A4E40] outline-none flex-1">
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <input type="text" id="exp-item" placeholder="這是花了什麼？" class="w-full bg-gray-50 input-base rounded-xl text-base outline-none border border-gray-200 focus:border-gray-400 transition-colors">
+                        <select id="exp-payer" class="w-full bg-gray-100 input-base rounded-xl text-sm font-black outline-none border border-gray-200">
+                            <option value="tina">Tina 霸氣買單 💰</option>
+                            <option value="darren">Darren 護妻神刷 💳</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <select id="exp-currency" onchange="window.updateExchangePreview()" class="bg-gray-50 input-base rounded-xl text-base font-bold outline-none border border-gray-200"><option value="THB">THB</option><option value="TWD">TWD</option><option value="USD">USD</option></select>
+                        <div class="flex-1 relative">
+                            <input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="w-full bg-gray-50 input-base rounded-xl text-base outline-none font-bold border border-gray-200 focus:border-gray-400 transition-colors">
+                            <div id="exchange-hint" class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold italic pointer-events-none"></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-1">
+                        <button onclick="window.addExpense()" id="btn-add-expense" class="flex-1 bg-[#2D3128] text-white py-3.5 rounded-xl text-sm font-black tracking-widest transition-transform active:scale-[0.98] shadow-md">新 增 記 帳</button>
+                        <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="bg-gray-200 text-gray-600 px-6 py-3.5 rounded-xl text-sm font-bold hidden transition-transform active:scale-[0.98]">取消</button>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="window.addExpense()" id="btn-add-expense" class="flex-1 bg-[#2D3128] text-white py-3 rounded-xl text-xs font-black tracking-widest transition-colors">新 增 記 帳</button>
-                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="bg-gray-300 text-white px-4 py-3 rounded-xl text-xs font-bold mt-2 hidden">取消</button>
-                </div>
+                <div id="exp-list" class="mt-5"></div>
             </div>
-            <div id="exp-list" class="mt-4"></div>
-        </div>
 
-        <!-- 行李清單 (Packing) -->
-        <div id="content-packing" class="tab-content hidden">
-            <div class="app-card p-4 mb-4">
-                <div class="mb-2">
-                    <select id="pack-category" class="w-full bg-gray-100 p-2 rounded-lg text-xs font-bold mb-2">
-                        <option value="cloth">👔 個人衣物</option>
-                        <option value="wash">🧼 個人盥洗</option>
-                        <option value="tech">📱 3C 產品</option>
-                        <option value="med">💊 個人藥品</option>
-                        <option value="doc">📄 重要文件</option>
-                        <option value="other">🎒 其他物品</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 mb-2">
-                    <input type="text" id="pack-item" placeholder="物品名稱..." class="flex-1 bg-gray-50 p-2 rounded-lg text-xs outline-none">
-                    <select id="pack-owner" class="bg-gray-50 px-2 rounded-lg text-xs font-bold"><option value="tina">Tina</option><option value="darren">Darren</option></select>
-                </div>
-                <button onclick="window.addPacking()" class="bg-[#6B705C] text-white w-full py-2.5 rounded-lg font-bold text-xs">記 得 記 得 帶 ！</button>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <p class="text-[10px] font-bold text-[#F8AD9D] mb-1 ml-1 uppercase">Tina's</p>
-                    <div id="pk-list-tina" class="app-card min-h-[50px]"></div>
-                </div>
-                <div>
-                    <p class="text-[10px] font-bold text-[#6B705C] mb-1 ml-1 uppercase">Darren's</p>
-                    <div id="pk-list-darren" class="app-card min-h-[50px]"></div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Custom Modals for Day Management -->
-    <div id="day-manage-modal" class="custom-modal" onclick="if(event.target === this) window.toggleDayManager()">
-        <div class="modal-panel flex flex-col p-5" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black text-lg text-[#4A4E40]">⚙️ 管理天數</h3>
-                <button onclick="window.toggleDayManager()" class="text-2xl text-gray-300">✕</button>
-            </div>
-            <div id="day-manager-list" class="flex-1 overflow-y-auto pb-4">
-                <!-- Managed via JS -->
-            </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mt-2">
-                <div class="text-xs font-bold text-gray-400 mb-2">新增天數</div>
-                <div class="flex gap-2">
-                    <input type="text" id="new-day-input" placeholder="如: Day 8 或 普吉島第一天" class="flex-1 p-2.5 bg-gray-50 rounded-lg text-sm font-bold outline-none border border-gray-200">
-                    <button onclick="window.addNewDay()" class="bg-[#6B705C] text-white px-4 rounded-lg text-sm font-bold">新增</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="rename-day-modal" class="custom-modal">
-        <div class="centered-modal-content">
-            <h3 class="font-black text-lg text-[#4A4E40] mb-4">修改名稱</h3>
-            <input type="hidden" id="rename-day-old">
-            <input type="text" id="rename-day-input" class="w-full p-3 bg-gray-50 rounded-xl text-base font-bold outline-none mb-4 border border-gray-200 focus:border-[#6B705C]">
-            <div class="flex gap-3">
-                <button onclick="window.closeRenameModal()" class="flex-1 bg-gray-200 text-gray-600 py-3 rounded-xl text-sm font-bold">取消</button>
-                <button onclick="window.confirmRenameDay()" class="flex-1 bg-[#6B705C] text-white py-3 rounded-xl text-sm font-bold">確認修改</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="delete-day-modal" class="custom-modal">
-        <div class="centered-modal-content text-center">
-            <div class="text-4xl mb-3">🗑️</div>
-            <h3 class="font-black text-lg text-[#4A4E40] mb-2">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
-            <p class="text-xs text-gray-500 font-bold mb-6">這將移除該天數標籤，但<br><span class="text-red-400">不會刪除</span>已綁定的行程資料。</p>
-            <input type="hidden" id="delete-day-target">
-            <div class="flex gap-3">
-                <button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-200 text-gray-600 py-3 rounded-xl text-sm font-bold">取消</button>
-                <button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-400 text-white py-3 rounded-xl text-sm font-bold">確認刪除</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI 助理 -->
-    <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
-        <div id="gemini-panel" onclick="event.stopPropagation()">
-            <div class="p-5 h-full flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center gap-2">
-                        <!-- Increased header size -->
-                        <h3 class="font-black text-lg text-[#4A4E40]">✨ 蜜月助理</h3>
-                        <button onclick="window.clearGemini()" class="text-[10px] bg-gray-200 px-2 py-1 rounded-full text-gray-500 font-bold">清除紀錄</button>
+            <!-- 行李清單 (Packing) -->
+            <div id="content-packing" class="tab-content hidden">
+                <div class="app-card p-5 mb-5 shadow-sm border border-gray-100">
+                    <div class="mb-3">
+                        <select id="pack-category" class="w-full bg-gray-100 input-base rounded-xl text-sm font-bold outline-none border border-gray-200">
+                            <option value="cloth">👔 個人衣物</option>
+                            <option value="wash">🧼 個人盥洗</option>
+                            <option value="tech">📱 3C 產品</option>
+                            <option value="med">💊 個人藥品</option>
+                            <option value="doc">📄 重要文件</option>
+                            <option value="other">🎒 其他物品</option>
+                        </select>
                     </div>
-                    <button onclick="window.toggleGemini()" class="text-2xl text-gray-300">✕</button>
+                    <div class="flex gap-3 mb-3">
+                        <input type="text" id="pack-item" placeholder="物品名稱..." class="flex-1 bg-gray-50 input-base rounded-xl text-base outline-none border border-gray-200 focus:border-[#6B705C] transition-colors">
+                        <select id="pack-owner" class="bg-gray-50 px-3 rounded-xl text-sm font-bold border border-gray-200 outline-none"><option value="tina">Tina</option><option value="darren">Darren</option></select>
+                    </div>
+                    <button onclick="window.addPacking()" class="bg-[#6B705C] text-white w-full py-3.5 rounded-xl font-bold text-sm transition-transform active:scale-[0.98] shadow-md">記 得 記 得 帶 ！</button>
                 </div>
-                <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 text-sm"></div>
-                <div class="flex gap-2 p-2 bg-white rounded-2xl shadow-inner border">
-                    <!-- Increased input size -->
-                    <input type="text" id="gemini-input" placeholder="問問助理..." class="flex-1 p-3 text-base outline-none bg-transparent">
-                    <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-5 rounded-xl text-sm font-bold">發送</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-[11px] font-black text-[#F8AD9D] mb-2 ml-2 uppercase tracking-widest">Tina's</p>
+                        <div id="pk-list-tina" class="min-h-[50px]"></div>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-black text-[#6B705C] mb-2 ml-2 uppercase tracking-widest">Darren's</p>
+                        <div id="pk-list-darren" class="min-h-[50px]"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Custom Modals for Day Management -->
+        <div id="day-manage-modal" class="custom-modal" onclick="if(event.target === this) window.toggleDayManager()">
+            <div class="modal-panel flex flex-col p-6" onclick="event.stopPropagation()">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="font-black text-xl text-[#4A4E40]">⚙️ 管理天數</h3>
+                    <button onclick="window.toggleDayManager()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
+                </div>
+                <div id="day-manager-list" class="flex-1 overflow-y-auto pb-4 px-1">
+                    <!-- Managed via JS -->
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-100 mt-3">
+                    <div class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">新增天數</div>
+                    <div class="flex gap-3">
+                        <input type="text" id="new-day-input" placeholder="如: Day 8 或 普吉島第一天" class="flex-1 p-3 bg-gray-50 rounded-xl text-base font-bold outline-none border border-gray-200 focus:border-[#6B705C] transition-colors">
+                        <button onclick="window.addNewDay()" class="bg-[#6B705C] text-white px-6 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95">新增</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <nav class="bottom-nav">
-        <div onclick="window.switchTab('core')" id="btn-core" class="nav-btn btn-press">🛫</div>
-        <div onclick="window.switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press opacity-30">🗺️</div>
-        <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
-        <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
-        <div onclick="window.toggleGemini()" class="nav-btn btn-press">✨</div>
-    </nav>
+        <div id="rename-day-modal" class="custom-modal">
+            <div class="centered-modal-content p-6">
+                <h3 class="font-black text-xl text-[#4A4E40] mb-5">修改名稱</h3>
+                <input type="hidden" id="rename-day-old">
+                <input type="text" id="rename-day-input" class="w-full p-4 bg-gray-50 rounded-xl text-lg font-bold outline-none mb-5 border border-gray-200 focus:border-[#6B705C] transition-colors text-center">
+                <div class="flex gap-4">
+                    <button onclick="window.closeRenameModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold transition-transform active:scale-95">取消</button>
+                    <button onclick="window.confirmRenameDay()" class="flex-1 bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95">確認修改</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="delete-day-modal" class="custom-modal">
+            <div class="centered-modal-content text-center p-6">
+                <div class="text-5xl mb-4">🗑️</div>
+                <h3 class="font-black text-xl text-[#4A4E40] mb-3">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
+                <p class="text-sm text-gray-500 font-bold mb-8 leading-relaxed">這將移除該天數標籤，但<br><span class="text-red-400 bg-red-50 px-2 py-0.5 rounded">不會刪除</span>已綁定的行程資料。</p>
+                <input type="hidden" id="delete-day-target">
+                <div class="flex gap-4">
+                    <button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold transition-transform active:scale-95">取消</button>
+                    <button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm transition-transform active:scale-95">確認刪除</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI 助理 -->
+        <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
+            <div id="gemini-panel" onclick="event.stopPropagation()">
+                <div class="p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-5">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理</h3>
+                            <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
+                        </div>
+                        <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
+                    </div>
+                    <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1"></div>
+                    <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] border border-gray-100">
+                        <input type="text" id="gemini-input" placeholder="問問助理..." class="flex-1 p-3.5 text-base outline-none bg-transparent">
+                        <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-6 rounded-xl text-sm font-bold transition-transform active:scale-[0.98]">發送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div onclick="window.switchTab('core')" id="btn-core" class="nav-btn btn-press opacity-30">🛫</div>
+            <div onclick="window.switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press">🗺️</div>
+            <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
+            <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
+            <div onclick="window.toggleGemini()" class="nav-btn btn-press">✨</div>
+        </nav>
+    </div>
 </body>
 </html>
