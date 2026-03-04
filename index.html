@@ -48,7 +48,7 @@
         }
         .couple-name { 
             font-family: 'Playfair Display', serif; 
-            font-size: 2.4rem; /* 大螢幕字體微調加大 */
+            font-size: 2.4rem; 
             line-height: 1.1; 
             font-weight: 700; 
             color: #2D3128; 
@@ -82,9 +82,9 @@
             /* 在大螢幕置中並限制寬度，避免按鈕間距過大 */
             left: 50%; transform: translateX(-50%);
             width: calc(100% - 32px);
-            max-width: 416px; /* max-w-md (448px) 減去兩側 margin */
+            max-width: 416px; 
             border-radius: 2rem;
-            height: 65px; /* 加高一點點讓點擊更舒適 */
+            height: 65px; 
             z-index: 1000;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -103,7 +103,7 @@
             position: absolute; bottom: 0; left: 0; right: 0;
             height: 85%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
-            padding-bottom: env(safe-area-inset-bottom); /* 面板內容避開底部 */
+            padding-bottom: env(safe-area-inset-bottom); 
         }
         #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
         
@@ -129,9 +129,6 @@
         
         .expand-panel { display: none; margin-top: 12px; }
         .expand-panel.active { display: block; }
-
-        .flight-path { position: relative; height: 1.5px; background: #E5E7EB; flex: 1; margin: 0 12px; }
-        .flight-path::after { content: '✈️'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 12px; }
 
         .weather-card {
             background: linear-gradient(135deg, #8E9775 0%, #6B705C 100%);
@@ -173,7 +170,7 @@
         /* Day Tabs Styling */
         .day-tab {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-width: 75px; height: 85px; /* 加大觸控面積 */
+            min-width: 75px; height: 85px; 
             background: white; border: 1px solid #E5E7EB; border-radius: 16px;
             margin-right: 10px; transition: all 0.3s;
             flex-shrink: 0; 
@@ -206,7 +203,7 @@
 
         /* Packing Filter Tabs */
         .pack-filter-btn {
-            width: 36px; height: 36px; /* 加大 */
+            width: 36px; height: 36px; 
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 16px;
@@ -255,7 +252,7 @@
         let packingData = []; 
         
         // Day Management State
-        let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; // Default fallback
+        let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
         let dayDates = {}; 
         
         // Edit State
@@ -291,7 +288,7 @@
                 const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
                 return `${month + 1}/${day} (${weekdays[d.getDay()]})`;
             }
-            return dateString; // fallback
+            return dateString; 
         };
 
         onAuthStateChanged(auth, async (user) => { 
@@ -371,7 +368,6 @@
                 </div>`;
             }).join('');
 
-            // Add Manage Button
             html += `
                 <div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center cursor-pointer opacity-70 hover:opacity-100">
                     <div class="text-2xl font-black text-gray-400">⚙️</div>
@@ -570,7 +566,7 @@
         function renderItinerary() {
             const list = document.getElementById('it-list');
             const filtered = itineraryData.filter(item => item.day === currentDayFilter);
-            const sorted = filtered.sort((a,b) => a.time.localeCompare(b.time));
+            const sorted = filtered.sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
             
             if (sorted.length === 0) {
                 list.innerHTML = `<div class="text-center text-gray-400 text-sm py-12 font-bold">這天還沒有行程喔 💤</div>`;
@@ -645,6 +641,7 @@
             document.getElementById('f-from').value = item.from;
             document.getElementById('f-to').value = item.to;
             document.getElementById('f-date').value = item.date || '';
+            document.getElementById('f-duration').value = item.duration || '';
             document.getElementById('f-depTime').value = item.depTime;
             document.getElementById('f-arrTime').value = item.arrTime;
             document.getElementById('f-checkinTime').value = item.checkinTime;
@@ -654,6 +651,7 @@
             document.getElementById('btn-add-flight').innerText = '確認修改 ✅';
             document.getElementById('btn-cancel-flight').classList.remove('hidden');
             if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.cancelEditFlight = () => {
@@ -662,6 +660,7 @@
             document.getElementById('f-from').value = '';
             document.getElementById('f-to').value = '';
             document.getElementById('f-date').value = '';
+            document.getElementById('f-duration').value = '';
             document.getElementById('f-depTime').value = '';
             document.getElementById('f-arrTime').value = '';
             document.getElementById('f-checkinTime').value = '';
@@ -679,6 +678,7 @@
                 from: document.getElementById('f-from').value, 
                 to: document.getElementById('f-to').value, 
                 date: document.getElementById('f-date').value,
+                duration: document.getElementById('f-duration').value,
                 depTime: document.getElementById('f-depTime').value, 
                 arrTime: document.getElementById('f-arrTime').value, 
                 checkinTime: document.getElementById('f-checkinTime').value, 
@@ -697,7 +697,16 @@
         };
 
         function renderFlights() {
-            document.getElementById('flights-list').innerHTML = flightsData.map(f => {
+            const sortedFlights = [...flightsData].sort((a, b) => {
+                const dateA = a.date || '9999-99-99';
+                const dateB = b.date || '9999-99-99';
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                const timeA = a.depTime || '99:99';
+                const timeB = b.depTime || '99:99';
+                return timeA.localeCompare(timeB);
+            });
+
+            document.getElementById('flights-list').innerHTML = sortedFlights.map(f => {
                 const dateDisplay = f.date ? window.formatDisplayDate(f.date) : '';
                 return `
                 <div class="app-card p-5 mb-4">
@@ -707,20 +716,31 @@
                             ${dateDisplay ? `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateDisplay}</span>` : ''}
                         </div>
                         <div class="flex gap-4">
-                             <span class="text-sm font-bold text-gray-400">Seat: ${f.seat || '--'}</span>
+                             <span class="text-sm font-bold text-gray-400 mt-1">Seat: ${f.seat || '--'}</span>
                              <button onclick="window.editFlight('${f.id}')" class="text-gray-400 text-sm hover:text-[#6B705C]">✎</button>
                              <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-300 text-sm">✕</button>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="text-center flex-1">
-                            <div class="text-3xl font-black text-[#2D3128]">${f.from}</div>
-                            <div class="text-base font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div>
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="text-center flex-1 min-w-0 px-1">
+                            <div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.from}</div>
+                            <div class="text-sm font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div>
                         </div>
-                        <div class="flight-path mx-4"></div>
-                        <div class="text-center flex-1">
-                            <div class="text-3xl font-black text-[#2D3128]">${f.to}</div>
-                            <div class="text-base font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div>
+                        
+                        <!-- 改版：飛機軌跡線加上飛行時間 -->
+                        <div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] px-2">
+                            <span class="text-sm text-gray-400 leading-none">✈️</span>
+                            <div class="w-full h-[1.5px] bg-gray-200 my-1.5 relative">
+                                <div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -left-0.5 top-1/2 transform -translate-y-1/2"></div>
+                                <div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -right-0.5 top-1/2 transform -translate-y-1/2"></div>
+                            </div>
+                            ${f.duration ? `<span class="text-[9px] text-gray-400 font-bold tracking-tighter mt-0.5">${f.duration}</span>` : '<span class="text-[9px] opacity-0">-</span>'}
+                        </div>
+
+                        <div class="text-center flex-1 min-w-0 px-1">
+                            <div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.to}</div>
+                            <div class="text-sm font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div>
                         </div>
                     </div>
                     ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-3">
@@ -746,6 +766,7 @@
             document.getElementById('btn-add-hotel').innerText = '確認修改 ✅';
             document.getElementById('btn-cancel-hotel').classList.remove('hidden');
             if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.cancelEditHotel = () => {
@@ -781,7 +802,13 @@
         };
 
         function renderHotels() {
-            document.getElementById('hotels-list').innerHTML = hotelsData.map(h => {
+            const sortedHotels = [...hotelsData].sort((a, b) => {
+                const dateA = a.checkin || '9999-99-99';
+                const dateB = b.checkin || '9999-99-99';
+                return dateA.localeCompare(dateB);
+            });
+
+            document.getElementById('hotels-list').innerHTML = sortedHotels.map(h => {
                 let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--';
                 if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`;
 
@@ -1122,10 +1149,16 @@
                     </div>
                 </div>
 
-                <!-- 獨立一行：出發日期 (加入 overflow-hidden 與 box-border 防溢出) -->
-                <div class="mb-3 overflow-hidden">
-                    <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">出發日期</div>
-                    <input type="date" id="f-date" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div class="min-w-0 overflow-hidden">
+                        <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">出發日期</div>
+                        <input type="date" id="f-date" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none appearance-none">
+                    </div>
+                    <!-- 新增：飛行時間輸入框 -->
+                    <div class="min-w-0 overflow-hidden">
+                        <div class="text-[10px] text-gray-500 font-bold mb-1 ml-1 uppercase tracking-widest">飛行時間 (選填)</div>
+                        <input type="text" id="f-duration" placeholder="如: 3h 45m" class="w-full box-border p-2.5 text-sm rounded-xl border border-gray-200 font-bold text-[#4A4E40] focus:border-[#6B705C] outline-none">
+                    </div>
                 </div>
 
                 <!-- 獨立一行：起飛時間 -->
@@ -1280,7 +1313,7 @@
                         <div id="pk-list-tina" class="min-h-[50px]"></div>
                     </div>
                     <div>
-                        <p class="text-[11px] font-black text-[#6B705C] mb-2 ml-2 uppercase tracking-widest">Darren's</p>
+                        <p class="text-[11px] font-bold text-[#6B705C] mb-2 ml-2 uppercase tracking-widest">Darren's</p>
                         <div id="pk-list-darren" class="min-h-[50px]"></div>
                     </div>
                 </div>
