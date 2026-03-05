@@ -987,7 +987,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：強制使用 gemini-pro (v2.3) ===
+        // === 🚀 核心 AI 助理：穩定版 (v2.4) ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -1008,23 +1008,44 @@
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 強制使用 Google 基礎免費模型 gemini-pro，繞過 billing 限制
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+                // 🎯 使用官方主推且免費支援最好的 1.5-flash 家族
+                const modelsToTry = [
+                    "gemini-1.5-flash",
+                    "gemini-1.5-flash-8b"
+                ];
                 
-                const response = await fetch(url, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errData = await response.json().catch(() => ({}));
-                    throw new Error(errData.error?.message || `HTTP_${response.status}`);
+                let data = null;
+                let lastErrorMsg = "";
+
+                for (const model of modelsToTry) {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            throw new Error(errData.error?.message || `HTTP_${response.status}`);
+                        }
+                        
+                        data = await response.json();
+                        break; 
+                    } catch (e) {
+                        lastErrorMsg = e.message;
+                        // 若確認金鑰無效或被限制額度，直接中斷嘗試
+                        if (e.message.includes("API_KEY_INVALID") || e.message.includes("429")) {
+                            throw e; 
+                        }
+                    }
                 }
-                
-                const data = await response.json();
+
+                if (!data) throw new Error(lastErrorMsg); 
+
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
                 
                 document.getElementById(thinkingId)?.remove();
@@ -1037,11 +1058,9 @@
                 if (e.message.includes("API_KEY_INVALID")) {
                     errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否有開通權限。";
                 } else if (e.message.includes("429") || e.message.includes("Quota")) {
-                    errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度限制)<br>請休息約一分鐘後再問我喔！";
+                    errorMsg = "⚠️ Google 帳號的免費額度已被限制！<br><br>這通常是因為新帳號被要求驗證身分。請您前往 Google Cloud Console 設定帳單 (Billing) 綁定信用卡。<br><span class='text-xs font-normal'>放心，只要不超量，Google 絕對不會扣款！</span>";
                 } else if (e.message.includes("not found") || e.message.includes("404")) {
-                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><br><span class='text-[11px] text-gray-500 font-normal'>新金鑰需要一點時間同步到全世界的伺服器。請稍等 10 到 15 分鐘後再試。</span>";
-                } else if (e.message.includes("Billing") || e.message.includes("billing")) {
-                    errorMsg = "⚠️ Google 帳號的免費額度被限制。<br>請至 Google AI Studio 確認您的帳號是否需要設定 Billing。";
+                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><br><span class='text-[11px] text-gray-500 font-normal'>新金鑰需要一點時間同步到全世界的伺服器。請您先去喝杯咖啡，大約 10~15 分鐘後再試即可！</span>";
                 } else {
                     errorMsg = `⚠️ 發生錯誤：<br><span class='text-xs font-normal'>${e.message}</span>`;
                 }
@@ -1414,7 +1433,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.3</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.4</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
