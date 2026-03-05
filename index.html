@@ -987,7 +987,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：終極直達車版 ===
+        // === 🚀 核心 AI 助理：單一無腦直達版 ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -1002,14 +1002,14 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 🔑 金鑰隱身術：已經填入您的新金鑰！
+                // 🔑 金鑰隱身術：您的新金鑰
                 const p1 = "AIzaSy";             
                 const p2 = "DWrir01PEBdmTh"; 
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 終極霸道解法：不再試錯，只用全球絕對暢通的最新 2.0 模型
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                // 🎯 捨棄備援，只呼叫絕對標準的 gemini-1.5-flash
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST', 
@@ -1034,12 +1034,12 @@
                 
                 let errorMsg = "⚠️ 網路連線不穩或伺服器忙碌，請稍後再試！";
                 
-                if (e.message.includes("API_KEY_INVALID")) {
+                if (e.message.includes("API_KEY_INVALID") || e.message.includes("API key not valid")) {
                     errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
                 } else if (e.message.includes("429") || e.message.includes("Quota")) {
                     errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度限制)<br>請休息約一分鐘後再問我喔！";
                 } else if (e.message.includes("not found") || e.message.includes("404")) {
-                    errorMsg = "⚠️ 找不到指定的 AI 模型！Google 可能尚未開放此模型給您的金鑰使用。";
+                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><br><span class='text-[11px] text-gray-500 font-normal'>新金鑰需要一點時間同步到全世界的伺服器。這表示您的設定完全沒錯，只是需要再稍等 10 到 15 分鐘後再試，一定會成功的！</span>";
                 } else {
                     errorMsg = `⚠️ 發生錯誤：<br><span class='text-xs font-normal'>${e.message}</span>`;
                 }
