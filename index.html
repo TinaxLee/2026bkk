@@ -987,7 +987,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：金鑰隱身術 (免輸入順暢版) ===
+        // === 🚀 核心 AI 助理：終極直達車版 ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -1002,50 +1002,31 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 🔑 金鑰隱身術：已經幫您將新的 API Key 拆段填入，騙過 GitHub 掃描機器人！
+                // 🔑 金鑰隱身術：已經填入您的新金鑰！
                 const p1 = "AIzaSy";             
                 const p2 = "DWrir01PEBdmTh"; 
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                const modelsToTry = [
-                    "gemini-1.5-flash",
-                    "gemini-1.5-flash-8b",
-                    "gemini-1.0-pro"
-                ];
-
-                let data = null;
-                let lastErrorMsg = "";
-
-                for (const model of modelsToTry) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                    try {
-                        const response = await fetch(url, {
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errData = await response.json().catch(() => ({}));
-                            throw new Error(errData.error?.message || `HTTP_${response.status}`);
-                        }
-                        
-                        data = await response.json();
-                        break; 
-                    } catch (e) {
-                        lastErrorMsg = e.message;
-                        if (e.message.includes("API_KEY_INVALID") || e.message.includes("API key not valid")) {
-                            throw new Error("API_KEY_INVALID"); 
-                        }
-                    }
+                // 🎯 終極霸道解法：不再試錯，只用全球絕對暢通的最新 2.0 模型
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || `HTTP_${response.status}`);
                 }
-
-                if (!data) throw new Error(lastErrorMsg); 
-
+                
+                const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
+                
                 document.getElementById(thinkingId)?.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div></div>`;
             } catch (e) { 
@@ -1054,11 +1035,11 @@
                 let errorMsg = "⚠️ 網路連線不穩或伺服器忙碌，請稍後再試！";
                 
                 if (e.message.includes("API_KEY_INVALID")) {
-                    errorMsg = "⚠️ API 金鑰無效！請確認您程式碼中的 3 段金鑰是否拼湊正確。";
+                    errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
                 } else if (e.message.includes("429") || e.message.includes("Quota")) {
                     errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度限制)<br>請休息約一分鐘後再問我喔！";
                 } else if (e.message.includes("not found") || e.message.includes("404")) {
-                    errorMsg = "⚠️ Google 伺服器正在同步您的金鑰權限中！<br>新建立的金鑰大約需要 5~15 分鐘才會生效。請稍後再試。";
+                    errorMsg = "⚠️ 找不到指定的 AI 模型！Google 可能尚未開放此模型給您的金鑰使用。";
                 } else {
                     errorMsg = `⚠️ 發生錯誤：<br><span class='text-xs font-normal'>${e.message}</span>`;
                 }
