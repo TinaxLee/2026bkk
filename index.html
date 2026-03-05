@@ -1011,20 +1011,33 @@
                 // 🎯 捨棄備援，只呼叫絕對標準且支援度最廣的 gemini-2.0-flash
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 
-                const response = await fetch(url, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errData = await response.json().catch(() => ({}));
-                    throw new Error(errData.error?.message || `HTTP_${response.status}`);
+                const fetchWithRetry = async (retries = 3) => {
+                     const delays = [1000, 3000, 5000];
+                     for (let i = 0; i < retries; i++) {
+                         const response = await fetch(url, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
+                            })
+                        });
+                        
+                        if (response.ok) return await response.json();
+                        
+                        const errData = await response.json().catch(() => ({}));
+                        const errMsg = errData.error?.message || `HTTP_${response.status}`;
+                        
+                        if (response.status === 429) {
+                            if (i === retries - 1) throw new Error(`429|${errMsg}`);
+                            console.warn(`Encountered 429, retrying in ${delays[i]}ms...`);
+                            await new Promise(res => setTimeout(res, delays[i]));
+                        } else {
+                            throw new Error(`${response.status}|${errMsg}`);
+                        }
+                     }
                 }
-                
-                const data = await response.json();
+
+                const data = await fetchWithRetry();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
                 
                 document.getElementById(thinkingId)?.remove();
@@ -1034,7 +1047,7 @@
                 
                 let errorMsg = "⚠️ 網路連線不穩或伺服器忙碌，請稍後再試！";
                 
-                if (e.message.includes("API_KEY_INVALID") || e.message.includes("API key not valid")) {
+                if (e.message.includes("API_KEY_INVALID") || e.message.includes("API key not valid") || e.message.includes("400")) {
                     errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
                 } else if (e.message.includes("429") || e.message.includes("Quota")) {
                     errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度限制)<br>請休息約一分鐘後再問我喔！";
@@ -1412,7 +1425,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.0</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.1</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
