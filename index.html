@@ -1008,8 +1008,8 @@
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 捨棄備援，只呼叫絕對標準的 gemini-1.5-flash
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // 🎯 捨棄備援，只呼叫絕對標準且支援度最廣的 gemini-2.0-flash
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST', 
@@ -1412,7 +1412,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理</h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.0</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
