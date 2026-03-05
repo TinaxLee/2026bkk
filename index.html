@@ -987,7 +987,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === API 呼叫 (GitHub Pages 真實環境多重備援版) ===
+        // === 🚀 核心 AI 助理：專為 GitHub Pages 真實環境打造 ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -1001,60 +1001,57 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 這是您專屬的 API 金鑰
+                // 🔑 您的專屬 API 金鑰已經完美寫入
                 const apiKey = "AIzaSyBaCNZk1RwM6F3GEb3DXeaPrJNu38YjIJk"; 
                 
-                // 【終極方案】：列出 4 種絕對存在於 Google 伺服器的通道組合，失敗就自動瞬間換下一個！
-                const endpoints = [
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-                    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                // 嘗試不同版本的 URL 結構，確保至少有一個通道能接通！
+                const endpointsToTry = [
                     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`
                 ];
-
+                
                 let data = null;
-                let lastErrorMsg = "";
+                let lastErr = null;
 
-                for (const url of endpoints) {
+                for (let url of endpointsToTry) {
                     try {
                         const response = await fetch(url, {
-                            method: 'POST',
+                            method: 'POST', 
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }]
+                            body: JSON.stringify({ 
+                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
                             })
                         });
-
+                        
                         if (!response.ok) {
-                            const errData = await response.json().catch(()=>({}));
-                            throw new Error(errData.error?.message || `HTTP ${response.status}`);
+                            const errData = await response.json().catch(() => ({}));
+                            throw new Error(errData.error?.message || `HTTP_Error_${response.status}`);
                         }
-
+                        
                         data = await response.json();
-                        break; // 只要有任何一個網址成功，就馬上跳出迴圈！
+                        break; // 若成功接通，立刻跳出重試迴圈
                     } catch (e) {
-                        lastErrorMsg = e.message;
-                        // 如果是因為金鑰錯了或是被限制流量，就不浪費時間測下一個了
-                        if (e.message.includes("API_KEY_INVALID") || e.message.includes("429") || e.message.includes("Quota")) {
-                            throw e; 
+                        lastErr = e;
+                        // 若是因為額度滿了或金鑰無效，就不用再嘗試其他模型了，直接報錯給用戶
+                        if (e.message.includes('API_KEY') || e.message.includes('429') || e.message.includes('Quota')) {
+                            throw e;
                         }
-                        // 如果是 404 (找不到模型)，程式會安靜地繼續嘗試下一個網址
                     }
                 }
 
-                if (!data) throw new Error(lastErrorMsg); // 4個網址都失敗才會走到這步
+                if (!data) throw lastErr;
 
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
                 document.getElementById(thinkingId)?.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div></div>`;
-            } catch (e) {
-                document.getElementById(thinkingId)?.remove();
-                let errorMsg = `⚠️ 連線錯誤：${e.message}`;
+            } catch (e) { 
+                document.getElementById(thinkingId)?.remove(); 
+                let errorMsg = `⚠️ 發生連線錯誤：<br><span class="text-[12px] text-gray-500">${e.message}</span>`;
                 
-                if (e.message.includes('API_KEY_INVALID')) {
-                    errorMsg = "⚠️ API 金鑰無效，請確認您的金鑰是否有權限。";
-                } else if (e.message.includes('429') || e.message.includes('Quota')) {
-                    errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度限制)<br><br>請休息約一分鐘後再問我喔！";
+                if (e.message.includes("429") || e.message.includes("Quota")) {
+                    errorMsg = "⚠️ 助理現在太忙碌了 (觸發了 API 免費額度限制)，請休息約一分鐘後再問我喔！";
+                } else if (e.message.includes("API_KEY")) {
+                    errorMsg = "⚠️ API 金鑰無效，請確認您申請的金鑰是否擁有存取權限。";
                 }
                 
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm shadow-sm border border-red-100 leading-relaxed text-red-500 max-w-[95%] font-bold">${errorMsg}</div></div>`;
