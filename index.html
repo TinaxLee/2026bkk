@@ -133,7 +133,6 @@
             position: relative; overflow: hidden;
         }
 
-        /* Action Link Button Style */
         .action-link {
             font-size: 11px; font-weight: 800; color: #8E9775;
             padding: 8px 14px; border: 1.5px solid #E5E7EB; border-radius: 20px;
@@ -628,7 +627,6 @@
             }).join('');
         }
 
-        // --- Flights Logic (Edit/Add) ---
         window.editFlight = (id) => {
             const item = flightsData.find(f => f.id === id);
             if (!item) return;
@@ -748,7 +746,6 @@
             }).join('');
         }
 
-        // --- Hotels Logic (Edit/Add) ---
         window.editHotel = (id) => {
             const item = hotelsData.find(h => h.id === id);
             if (!item) return;
@@ -829,7 +826,6 @@
             }).join('');
         }
 
-        // --- Packing with Categories ---
         window.setPackFilter = (owner, cat) => {
             packFilters[owner] = cat;
             renderPacking();
@@ -862,7 +858,6 @@
             draw('darren', 'pk-list-darren');
         }
 
-        // --- Expenses Logic (Edit/Add) ---
         window.editExpense = (id) => {
             const item = allExpenses.find(e => e.id === id);
             if (!item) return;
@@ -981,7 +976,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：極簡純淨直達版 (v2.7) ===
+        // === 🚀 核心 AI 助理：終極除錯雷達版 (v2.8) ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -996,30 +991,46 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 🔑 金鑰隱身術
                 const p1 = "AIzaSy";             
                 const p2 = "DWrir01PEBdmTh"; 
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 v2.7: 取消耗費額度的自動掃描，直接命中最新免費主力模型，省下 50% 扣打！
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                
-                const response = await fetch(url, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errData = await response.json().catch(() => ({}));
-                    throw new Error(`${response.status}|${errData.error?.message || response.statusText}`);
+                // 依序測試主流模型，並收集真實的錯誤訊息
+                const modelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash"];
+                let successData = null;
+                let errorLogs = [];
+
+                for (const model of modelsToTry) {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
+                            })
+                        });
+                        
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            successData = data;
+                            break; 
+                        } else {
+                            // 記錄 Google 回傳的最真實英文錯誤
+                            errorLogs.push(`[${model}] 狀態碼 ${response.status}: ${data.error?.message || '未知錯誤'}`);
+                        }
+                    } catch (e) {
+                        errorLogs.push(`[${model}] 網路錯誤: ${e.message}`);
+                    }
                 }
-                
-                const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
+
+                if (!successData) {
+                    throw new Error(errorLogs.join("<br><br>")); 
+                }
+
+                const text = successData.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
                 
                 document.getElementById(thinkingId)?.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div></div>`;
@@ -1027,20 +1038,10 @@
             } catch (e) { 
                 document.getElementById(thinkingId)?.remove(); 
                 
-                let errorMsg = "⚠️ 發生未知錯誤，請稍後再試！";
-                const errText = e.message;
-
-                if (errText.includes("429") || errText.includes("Quota")) {
-                    errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度已達上限)<br><br><span class='text-[11px] text-gray-500 font-normal'>Google 免費版限制每分鐘只能問 15 次。我們剛剛為了測試可能點太快了，請您先關閉網頁，**休息整整 2 分鐘**後再發問，就會恢復正常囉！</span>";
-                } else if (errText.includes("API_KEY_INVALID") || errText.includes("400")) {
-                    errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
-                } else if (errText.includes("404")) {
-                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><span class='text-[11px] text-gray-500 font-normal'>請再稍等一下。</span>";
-                } else {
-                    errorMsg = `⚠️ 系統錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${errText}</span>`;
-                }
+                // 直接印出最原始的錯誤內容，不再包裝！
+                let errorMsg = `⚠️ <b>Google 伺服器回傳的真實錯誤：</b><br><br><span class='text-[10px] text-gray-600 font-mono leading-tight block break-words'>${e.message}</span><br><br><span class='text-xs font-bold text-red-600'>請將上方這段英文錯誤截圖或複製給我，我們就能精準破解了！</span>`;
                 
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm shadow-sm border border-red-100 leading-relaxed text-red-500 max-w-[95%] font-bold">${errorMsg}</div></div>`;
+                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm shadow-sm border border-red-100 leading-relaxed text-red-500 max-w-[95%]">${errorMsg}</div></div>`;
             }
             chat.scrollTop = chat.scrollHeight;
         };
@@ -1408,7 +1409,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.7</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.8</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
