@@ -133,6 +133,7 @@
             position: relative; overflow: hidden;
         }
 
+        /* Action Link Button Style */
         .action-link {
             font-size: 11px; font-weight: 800; color: #8E9775;
             padding: 8px 14px; border: 1.5px solid #E5E7EB; border-radius: 20px;
@@ -980,7 +981,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：自動掃描可用模型雷達 (v2.6) ===
+        // === 🚀 核心 AI 助理：極簡純淨直達版 (v2.7) ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -1001,36 +1002,8 @@
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 步驟一：先去問 Google 伺服器，這把金鑰「到底可以使用哪些模型」
-                let targetModel = "";
-                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-                const listRes = await fetch(listUrl);
-
-                if (!listRes.ok) {
-                    const errData = await listRes.json().catch(() => ({}));
-                    throw new Error(`KEY_ERROR|${errData.error?.message || listRes.status}`);
-                }
-
-                const listData = await listRes.json();
-                // 篩選出可以聊天的 Gemini 模型
-                const validModels = (listData.models || []).filter(m => m.supportedGenerationMethods?.includes("generateContent") && m.name.includes("gemini"));
-
-                // 如果 Google 回傳的清單是空的，代表這把金鑰沒有模型存取權
-                if (validModels.length === 0) {
-                     throw new Error("NO_MODELS|無可用模型權限");
-                }
-
-                // 從允許的名單中，挑選最適合的 (優先選用 1.5 或 2.0，若無則挑第一個)
-                const preferred = validModels.find(m => m.name.includes("gemini-1.5-flash") && !m.name.includes("8b"))
-                               || validModels.find(m => m.name.includes("gemini-2.0-flash"))
-                               || validModels.find(m => m.name.includes("gemini-pro"))
-                               || validModels[0];
-
-                targetModel = preferred.name.replace('models/', '');
-                console.log("使用模型:", targetModel);
-
-                // 🎯 步驟二：確定有模型可用後，正式發送問題
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+                // 🎯 v2.7: 取消耗費額度的自動掃描，直接命中最新免費主力模型，省下 50% 扣打！
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 
                 const response = await fetch(url, {
                     method: 'POST', 
@@ -1042,7 +1015,7 @@
                 
                 if (!response.ok) {
                     const errData = await response.json().catch(() => ({}));
-                    throw new Error(`GEN_ERROR|${errData.error?.message || response.status}`);
+                    throw new Error(`${response.status}|${errData.error?.message || response.statusText}`);
                 }
                 
                 const data = await response.json();
@@ -1054,28 +1027,17 @@
             } catch (e) { 
                 document.getElementById(thinkingId)?.remove(); 
                 
-                const parts = e.message.split('|');
-                const errType = parts[0];
-                const errDetail = parts[1] || e.message;
-
                 let errorMsg = "⚠️ 發生未知錯誤，請稍後再試！";
+                const errText = e.message;
 
-                if (errType === "KEY_ERROR") {
-                    if (errDetail.includes("API_KEY_INVALID")) {
-                         errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
-                    } else {
-                         errorMsg = `⚠️ 驗證金鑰時發生錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${errDetail}</span>`;
-                    }
-                } else if (errType === "NO_MODELS") {
-                    errorMsg = "⚠️ 您的 Google 帳號已被徹底限制！<br><br><span class='text-[11px] text-gray-500 font-normal'>Google 伺服器表示您的帳號『沒有任何可用模型』。這代表您必須設定付款資訊 (Billing)，或者換一個 Google 帳號重新申請金鑰才能使用了😭</span>";
-                } else if (errType === "GEN_ERROR") {
-                    if (errDetail.includes("429") || errDetail.includes("Quota")) {
-                        errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度已達上限)<br>請休息幾分鐘後再問我喔！";
-                    } else {
-                        errorMsg = `⚠️ 產生回覆失敗：<br><span class='text-[11px] text-gray-500 font-normal'>${errDetail}</span>`;
-                    }
+                if (errText.includes("429") || errText.includes("Quota")) {
+                    errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度已達上限)<br><br><span class='text-[11px] text-gray-500 font-normal'>Google 免費版限制每分鐘只能問 15 次。我們剛剛為了測試可能點太快了，請您先關閉網頁，**休息整整 2 分鐘**後再發問，就會恢復正常囉！</span>";
+                } else if (errText.includes("API_KEY_INVALID") || errText.includes("400")) {
+                    errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
+                } else if (errText.includes("404")) {
+                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><span class='text-[11px] text-gray-500 font-normal'>請再稍等一下。</span>";
                 } else {
-                    errorMsg = `⚠️ 系統錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${e.message}</span>`;
+                    errorMsg = `⚠️ 系統錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${errText}</span>`;
                 }
                 
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm shadow-sm border border-red-100 leading-relaxed text-red-500 max-w-[95%] font-bold">${errorMsg}</div></div>`;
@@ -1446,7 +1408,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.6</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.7</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
