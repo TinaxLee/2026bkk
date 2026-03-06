@@ -163,6 +163,7 @@
             80%, 100% { content: ''; }
         }
 
+        /* Day Tabs Styling */
         .day-tab {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-width: 75px; height: 85px; 
@@ -178,6 +179,7 @@
         .day-tab-num { font-size: 14px; font-weight: 900; }
         .day-tab-date { font-size: 10px; margin-top: 4px; opacity: 0.8; font-weight: 600; padding: 0 4px; }
         
+        /* Timeline styling */
         .timeline-item { border-left: 3px solid #E5E7EB; margin-left: 12px; padding-left: 18px; position: relative; }
         .timeline-item::before {
             content: ''; position: absolute; left: -7px; top: 16px; width: 11px; height: 11px; border-radius: 50%; background: #E5E7EB; border: 2.5px solid white;
@@ -195,6 +197,7 @@
         .timeline-play { border-left-color: #CB997E; }
         .timeline-play::before { background: #CB997E; }
 
+        /* Packing Filter Tabs */
         .pack-filter-btn {
             width: 36px; height: 36px; 
             border-radius: 50%;
@@ -210,6 +213,7 @@
         }
         .pack-filter-btn-tina.active { background: #F8AD9D; border-color: #F8AD9D; }
         
+        /* Input & Button Base Paddings for Large Phones */
         .input-base { padding: 0.6rem 0.75rem; }
     </style>
 
@@ -237,19 +241,23 @@
         let currentPayerFilter = 'all'; 
         let currentDayFilter = 'Day 1'; 
         
+        // Data Stores
         let itineraryData = []; 
         let flightsData = [];
         let hotelsData = [];
         let packingData = []; 
         
+        // Day Management State
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
         let dayDates = {}; 
         
+        // Edit State
         let editingItineraryId = null;
         let editingFlightId = null;
         let editingHotelId = null;
         let editingExpenseId = null;
 
+        // Default packing filters
         let packFilters = { tina: 'cloth', darren: 'cloth' };
         
         const packCategories = [
@@ -264,12 +272,13 @@
         const ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
         const thbToTWD = 0.95; 
 
+        // --- Date Formatter Helper ---
         window.formatDisplayDate = (dateString) => {
             if (!dateString) return '';
             const parts = dateString.split('-');
             if (parts.length === 3) {
                 const year = parseInt(parts[0], 10);
-                const month = parseInt(parts[1], 10) - 1; 
+                const month = parseInt(parts[1], 10) - 1; // 0-indexed
                 const day = parseInt(parts[2], 10);
                 const d = new Date(year, month, day);
                 const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
@@ -333,6 +342,7 @@
             });
         }
 
+        // --- Render Day Tabs & Dropdowns ---
         window.renderDayTabs = () => {
             const container = document.getElementById('day-tabs-container');
             let html = dayList.map(dayStr => {
@@ -391,6 +401,7 @@
             await setDoc(configRef, { [day]: dateVal }, { merge: true });
         };
 
+        // --- Day Management Modals ---
         window.toggleDayManager = () => {
             const modal = document.getElementById('day-manage-modal');
             modal.classList.toggle('open');
@@ -486,6 +497,7 @@
             window.closeDeleteModal();
         };
 
+        // --- Itinerary Logic (Edit/Add) ---
         window.editItinerary = (id) => {
             const item = itineraryData.find(i => i.id === id);
             if (!item) return;
@@ -615,6 +627,7 @@
             }).join('');
         }
 
+        // --- Flights Logic (Edit/Add) ---
         window.editFlight = (id) => {
             const item = flightsData.find(f => f.id === id);
             if (!item) return;
@@ -734,6 +747,7 @@
             }).join('');
         }
 
+        // --- Hotels Logic (Edit/Add) ---
         window.editHotel = (id) => {
             const item = hotelsData.find(h => h.id === id);
             if (!item) return;
@@ -814,6 +828,7 @@
             }).join('');
         }
 
+        // --- Packing with Categories ---
         window.setPackFilter = (owner, cat) => {
             packFilters[owner] = cat;
             renderPacking();
@@ -846,6 +861,7 @@
             draw('darren', 'pk-list-darren');
         }
 
+        // --- Expenses Logic (Edit/Add) ---
         window.editExpense = (id) => {
             const item = allExpenses.find(e => e.id === id);
             if (!item) return;
@@ -964,7 +980,7 @@
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
 
-        // === 🚀 核心 AI 助理：無痛繞道版 (v2.5) ===
+        // === 🚀 核心 AI 助理：自動掃描可用模型雷達 (v2.6) ===
         window.askGemini = async (q = null) => {
             const input = document.getElementById('gemini-input');
             const chat = document.getElementById('gemini-chat');
@@ -979,69 +995,87 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 🔑 金鑰隱身術：您的新金鑰
+                // 🔑 金鑰隱身術
                 const p1 = "AIzaSy";             
                 const p2 = "DWrir01PEBdmTh"; 
                 const p3 = "tDqJWMu13kApo3ytJ2g"; 
                 const apiKey = p1 + p2 + p3;       
                 
-                // 🎯 加入免綁卡最穩定的舊版模型：gemini-1.0-pro 與 gemini-pro
-                const modelsToTry = [
-                    "gemini-1.5-flash",    // 首選：最聰明
-                    "gemini-1.5-flash-8b", // 備用 1：輕量版
-                    "gemini-1.0-pro",      // 備用 2：對無信用卡帳號最友善
-                    "gemini-pro"           // 備用 3：最老的免費通道
-                ];
-                
-                let data = null;
-                let lastErrorMsg = "";
+                // 🎯 步驟一：先去問 Google 伺服器，這把金鑰「到底可以使用哪些模型」
+                let targetModel = "";
+                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+                const listRes = await fetch(listUrl);
 
-                for (const model of modelsToTry) {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                    try {
-                        const response = await fetch(url, {
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errData = await response.json().catch(() => ({}));
-                            throw new Error(errData.error?.message || `HTTP_${response.status}`);
-                        }
-                        
-                        data = await response.json();
-                        break; 
-                    } catch (e) {
-                        lastErrorMsg = e.message;
-                        // 若確認金鑰無效，直接中斷嘗試
-                        if (e.message.includes("API_KEY_INVALID")) {
-                            throw e; 
-                        }
-                    }
+                if (!listRes.ok) {
+                    const errData = await listRes.json().catch(() => ({}));
+                    throw new Error(`KEY_ERROR|${errData.error?.message || listRes.status}`);
                 }
 
-                if (!data) throw new Error(lastErrorMsg); 
+                const listData = await listRes.json();
+                // 篩選出可以聊天的 Gemini 模型
+                const validModels = (listData.models || []).filter(m => m.supportedGenerationMethods?.includes("generateContent") && m.name.includes("gemini"));
 
+                // 如果 Google 回傳的清單是空的，代表這把金鑰沒有模型存取權
+                if (validModels.length === 0) {
+                     throw new Error("NO_MODELS|無可用模型權限");
+                }
+
+                // 從允許的名單中，挑選最適合的 (優先選用 1.5 或 2.0，若無則挑第一個)
+                const preferred = validModels.find(m => m.name.includes("gemini-1.5-flash") && !m.name.includes("8b"))
+                               || validModels.find(m => m.name.includes("gemini-2.0-flash"))
+                               || validModels.find(m => m.name.includes("gemini-pro"))
+                               || validModels[0];
+
+                targetModel = preferred.name.replace('models/', '');
+                console.log("使用模型:", targetModel);
+
+                // 🎯 步驟二：確定有模型可用後，正式發送問題
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: `你是蜜月助理。請用親切活潑的語氣回覆以下關於泰國蜜月的詢問：${query}` }] }] 
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(`GEN_ERROR|${errData.error?.message || response.status}`);
+                }
+                
+                const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，助理現在有點卡住...";
                 
                 document.getElementById(thinkingId)?.remove();
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div></div>`;
+
             } catch (e) { 
                 document.getElementById(thinkingId)?.remove(); 
                 
-                let errorMsg = "⚠️ 網路連線不穩或伺服器忙碌，請稍後再試！";
-                
-                if (e.message.includes("API_KEY_INVALID")) {
-                    errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否有開通權限。";
-                } else if (e.message.includes("429") || e.message.includes("Quota")) {
-                    errorMsg = "⚠️ Google 帳號的免費額度已被限制！<br><br>這通常是因為新帳號被要求驗證身分。若不想綁定信用卡，建議您用一個**「比較有歷史的舊 Gmail 帳號」**重新申請一把金鑰來替換。<br><span class='text-xs font-normal'>(只要不用全新的空殼帳號，通常就不會被擋)</span>";
-                } else if (e.message.includes("not found") || e.message.includes("404")) {
-                    errorMsg = "⚠️ Google 伺服器尚未開通您的金鑰權限！<br><br><span class='text-[11px] text-gray-500 font-normal'>新金鑰需要一點時間同步到全世界的伺服器。請您先去喝杯咖啡，大約 10~15 分鐘後再試即可！</span>";
+                const parts = e.message.split('|');
+                const errType = parts[0];
+                const errDetail = parts[1] || e.message;
+
+                let errorMsg = "⚠️ 發生未知錯誤，請稍後再試！";
+
+                if (errType === "KEY_ERROR") {
+                    if (errDetail.includes("API_KEY_INVALID")) {
+                         errorMsg = "⚠️ API 金鑰無效！請確認您的金鑰是否正確。";
+                    } else {
+                         errorMsg = `⚠️ 驗證金鑰時發生錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${errDetail}</span>`;
+                    }
+                } else if (errType === "NO_MODELS") {
+                    errorMsg = "⚠️ 您的 Google 帳號已被徹底限制！<br><br><span class='text-[11px] text-gray-500 font-normal'>Google 伺服器表示您的帳號『沒有任何可用模型』。這代表您必須設定付款資訊 (Billing)，或者換一個 Google 帳號重新申請金鑰才能使用了😭</span>";
+                } else if (errType === "GEN_ERROR") {
+                    if (errDetail.includes("429") || errDetail.includes("Quota")) {
+                        errorMsg = "⚠️ 助理現在太忙碌啦！(免費額度已達上限)<br>請休息幾分鐘後再問我喔！";
+                    } else {
+                        errorMsg = `⚠️ 產生回覆失敗：<br><span class='text-[11px] text-gray-500 font-normal'>${errDetail}</span>`;
+                    }
                 } else {
-                    errorMsg = `⚠️ 發生錯誤：<br><span class='text-xs font-normal'>${e.message}</span>`;
+                    errorMsg = `⚠️ 系統錯誤：<br><span class='text-[11px] text-gray-500 font-normal'>${e.message}</span>`;
                 }
                 
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm shadow-sm border border-red-100 leading-relaxed text-red-500 max-w-[95%] font-bold">${errorMsg}</div></div>`;
@@ -1412,7 +1446,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.5</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 蜜月助理 <span class="text-[10px] text-gray-400 font-normal ml-1">v2.6</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-200 px-3 py-1.5 rounded-full text-gray-500 font-bold transition-transform active:scale-95">清除紀錄</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
