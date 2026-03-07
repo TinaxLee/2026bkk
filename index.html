@@ -247,7 +247,7 @@
         let flightsData = [];
         let hotelsData = [];
         let packingData = []; 
-        let chatHistory = []; // 對話記憶存放處 (v6.1)
+        let chatHistory = []; 
         
         // Day Management State
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
@@ -271,8 +271,31 @@
             { id: 'other', icon: '🎒', label: '其他' }
         ];
 
-        const ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
-        const thbToTWD = 0.95; 
+        // Live Exchange Rates (v6.3)
+        let ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 }; // Default fallbacks
+
+        const fetchLiveRates = async () => {
+            try {
+                // Fetch USD base rates from a free API
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if (data && data.rates) {
+                    const usdToThb = data.rates.THB;
+                    const usdToTwd = data.rates.TWD;
+                    
+                    // Calculate cross rates relative to THB
+                    ratesToTHB['THB'] = 1;
+                    ratesToTHB['USD'] = usdToThb;
+                    ratesToTHB['TWD'] = usdToThb / usdToTwd;
+                    
+                    console.log('Live rates updated:', ratesToTHB);
+                    // Re-render expenses to apply new rates
+                    if (allExpenses.length > 0) window.renderExpenses();
+                }
+            } catch (e) {
+                console.error('Failed to fetch live rates, using defaults', e);
+            }
+        };
 
         onAuthStateChanged(auth, async (user) => { 
             if (user) { 
@@ -766,8 +789,38 @@
         window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; chatHistory = []; };
         window.getWeather = async () => { try { const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); const data = await res.json(); document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; } catch(e){} };
 
-        window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); r.innerText = c === 'THB' ? `台幣 NT$ ${Math.round(v * 0.95).toLocaleString()}` : `泰銖 ฿ ${Math.round(v * (ratesToTHB[c] || 1)).toLocaleString()}`; };
-        window.updateExchangePreview = () => { const v = parseFloat(document.getElementById('exp-cost').value) || 0; const c = document.getElementById('exp-currency').value; document.getElementById('exchange-hint').innerText = c === 'THB' ? '' : `≈ ฿ ${Math.round(v * (ratesToTHB[c] || 1)).toLocaleString()}`; };
+        window.calcIndependentRate = () => { 
+            const v = parseFloat(document.getElementById('conv-input').value) || 0; 
+            const c = document.getElementById('conv-curr').value; 
+            const r = document.getElementById('conv-res'); 
+            
+            // Use live rates for calculation
+            if (c === 'THB') {
+                const twdValue = v * ratesToTHB['TWD'];
+                r.innerText = `台幣 NT$ ${Math.round(twdValue).toLocaleString()}`;
+            } else if (c === 'USD') {
+                const thbValue = v * ratesToTHB['USD'];
+                r.innerText = `泰銖 ฿ ${Math.round(thbValue).toLocaleString()}`;
+            } else {
+                // TWD to THB
+                const thbValue = v / ratesToTHB['TWD'];
+                r.innerText = `泰銖 ฿ ${Math.round(thbValue).toLocaleString()}`;
+            }
+        };
+
+        window.updateExchangePreview = () => { 
+            const v = parseFloat(document.getElementById('exp-cost').value) || 0; 
+            const c = document.getElementById('exp-currency').value; 
+            const hint = document.getElementById('exchange-hint');
+            
+            if (c === 'THB') {
+                hint.innerText = '';
+            } else {
+                // Convert non-THB to THB using live rates
+                const thbValue = c === 'USD' ? v * ratesToTHB['USD'] : v / ratesToTHB['TWD'];
+                hint.innerText = `≈ ฿ ${Math.round(thbValue).toLocaleString()}`;
+            }
+        };
         
         window.addExpense = async () => {
             const item = document.getElementById('exp-item').value; const cost = document.getElementById('exp-cost').value;
@@ -801,21 +854,35 @@
             document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
 
             const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
-            const total = filtered.reduce((s, e) => s + (e.cost * (ratesToTHB[e.currency] || 1)), 0);
+            
+            // Calculate total using live rates
+            const total = filtered.reduce((s, e) => {
+                let thbEquivalent = e.cost;
+                if (e.currency === 'USD') thbEquivalent = e.cost * ratesToTHB['USD'];
+                if (e.currency === 'TWD') thbEquivalent = e.cost / ratesToTHB['TWD'];
+                return s + thbEquivalent;
+            }, 0);
+            
             document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
             
-            document.getElementById('exp-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => `
+            document.getElementById('exp-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
+                let thbEq = exp.cost;
+                if (exp.currency === 'USD') thbEq = exp.cost * ratesToTHB['USD'];
+                if (exp.currency === 'TWD') thbEq = exp.cost / ratesToTHB['TWD'];
+                
+                return `
                 <div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
                     <div class="flex-1 pr-4">
                         <div class="flex items-center gap-2 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40]">${exp.item}</div></div>
                         <div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()}</div>
                     </div>
-                    <div class="text-right font-black text-[#2D3128]">฿ ${Math.round(exp.cost * (ratesToTHB[exp.currency] || 1)).toLocaleString()}</div>
+                    <div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div>
                     <div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3">
                         <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button>
                         <button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button>
                     </div>
-                </div>`).join('');
+                </div>`
+            }).join('');
         };
         window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); window.renderExpenses(); };
 
@@ -831,7 +898,10 @@
         };
         window.setPackFilter = (o, c) => { packFilters[o] = c; renderPacking(); };
 
-        document.addEventListener('DOMContentLoaded', () => { document.getElementById('exp-date').valueAsDate = new Date(); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            document.getElementById('exp-date').valueAsDate = new Date(); 
+            fetchLiveRates(); // Fetch live rates on load
+        });
         window.switchTab('itinerary');
         window.getWeather();
     </script>
@@ -927,7 +997,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v6.2</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v6.3</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
