@@ -677,10 +677,6 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 🛡️ 碎片金鑰安全法
-                const kP = ['gsk', '_hU5', 'wnZhA5', '3PBNXBH4r', 'N9WGdyb3', 'FYhMUemD', 'kF24nTf', '8ovEIliA', 'orh'];
-                const apiKey = kP.join(''); 
-                
                 // 🧠 更新對話記憶 (保留最近 8 條訊息)
                 chatHistory.push({ role: "user", content: query });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
@@ -700,10 +696,12 @@
                     4. [排版]：善用 Emoji 與空行，讓手機閱讀時視覺輕鬆。
                 `;
 
-                const url = "https://api.groq.com/openai/v1/chat/completions";
+                // 🌐 改用 Cloudflare Worker 作為後端轉運站，徹底隱藏 API 金鑰！
+                const url = "https://honeymoon-ai.tina09210808.workers.dev";
+                
                 const response = await fetch(url, {
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                    headers: { 'Content-Type': 'application/json' }, // 已安全移除 Authorization 表頭
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
                         messages: [{ role: "system", content: systemPrompt }, ...chatHistory],
