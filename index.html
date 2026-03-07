@@ -697,11 +697,11 @@
                 `;
 
                 // 🌐 改用 Cloudflare Worker 作為後端轉運站，徹底隱藏 API 金鑰！
-                const url = "https://honeymoon-ai.tina09210808.workers.dev";
+                const url = "https://thailand-ai.tina09210808.workers.dev";
                 
                 const response = await fetch(url, {
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, // 已安全移除 Authorization 表頭
+                    headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
                         messages: [{ role: "system", content: systemPrompt }, ...chatHistory],
