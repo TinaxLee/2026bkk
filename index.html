@@ -459,7 +459,7 @@
                 toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[4000] pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]';
                 document.body.appendChild(toast);
             }
-            toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892]"><span>${icon}</span> ${msg}</div>`;
+            toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892] w-[90vw] max-w-[340px] leading-relaxed"><span>${icon}</span> ${msg}</div>`;
             
             setTimeout(() => {
                 toast.classList.remove('opacity-0', 'translate-y-[-20px]');
@@ -469,7 +469,7 @@
             setTimeout(() => {
                 toast.classList.remove('opacity-100', 'translate-y-0');
                 toast.classList.add('opacity-0', 'translate-y-[-20px]');
-            }, 2500);
+            }, 3500); // 延長顯示時間讓字多的吐槽可以看完
         };
 
         // --- 任務清單邏輯 ---
@@ -1431,30 +1431,47 @@
                 window.cancelEditExpense(); 
             }
 
-            // --- 趣味記帳提示 (升級戲很多版本) ---
+            // --- 趣味記帳提示 (加入分類與付款方式綜合判斷) ---
             const payer = document.getElementById('exp-payer').value;
+            const splitType = document.getElementById('exp-split').value;
+            const category = document.getElementById('exp-category').value;
+            
+            // 根據分類加上特色吐槽
+            let catText = "";
+            if (category === 'food') catText = "🤤 泰國美食吃起來！回去再減肥！";
+            else if (category === 'shop') catText = "🛍️ 買啦哪次不買！戰利品+1！";
+            else if (category === 'massage') catText = "💆 鬆一下～泰式按摩按到爽！";
+            else if (category === 'play') catText = "🎢 蜜月就是要盡情玩樂體驗！";
+            else if (category === 'traffic') catText = "🚕 交通費 get，平安抵達最重要！";
+            else catText = "✨ 錢錢變成喜歡的形狀了！";
+
             let msgs = [];
-            if (payer === 'darren') {
-                msgs = [
-                    `Darren 霸氣買單！這卡刷下去的姿勢，簡直是泰國最帥的男人！😎`,
-                    `這筆「${item}」由老公處理！花錢的品味跟挑老婆的眼光一樣好！✨`,
-                    `Darren 這次掏錢動作挺快嘛！晚上 Tina 記得給他多吃點海鮮補補！🦞`,
-                    `老公買單囉！Tina 負責享受，Darren 負責提戰利品，分工完美！🎒`,
-                    `記帳成功！Darren 這筆預算控管得太精準，不愧是精打細算好老公！📈`,
-                    `Darren 買單！這筆錢都可以買一打泰國燕窩了，太爽了吧！🥥`,
-                    `入帳啦！Darren 這次大失血，起碼少按了三次泰式按摩，幫他 QQ！💆‍♂️`
+            if (splitType === 'split') {
+                msgs = payer === 'darren' ? [
+                    `Darren 先代墊「${item}」！${catText} (記得跟老婆收錢🤣)`,
+                    `公費支出！Darren 帥氣刷卡，${catText}`,
+                ] : [
+                    `Tina 先代墊「${item}」！${catText} (記帳小精靈上線)`,
+                    `公費支出！老婆先付錢啦，${catText}`,
                 ];
-            } else {
-                msgs = [
-                    `Tina 買單！這筆「${item}」買得太有眼光了，仙女下凡就是要配好東西！🧚‍♀️`,
-                    `老婆出馬！Tina 這筆錢花在刀口上，整個泰國都為妳的氣質買單！💖`,
-                    `Tina 破費啦！Darren 還不快點過來幫老婆搥搥背、拿戰利品！🛍️`,
-                    `老婆請客囉！Darren 今晚的宵夜是不是該自動表現一下了？😏`,
-                    `入帳成功！Tina 這筆花費完全在我們的蜜月完美計畫之內，超專業！📋`,
-                    `Tina 買單！這筆「${item}」換算下來，根本可以喝一個月的泰奶了！🧋`,
-                    `記帳啦！Tina 這次出手的氣勢，簡直像買下了一整座 Big C！🛒`
+            } else if (splitType === 'treat') {
+                msgs = payer === 'darren' ? [
+                    `Darren 霸氣請客「${item}」！老公太帥了！${catText}`,
+                    `老公買單！Tina 負責開心享受就好！${catText}`,
+                ] : [
+                    `Tina 大方請客「${item}」！仙女霸氣買單！${catText}`,
+                    `老婆請客！Darren 今晚宵夜該表現一下了 😏 ${catText}`,
+                ];
+            } else { // personal
+                msgs = payer === 'darren' ? [
+                    `Darren 的專屬花費！男生也是要對自己好的！${catText}`,
+                    `個人支出入帳！Darren 的私房錢守不住啦 😂 ${catText}`
+                ] : [
+                    `Tina 的專屬戰利品！仙女就是要配好東西！${catText}`,
+                    `個人支出入帳！誰都不能阻止 Tina 變美！💖 ${catText}`
                 ];
             }
+            
             const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
             window.showToast(randomMsg, '💰');
         };
