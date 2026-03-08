@@ -812,7 +812,7 @@
             list.innerHTML = sorted.map(item => {
                 const safeAddr = (item.address || "").replace(/'/g, "\\'");
                 const safeAct = item.activity.replace(/'/g, "\\'");
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
+                const mapUrl = `http://googleusercontent.com/maps.google.com/${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
                 
                 let typeClass = '';
                 let typeLabel = '';
@@ -978,7 +978,7 @@
             if(!q) input.value = '';
             
             const displayMessage = query || '📸 傳送了一張照片';
-            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl 圓角
+            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
@@ -1904,7 +1904,7 @@
               };
           }).catch(err => console.log('離線支援準備中 ✈️', err));
       } else {
-          console.log('非正式環境，跳過註冊。');
+          console.log('當前預覽環境跳過 Service Worker 註冊。');
       }
     </script>
 </body>
