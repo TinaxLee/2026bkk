@@ -270,10 +270,10 @@
 
         /* AI 氣泡：粉嫩色系 */
         .ai-bubble {
-            background-color: #FCEBE8; /* 柔和粉 */
-            color: #9D6B60; /* 深粉褐文字 */
+            background-color: #FCEBE8; 
+            color: #9D6B60; 
             border: 1px solid #F8D7D1;
-            border-bottom-left-radius: 4px; /* 做出氣泡尖角感 */
+            border-bottom-left-radius: 4px; 
         }
 
         /* 使用者氣泡：莫蘭迪綠 */
@@ -327,6 +327,7 @@
         let chatHistory = []; 
         let memoriesData = []; 
         let vaultData = []; 
+        let missionsData = []; 
         
         // Day Management State
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
@@ -398,7 +399,7 @@
                 if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0];
                 renderDayTabs();
                 renderDayDropdown();
-                if(document.getElementById('day-manage-modal').classList.contains('open')) renderDayManagerList();
+                if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) renderDayManagerList();
             });
 
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
@@ -410,15 +411,15 @@
 
             onSnapshot(getColl('itinerary'), (s) => {
                 itineraryData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderItinerary();
+                window.renderItinerary();
             });
             onSnapshot(getColl('packing'), (s) => {
                 packingData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderPacking();
+                window.renderPacking();
             });
             onSnapshot(getColl('expenses'), (s) => {
                 allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderExpenses();
+                window.renderExpenses();
             });
             onSnapshot(getColl('flights'), (s) => {
                 flightsData = s.docs.map(d => ({id: d.id, ...d.data()}));
@@ -438,7 +439,59 @@
                 vaultData = s.docs.map(d => ({id: d.id, ...d.data()}));
                 if (window.renderVault) window.renderVault();
             });
+
+            onSnapshot(getColl('missions'), (s) => {
+                missionsData = s.docs.map(d => ({id: d.id, ...d.data()}));
+                if (window.renderMissions) window.renderMissions();
+            });
         }
+
+        // --- 任務清單邏輯 ---
+        window.addMission = async () => {
+            const task = document.getElementById('mission-task').value;
+            const cat = document.getElementById('mission-category').value;
+            if(!task || !currentUser) return;
+            await addDoc(getColl('missions'), { 
+                task, 
+                category: cat, 
+                checked: false, 
+                createdAt: Date.now() 
+            });
+            document.getElementById('mission-task').value = '';
+        };
+
+        window.toggleMission = async (id, s) => { 
+            if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); 
+        };
+
+        window.renderMissions = () => {
+            const container = document.getElementById('missions-container');
+            if (!container) return;
+
+            const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' };
+            
+            container.innerHTML = Object.keys(cats).map(key => {
+                const items = missionsData.filter(m => m.category === key);
+                if (items.length === 0 && key !== 'pre') return ''; 
+
+                return `
+                    <div>
+                        <h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            ${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `
+                                <div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}">
+                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">
+                                        ${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}
+                                    </div>
+                                    <span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span>
+                                    <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-2 text-lg">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
 
         // --- 保險箱邏輯 ---
         window.unlockVault = () => {
@@ -532,6 +585,8 @@
         // --- UI Rendering Helpers ---
         window.renderDayTabs = () => {
             const container = document.getElementById('day-tabs-container');
+            if (!container) return;
+            
             let html = dayList.map(dayStr => {
                 const dateStr = dayDates[dayStr] || ''; 
                 const isActive = currentDayFilter === dayStr;
@@ -541,7 +596,7 @@
                 return `
                 <div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}">
                     <div class="day-tab-num">${dayStr}</div>
-                    ${isActive && !document.getElementById('day-manage-modal').classList.contains('open')
+                    ${isActive && document.getElementById('day-manage-modal') && !document.getElementById('day-manage-modal').classList.contains('open')
                         ? `<div class="relative mt-1.5 w-full flex justify-center">
                              <div class="bg-white/20 text-center px-2 py-0.5 text-[10px] rounded-md text-white font-bold whitespace-nowrap tracking-wide">${formattedDate || '選日期 📅'}</div>
                              <input type="date" value="${dateStr}" onclick="event.stopPropagation()" onchange="window.saveDate('${dayStr}', this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
@@ -565,7 +620,7 @@
         window.setDayFilter = (day) => { 
             currentDayFilter = day; 
             renderDayTabs(); 
-            renderItinerary(); 
+            window.renderItinerary(); 
             const dayLabel = document.getElementById('current-day-label');
             if (dayLabel) dayLabel.innerText = day;
         };
@@ -577,6 +632,7 @@
 
             if (dailyItems.length === 0) {
                 const btn = document.querySelector('#day-map-action button');
+                if(!btn) return;
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = "💤 今天尚未安排景點喔！";
                 setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
@@ -593,12 +649,14 @@
         // --- Day Management Modals ---
         window.toggleDayManager = () => {
             const modal = document.getElementById('day-manage-modal');
+            if(!modal) return;
             modal.classList.toggle('open');
             if (modal.classList.contains('open')) window.renderDayManagerList();
         };
 
         window.renderDayManagerList = () => {
             const container = document.getElementById('day-manager-list');
+            if(!container) return;
             container.innerHTML = dayList.map(d => `
                 <div class="flex justify-between items-center bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
                     <span class="font-bold text-base text-[#4A4E40]">${d}</span>
@@ -690,7 +748,7 @@
                 document.getElementById('it-time-end').value = times[1];
             } else {
                 document.getElementById('it-time-start').value = item.time;
-                document.getElementById('it-time-end').value = '';
+                if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = '';
             }
 
             document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅';
@@ -743,6 +801,7 @@
 
         window.renderItinerary = () => {
             const list = document.getElementById('it-list');
+            if (!list) return;
             const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
             
             if (sorted.length === 0) {
@@ -777,7 +836,7 @@
                             </div>
                             <div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>
                             ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
-                            ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5">📝 ${item.note}</div>` : ''}
+                            ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}
                         </div>
                         <div class="flex flex-col gap-3 ml-2">
                             <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
@@ -788,7 +847,7 @@
                     <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
                         <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
                         <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button>
-                        <button onclick="window.askGemini('請問關於「${safeAct}」的攻略')" class="action-link">💡 攻略</button>
+                        <button onclick="window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？')" class="action-link">💡 攻略</button>
                     </div>
                 </div>`;
             }).join('');
@@ -834,12 +893,14 @@
         };
 
         function renderFlights() {
+            const list = document.getElementById('flights-list');
+            if (!list) return;
             const sortedFlights = [...flightsData].sort((a, b) => {
                 const dateA = a.date || '9999-99-99'; const dateB = b.date || '9999-99-99';
                 if (dateA !== dateB) return dateA.localeCompare(dateB);
                 return (a.depTime || '99:99').localeCompare(b.depTime || '99:99');
             });
-            document.getElementById('flights-list').innerHTML = sortedFlights.map(f => {
+            list.innerHTML = sortedFlights.map(f => {
                 const dateDisplay = f.date ? window.formatDisplayDate(f.date) : '';
                 return `
                 <div class="app-card p-5 mb-4">
@@ -886,9 +947,11 @@
             window.toggleSection('hotel');
         };
 
-        function renderHotels() {
+        window.renderHotels = () => {
+            const list = document.getElementById('hotels-list');
+            if (!list) return;
             const sortedHotels = [...hotelsData].sort((a, b) => (a.checkin || '9999-99-99').localeCompare(b.checkin || '9999-99-99'));
-            document.getElementById('hotels-list').innerHTML = sortedHotels.map(h => {
+            list.innerHTML = sortedHotels.map(h => {
                 let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--';
                 if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`;
                 return `
@@ -900,7 +963,7 @@
                     ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${h.note}</div></div>` : ''}
                 </div>`;
             }).join('');
-        }
+        };
 
         // --- AI 助理：看圖與聊天雙棲版 (v7.3 日期感應版) ---
         window.askGemini = async (q = null, isAutoFood = false) => {
@@ -915,8 +978,8 @@
             if(!q) input.value = '';
             
             const displayMessage = query || '📸 傳送了一張照片';
-            // 💡 更新：使用者氣泡採用 user-bubble 樣式
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
+            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl 圓角
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
             const thinkingText = imageInput && imageInput.files[0] ? '管家正在看照片' : '管家思考中';
@@ -996,8 +1059,8 @@
 
                 document.getElementById(thinkingId)?.remove();
                 
-                // 💡 更新：AI 氣泡採用 ai-bubble 樣式
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 text-lg shadow-sm leading-relaxed max-w-[95%]">${text.replace(/\n/g, '<br>')}</div>`;
+                // 💡 更新：AI 氣泡採用 ai-bubble 樣式，加入 rounded-2xl 圓角
+                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${text.replace(/\n/g, '<br>')}</div>`;
                 
                 if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
@@ -1278,6 +1341,9 @@
         };
 
         window.renderExpenses = () => {
+            const list = document.getElementById('exp-list');
+            if(!list) return;
+
             let totalsByPayer = { tina: {}, darren: {} };
             
             let sharedTotalTHB = 0;
@@ -1324,7 +1390,7 @@
                 settlementEl.innerHTML = `目前帳目完美打平 ✨`;
             }
             
-            document.getElementById('exp-list').innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
+            list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
                 let thbEq = exp.cost;
                 if (exp.currency === 'USD') thbEq = exp.cost * ratesToTHB['USD'];
                 if (exp.currency === 'TWD') thbEq = exp.cost / ratesToTHB['TWD'];
@@ -1404,16 +1470,19 @@
         window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
         window.renderPacking = () => {
             const draw = (o, cid) => {
+                const container = document.getElementById(cid);
+                if(!container) return;
                 const items = packingData.filter(i => i.owner === o && i.category === packFilters[o]);
                 const tabs = `<div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar">${packCategories.map(c => `<button onclick="window.setPackFilter('${o}','${c.id}')" class="pack-filter-btn ${o==='tina'?'pack-filter-btn-tina':''} ${packFilters[o]===c.id?'active':''}">${c.icon}</button>`).join('')}</div>`;
-                document.getElementById(cid).innerHTML = tabs + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${items.map(i => `<div class="p-3.5 flex items-center gap-3 border-b last:border-0"><div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 ${i.checked?'bg-[#6B705C] border-[#6B705C]':'border-gray-300'}"></div><span class="flex-1 ${i.checked?'line-through text-gray-300':'font-bold'}">${i.item}</span><button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300">✕</button></div>`).join('')}</div>`;
+                container.innerHTML = tabs + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${items.map(i => `<div class="p-3.5 flex items-center gap-3 border-b last:border-0"><div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 ${i.checked?'bg-[#6B705C] border-[#6B705C]':'border-gray-300'}"></div><span class="flex-1 ${i.checked?'line-through text-gray-300':'font-bold'}">${i.item}</span><button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300">✕</button></div>`).join('')}</div>`;
             };
             draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
         };
         window.setPackFilter = (o, c) => { packFilters[o] = c; renderPacking(); };
 
         document.addEventListener('DOMContentLoaded', () => { 
-            document.getElementById('exp-date').valueAsDate = new Date(); 
+            const expDate = document.getElementById('exp-date');
+            if(expDate) expDate.valueAsDate = new Date(); 
             fetchLiveRates(); 
         });
         window.switchTab('itinerary');
@@ -1569,6 +1638,29 @@
                 </div>
             </div>
 
+            <!-- 任務分頁 -->
+            <div id="content-missions" class="tab-content hidden">
+                <div class="mb-6 px-1">
+                    <h3 class="text-xl font-black text-[#4A4E40]">蜜月重要任務 📝</h3>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Honeymoon Milestones</p>
+                </div>
+
+                <div class="app-card p-5 mb-6 border-2 border-dashed border-[#6B705C]/30">
+                    <div class="flex gap-2 mb-3">
+                        <select id="mission-category" class="bg-gray-100 px-3 rounded-xl text-xs font-bold border-none outline-none">
+                            <option value="pre">✈️ 出發前</option>
+                            <option value="day">🇹🇭 抵達當天</option>
+                            <option value="trip">❤️ 旅程中</option>
+                        </select>
+                        <input type="text" id="mission-task" placeholder="例如：買 eSIM 卡..." class="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 outline-none">
+                    </div>
+                    <button onclick="window.addMission()" class="w-full bg-[#6B705C] text-white py-3 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">指 派 任 務</button>
+                </div>
+
+                <div id="missions-container" class="space-y-6">
+                </div>
+            </div>
+
             <!-- 回憶分頁 -->
             <div id="content-memories" class="tab-content hidden">
                 <div class="mb-6 px-1">
@@ -1685,7 +1777,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.5</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.6</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
@@ -1720,9 +1812,10 @@
 
         <!-- 底部導覽列 -->
         <nav class="bottom-nav">
+            <div onclick="window.switchTab('missions')" id="btn-missions" class="nav-btn btn-press opacity-30">📝</div>
+            <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
             <div onclick="window.switchTab('core')" id="btn-core" class="nav-btn btn-press opacity-30">🛫</div>
             <div onclick="window.switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press">🗺️</div>
-            <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
             <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
             <div onclick="window.toggleGemini()" class="nav-btn btn-press">✨</div>
         </nav>
@@ -1790,15 +1883,28 @@
 
     </div>
 
-    <!-- Service Worker -->
+    <!-- 🌍 自動化無感更新邏輯：以後妳改代碼，管家會自己下載 -->
     <script>
-      if ('serviceWorker' in navigator) {
-        // 只在正式環境 (http/https) 註冊，預覽環境會報錯但正常顯示
-        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-            navigator.serviceWorker.register('./sw.js')
-                .then(() => console.log('離線快取已就緒 ✨'))
-                .catch(err => console.log('Service Worker 暫不支援此環境'));
-        }
+      if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+          // 透過時間戳記 (?t=...) 確保每次開啟 App，瀏覽器都會去雲端檢查 sw.js 是否有變動
+          const swUrl = `./sw.js?t=${new Date().getTime()}`;
+
+          navigator.serviceWorker.register(swUrl).then(reg => {
+              // 監聽是否有新版本下載中
+              reg.onupdatefound = () => {
+                  const installingWorker = reg.installing;
+                  installingWorker.onstatechange = () => {
+                      // 當新版本下載完成並就緒
+                      if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                          console.log('發現新版蜜月管家！正在自動更新... ✨');
+                          // 核心動作：強制重整頁面，讓妳的手機瞬間載入最新代碼
+                          window.location.reload();
+                      }
+                  };
+              };
+          }).catch(err => console.log('離線支援準備中 ✈️', err));
+      } else {
+          console.log('非正式環境，跳過註冊。');
       }
     </script>
 </body>
