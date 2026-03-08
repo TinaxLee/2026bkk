@@ -301,14 +301,18 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // 啟用 Firestore 離線持久化
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
-            } else if (err.code == 'unimplemented') {
-                console.log('瀏覽器不支援離線持久化');
-            }
-        });
+        // 🟢 啟用 Firestore 離線持久化 (加上 try-catch 保護預覽沙盒環境)
+        try {
+            enableIndexedDbPersistence(db).catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
+                } else if (err.code == 'unimplemented') {
+                    console.log('瀏覽器不支援離線持久化');
+                }
+            });
+        } catch (e) {
+            console.log('當前預覽環境不支援 IndexedDB 離線存儲，將以連線模式執行', e);
+        }
 
         const auth = getAuth(app);
         const appId = "honeymoon-2026";
@@ -978,7 +982,7 @@
             if(!q) input.value = '';
             
             const displayMessage = query || '📸 傳送了一張照片';
-            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl
+            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl 圓角
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
