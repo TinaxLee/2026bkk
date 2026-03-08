@@ -1047,9 +1047,15 @@
                 chatHistory.push({ role: "user", content: userContent });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
-                // 🌟 修正防呆指令：請管家統稱你們，並加入隨機人格與任務監督功能
+                // 🌟 修正防呆指令：加入最高指導原則，強制管家統稱 Darren & Tina
                 const systemPrompt = `
                     你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
+
+                    【⚠️ 最高指導原則：稱呼限制】
+                    1. 妳「絕對不可以」只單獨叫 Darren 或單獨叫 Tina！
+                    2. 開場或對話時，請「一律統稱」為『你們』或是『Darren & Tina』。
+                    3. ❌ 嚴禁使用「兩位新人」或 "Bae"。
+                    4. ❌ 嚴禁開頭說「Darren，你好」或「Tina，你好」，因為妳不知道現在拿手機的是誰！
 
                     【視覺分析任務：你的眼睛】
                     當看到照片時，請根據照片類型主動切換功能：
