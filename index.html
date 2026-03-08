@@ -970,6 +970,22 @@
             }).join('');
         };
 
+        // --- 泰語發音功能 ---
+        window.speakThai = (text) => {
+            // 檢查瀏覽器是否支援語音
+            if (!window.speechSynthesis) return;
+            
+            // 停止目前正在播放的聲音
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'th-TH'; // 設定為泰語
+            utterance.rate = 0.8;    // 語速稍微放慢一點，讓你們聽得更清楚
+            utterance.pitch = 1;     // 音調正常
+            
+            window.speechSynthesis.speak(utterance);
+        };
+
         // --- AI 助理：看圖與聊天雙棲版 (v7.3 日期感應版) ---
         window.askGemini = async (q = null, isAutoFood = false) => {
             const input = document.getElementById('gemini-input');
@@ -987,16 +1003,24 @@
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
-            const thinkingText = imageInput && imageInput.files[0] ? '管家正在看照片' : '管家思考中';
+            const thinkingText = imageInput && imageInput.files[0] ? '管家正在戴眼鏡看照片...' : '管家正在幫你們出主意...';
             chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">${thinkingText}<span class="thinking-dots"></span></div></div>`;
             chat.scrollTop = chat.scrollHeight;
             
             try {
+                // 整理未完成任務，讓管家記住
+                const pendingMissions = missionsData
+                    .filter(m => !m.checked)
+                    .map(m => m.task)
+                    .join('、');
+
                 const dateContext = `
                     目前的系統資訊：
                     - 蜜月出發日期：${departureDate || '尚未設定'}
                     - 各行程天數對應日期：${JSON.stringify(dayDates)}
                     - 今天日期是：${new Date().toLocaleDateString('zh-TW')}
+                    - ⚠️ 你們還有這些「未完成任務」：${pendingMissions || '暫無，太棒了！'}
+                    - 目前身處：${currentDayFilter} 的行程中
                 `;
                 const contextPrefix = `[背景資訊：${dateContext}] `;
 
@@ -1023,21 +1047,31 @@
                 chatHistory.push({ role: "user", content: userContent });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
+                // 🌟 修正防呆指令：請管家統稱你們，並加入隨機人格與任務監督功能
                 const systemPrompt = `
-                    你是 Darren & Tina 的專屬泰國蜜月管家。妳的個性很俏皮、愛開玩笑但非常專業。
-                    
-                    【自動記帳任務】
-                    1. 辨識品項與金額。
-                    2. 回覆語氣要俏皮。例如：
-                       - 「這筆由老公買單！這錢花得真值得，老婆負責開心就好！💰」
-                       - 「錢錢沒有不見，只是變成了妳們在泰國的形狀！已入帳～✨」
-                       - 「吼～這筆支出很精準喔！不愧是精打細算、最有默契的夫妻檔！💳」
-                    3. 嚴格在回覆最後一行加上代碼：SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別","category":"分類","payer":"Darren或Tina"}
+                    你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
 
-                    【角色互動】
-                    - 稱呼他們為 Darren / Tina，或是「老公 / 老婆」。
-                    - ⚠️ 絕對不要使用 "Bae" 這個詞。
-                    - 結尾務必碎碎念：提醒防曬☀️、多喝水💧、隨身物品👜（錢包、手機、行動電源）。
+                    【視覺分析任務：你的眼睛】
+                    當看到照片時，請根據照片類型主動切換功能：
+                    1. 菜單照片：自動翻譯菜色名，並根據你們的口味（例如：Darren怕辣或Tina愛海鮮）推薦 2-3 道必點菜。
+                    2. 路標/地標：辨識地點，並告訴你們這附近有沒有什麼隱藏版拍照角度。
+                    3. 戰利品/商品：幫忙換算台幣價格，並評估這在泰國買合不划算。
+                    4. 蜜月自拍：大聲讚美你們很美/很帥，並給予構圖或姿勢的毒舌建議。
+
+                    【任務監督與倒數】
+                    - 持續觀察這項「未完成任務」清單：[背景資訊中提供]。
+                    - 若快出發了卻還沒辦好，請在對話結束前用損友口氣催促一下。
+
+                    【隨機記帳人格】
+                    針對 SAVE_EXPENSE，隨機使用「大方讚賞、幽默損友、專業分析、泰國比喻」其中一種人格回覆。
+
+                    【翻譯任務】
+                    1. 當用戶問「...泰文怎麼說」或要求翻譯時，除了文字解釋，必須在最後一行嚴格附上：
+                       SHOW_CARD: {"thai":"泰文原文","meaning":"中文意義","phonetic":"拼音"}
+
+                    【固定格式】
+                    1. 記帳最後一行：SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別","category":"分類","payer":"Darren或Tina"}
+                    2. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
                 `;
 
                 const url = "https://thailand-ai.tina09210808.workers.dev";
@@ -1064,16 +1098,52 @@
 
                 document.getElementById(thinkingId)?.remove();
 
-                // ✂️ 修正：隱藏並清理顯示給用戶看的系統代碼
-                let displayText = text;
-                if (text.includes("SAVE_EXPENSE:")) {
-                    displayText = text.split("SAVE_EXPENSE:")[0].trim();
+                // ✂️ 處理管家回覆並檢查是否有代碼
+                let responseText = text;
+                let cardBtnHtml = '';
+
+                // 1. 檢查是否有大字卡代碼 (SHOW_CARD)
+                if (responseText.includes("SHOW_CARD:")) {
+                    try {
+                        const parts = responseText.split("SHOW_CARD:");
+                        responseText = parts[0].trim(); // 把代碼從文字中拿掉，保持對話乾淨
+                        
+                        // 防呆處理：確保沒切到 SAVE_EXPENSE
+                        let jsonStr = parts[1].trim();
+                        if (jsonStr.includes("SAVE_EXPENSE:")) {
+                             jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
+                        }
+                        
+                        const cardData = JSON.parse(jsonStr);
+                        
+                        // 生成一個漂亮的翻譯按鈕 (加上取代單引號的防護)
+                        cardBtnHtml = `
+                            <div class="mt-3">
+                                <button onclick="window.showThaiCard('${cardData.thai.replace(/'/g, "\\'")}', '${cardData.meaning.replace(/'/g, "\\'")}', '${cardData.phonetic.replace(/'/g, "\\'")}')" 
+                                        class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
+                                    🔍 開啟動態大字卡 (支援語音)
+                                </button>
+                            </div>
+                        `;
+                    } catch (e) { console.error("大字卡解析失敗", e); }
+                }
+
+                // 2. 處理記帳代碼隱藏 (SAVE_EXPENSE)
+                if (responseText.includes("SAVE_EXPENSE:")) {
+                    responseText = responseText.split("SAVE_EXPENSE:")[0].trim();
                 }
                 
-                // 💡 更新：AI 氣泡採用 ai-bubble 樣式，並使用清理乾淨的 displayText
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${displayText.replace(/\n/g, '<br>')}</div>`;
+                // 3. 渲染對話泡泡
+                let responseHtml = `
+                    <div class="mb-4 text-left">
+                        <div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">
+                            ${responseText.replace(/\n/g, '<br>')}
+                            ${cardBtnHtml} 
+                        </div>
+                    </div>
+                `;
                 
-                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:")) {
+                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
                     if(extractedPlace.length > 1) {
                         responseHtml += `
@@ -1084,7 +1154,6 @@
                         `;
                     }
                 }
-                responseHtml += `</div>`;
                 chat.innerHTML += responseHtml;
                 
                 // 這裡依然使用完整的 text 來執行背景的記帳邏輯
@@ -1147,6 +1216,16 @@
             document.getElementById('thai-card-text').innerText = thai;
             document.getElementById('thai-card-meaning').innerText = meaning;
             document.getElementById('thai-card-phonetic').innerText = phonetic;
+            
+            // 這一行是關鍵：讓喇叭按鈕知道要讀哪段泰文
+            const speakerBtn = document.getElementById('thai-speaker-btn');
+            if (speakerBtn) {
+                speakerBtn.onclick = (e) => {
+                    e.stopPropagation(); // 阻止事件冒泡，避免點擊喇叭時關閉 Modal
+                    window.speakThai(thai);
+                };
+            }
+            
             document.getElementById('thai-card-modal').classList.add('open');
             
             const chat = document.getElementById('gemini-chat');
@@ -1789,7 +1868,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.7</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.8</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
@@ -1797,13 +1876,27 @@
                     
                     <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1 no-scrollbar"></div>
                     
-                    <div class="px-1 mb-3 overflow-x-auto no-scrollbar flex gap-2">
-                        <button onclick="window.showThaiCard('ขอผักชีเยอะๆ', '多一點香菜！', 'Kor Pak-Chee Yue-Yue')" class="shrink-0 bg-green-50 text-green-700 border border-green-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🌿 多點香菜</button>
-                        <button onclick="window.showThaiCard('เท่าไหร่?', '這個多少錢？', 'Tao-Rai?')" class="shrink-0 bg-orange-50 text-orange-700 border border-orange-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">💰 問價錢</button>
-                        <button onclick="window.showThaiCard('แพงไป!', '太貴了啦！', 'Paeng-Pai!')" class="shrink-0 bg-red-50 text-red-700 border border-red-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">😲 太貴了</button>
-                        <button onclick="window.showThaiCard('ลดหน่อยได้ไหม?', '算便宜一點嘛～', 'Lod-Noi-Dai-Mai?')" class="shrink-0 bg-blue-50 text-blue-700 border border-blue-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">💸 算便宜點</button>
-                        <button onclick="window.showThaiCard('ขอบคุณค่ะ', '謝謝 (Tina 用)', 'Kob-Khun-Ka')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝(女)</button>
-                        <button onclick="window.showThaiCard('ขอบคุณครับ', '謝謝 (Darren 用)', 'Kob-Khun-Krab')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝(男)</button>
+                    <div class="px-1 mb-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <a href="tel:1155" class="shrink-0 bg-red-500 text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1">
+                            <span>🚑</span> 觀光警察 1155
+                        </a>
+                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                            🍱 抽晚餐盲盒
+                        </button>
+                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的開表(By Meter)、去這裡(Go here)的泰文與發音，並提醒我泰國叫車避雷針。')" class="shrink-0 bg-yellow-400 text-black px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                            🚕 叫車小抄
+                        </button>
+                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                            💆 按摩溝通
+                        </button>
+                    </div>
+
+                    <div class="px-1 mb-3 overflow-x-auto no-scrollbar flex gap-2 opacity-70">
+                        <button onclick="window.showThaiCard('ขอผักชีเยอะๆ', '多一點香菜！', 'Kor Pak-Chee Yue-Yue')" class="shrink-0 bg-green-50 text-green-700 border border-green-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">🌿 多點香菜</button>
+                        <button onclick="window.showThaiCard('เท่าไหร่?', '這個多少錢？', 'Tao-Rai?')" class="shrink-0 bg-orange-50 text-orange-700 border border-orange-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">💰 問價錢</button>
+                        <button onclick="window.showThaiCard('ลดหน่อยได้ไหม?', '算便宜一點嘛～', 'Lod-Noi-Dai-Mai?')" class="shrink-0 bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">💸 算便宜點</button>
+                        <button onclick="window.showThaiCard('ขอบคุณค่ะ', '謝謝 (Tina 用)', 'Kob-Khun-Ka')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝 (Tina)</button>
+                        <button onclick="window.showThaiCard('ขอบคุณครับ', '謝謝 (Darren 用)', 'Kob-Khun-Krab')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝 (Darren)</button>
                     </div>
 
                     <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
@@ -1888,6 +1981,12 @@
             <div class="centered-modal-content text-center p-8 bg-white rounded-3xl shadow-2xl border-4 border-[#6B705C]" onclick="event.stopPropagation()">
                 <div id="thai-card-meaning" class="text-gray-400 font-bold text-sm mb-2 uppercase tracking-widest"></div>
                 <div id="thai-card-text" class="text-5xl font-black text-[#2D3128] mb-6 leading-tight"></div>
+                
+                <button id="thai-speaker-btn" class="bg-[#F8AD9D] text-white w-14 h-14 rounded-full shadow-lg mb-6 active:scale-90 transition-transform">
+                    <span class="text-2xl">🔊</span>
+                </button>
+                <br>
+                
                 <div id="thai-card-phonetic" class="text-lg font-bold text-[#6B705C] italic bg-[#F1F3EF] py-2 px-4 rounded-full inline-block"></div>
                 <div class="mt-8 text-gray-400 text-[10px] font-bold tracking-widest animate-pulse">點擊任何地方關閉</div>
             </div>
