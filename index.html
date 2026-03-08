@@ -242,6 +242,27 @@
         img.loaded {
             opacity: 1;
         }
+
+        /* 骨架屏主體：呼吸感灰色區塊 */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite linear;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 讓圖片載入前保持隱形，載入後淡入 */
+        .img-fade-in {
+            opacity: 0;
+            transition: opacity 0.7s ease-in-out;
+        }
+        .img-loaded {
+            opacity: 1;
+        }
     </style>
 
     <script type="module">
@@ -691,24 +712,22 @@
             window.setDayFilter(dayVal);
         };
 
-        function renderItinerary() {
+        window.renderItinerary = () => {
             const list = document.getElementById('it-list');
-            const filtered = itineraryData.filter(item => item.day === currentDayFilter);
-            const sorted = filtered.sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+            const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
             
             if (sorted.length === 0) {
-                list.innerHTML = `<div class="text-center text-gray-400 text-sm py-12 font-bold">這天還沒有行程喔 💤</div>`;
+                list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`;
                 return;
             }
 
             list.innerHTML = sorted.map(item => {
-                let typeClass = '';
-                let typeLabel = '';
-                const safeText = item.activity.replace(/'/g, "\\'"); 
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity)}`;
                 const safeAddr = (item.address || "").replace(/'/g, "\\'");
                 const safeAct = item.activity.replace(/'/g, "\\'");
-
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
+                
+                let typeClass = '';
+                let typeLabel = '';
                 switch(item.type) {
                     case 'food': typeClass = 'timeline-food'; typeLabel = '🍴 美食'; break;
                     case 'shop': typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; break;
@@ -728,7 +747,7 @@
                                 <span class="tag tag-type">${typeLabel}</span>
                             </div>
                             <div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>
-                            ${item.address ? `<div class="text-xs text-gray-400 font-bold mt-1">📍 ${item.address}</div>` : ''}
+                            ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
                             ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5">📝 ${item.note}</div>` : ''}
                         </div>
                         <div class="flex flex-col gap-3 ml-2">
@@ -737,15 +756,14 @@
                         </div>
                     </div>
                     
-                    <div class="flex flex-wrap gap-2 pt-3 mt-2 border-t border-gray-50/50">
+                    <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
                         <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
                         <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button>
-                        <button onclick="window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？')" class="action-link">💡 攻略</button>
-                        <button onclick="window.getFoodRecommendation('${safeAct}')" class="action-link food-btn">🍴 找美食</button>
+                        <button onclick="window.askGemini('請問關於「${safeAct}」的攻略')" class="action-link">💡 攻略</button>
                     </div>
                 </div>`;
             }).join('');
-        }
+        };
 
         // --- Flights & Hotels Logic ---
         window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
@@ -1093,7 +1111,14 @@
                     <div class="absolute -left-[27px] top-4 w-3.5 h-3.5 bg-white border-[3.5px] border-[#DDB892] rounded-full z-10 shadow-sm"></div>
                     
                     <div class="app-card bg-white overflow-hidden shadow-sm border border-gray-100">
-                        ${m.image ? `<img src="${m.image}" loading="lazy" class="w-full h-48 object-cover" onload="this.classList.add('loaded')">` : ''}
+                        ${m.image ? `
+                        <div class="relative w-full h-48 skeleton overflow-hidden">
+                            <img src="${m.image}" 
+                                 loading="lazy" 
+                                 class="w-full h-48 object-cover img-fade-in" 
+                                 onload="this.classList.add('img-loaded'); this.parentElement.classList.remove('skeleton')"
+                                 onerror="window.handleImgError(this)">
+                        </div>` : ''}
                         <div class="p-4">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="text-2xl">${m.mood || '✨'}</span>
@@ -1110,6 +1135,14 @@
         };
 
         // --- 基底與優化功能 ---
+        // 🏥 破圖急救函式：如果泰國收訊不好，照片跑不出來就秀愛心
+        window.handleImgError = (img) => {
+            img.onerror = null; 
+            img.src = 'https://img.icons8.com/plasticine/200/heart.png'; 
+            if(img.parentElement) img.parentElement.classList.remove('skeleton');
+            img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); 
+        };
+
         // 升級版分頁切換：支援動畫與震動
         window.switchTab = (id) => {
             // Android 專屬震動 (iOS 會自動跳過不報錯)
@@ -1130,18 +1163,14 @@
             const textToCopy = (address && address.trim() !== "") ? address : activity;
             try {
                 await navigator.clipboard.writeText(textToCopy);
-                if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]); // 複製成功的節奏震動
+                if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]); 
                 
-                // 顯示一個簡單的提示
-                const btn = event ? event.currentTarget : window.event.currentTarget;
-                if (btn) {
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = "✅ 已複製";
-                    setTimeout(() => { btn.innerHTML = "📋 複製地址"; }, 1500);
-                }
-            } catch (err) {
-                console.error('複製失敗', err);
-            }
+                // 🌟 修正點：使用傳入的 event 來精確抓到那個按鈕
+                const btn = event.currentTarget; 
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "✅ 已複製";
+                setTimeout(() => { btn.innerHTML = originalText; }, 1500);
+            } catch (err) { console.error('複製失敗', err); }
         };
 
         window.formatDisplayDate = (d) => { if(!d) return ''; const p = d.split('-'); if(p.length!==3) return d; const dt = new Date(p[0], p[1]-1, p[2]); return `${p[1]}/${p[2]} (${['日','一','二','三','四','五','六'][dt.getDay()]})`; };
@@ -1362,9 +1391,45 @@
         });
         window.switchTab('itinerary');
         window.getWeather();
+
+        // 🌍 網路狀態監測邏輯
+        window.addEventListener('online', () => {
+            const offlineToast = document.getElementById('offline-toast');
+            if (offlineToast) offlineToast.classList.add('hidden');
+            
+            const onlineToast = document.getElementById('online-toast');
+            if (onlineToast) {
+                onlineToast.classList.remove('hidden');
+                setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); // 3秒後消失
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            const offlineToast = document.getElementById('offline-toast');
+            if (offlineToast) offlineToast.classList.remove('hidden');
+        });
+
+        // 初始化檢查一次
+        if (!navigator.onLine) {
+            const offlineToast = document.getElementById('offline-toast');
+            if (offlineToast) offlineToast.classList.remove('hidden');
+        }
     </script>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
+    <!-- 🌍 網路狀態提示框 (加入 pointer-events-none 避免阻擋點擊) -->
+    <div id="offline-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] hidden pointer-events-none">
+        <div class="bg-red-500 text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-black text-xs transition-all animate-bounce whitespace-nowrap">
+            <span>⚠️</span> 網路斷線中，功能受限但仍可看行程
+        </div>
+    </div>
+
+    <div id="online-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] hidden pointer-events-none">
+        <div class="bg-[#6B705C] text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-black text-xs transition-all whitespace-nowrap">
+            <span>✨</span> 網路已恢復，管家重新上線！
+        </div>
+    </div>
+
     <div class="bg-[var(--bg-light)] min-h-screen shadow-2xl relative pb-24">
         <header class="main-header">
             <div class="heart-text"><span>♥</span> SWEET GETAWAY <span>♥</span></div>
@@ -1593,7 +1658,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.4</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.5</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
