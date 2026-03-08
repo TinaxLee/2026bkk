@@ -816,7 +816,8 @@
             list.innerHTML = sorted.map(item => {
                 const safeAddr = (item.address || "").replace(/'/g, "\\'");
                 const safeAct = item.activity.replace(/'/g, "\\'");
-                const mapUrl = `http://googleusercontent.com/maps.google.com/${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
+                // 🌟 修正：使用正確的 Google Maps 搜尋 URL
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
                 
                 let typeClass = '';
                 let typeLabel = '';
@@ -982,7 +983,7 @@
             if(!q) input.value = '';
             
             const displayMessage = query || '📸 傳送了一張照片';
-            // 💡 更新：使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl 圓角
+            // 使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
@@ -1054,7 +1055,7 @@
                 if (!response.ok) throw new Error(`[HTTP ${response.status}]`);
                 
                 const data = await response.json();
-                const text = data.choices?.[0]?.message?.content || "對不起，管家眼睛有點花...";
+                let text = data.choices?.[0]?.message?.content || "對不起，管家眼睛有點花...";
                 
                 const textToSave = query || "這張圖片是什麼？";
                 chatHistory[chatHistory.length - 1] = { role: "user", content: textToSave };
@@ -1062,9 +1063,15 @@
                 chatHistory.push({ role: "assistant", content: text });
 
                 document.getElementById(thinkingId)?.remove();
+
+                // ✂️ 修正：隱藏並清理顯示給用戶看的系統代碼
+                let displayText = text;
+                if (text.includes("SAVE_EXPENSE:")) {
+                    displayText = text.split("SAVE_EXPENSE:")[0].trim();
+                }
                 
-                // 💡 更新：AI 氣泡採用 ai-bubble 樣式，加入 rounded-2xl 圓角
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${text.replace(/\n/g, '<br>')}</div>`;
+                // 💡 更新：AI 氣泡採用 ai-bubble 樣式，並使用清理乾淨的 displayText
+                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${displayText.replace(/\n/g, '<br>')}</div>`;
                 
                 if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
@@ -1080,6 +1087,7 @@
                 responseHtml += `</div>`;
                 chat.innerHTML += responseHtml;
                 
+                // 這裡依然使用完整的 text 來執行背景的記帳邏輯
                 if (text.includes("SAVE_EXPENSE:")) {
                     try {
                         let jsonStr = text.split("SAVE_EXPENSE:")[1].trim();
@@ -1781,7 +1789,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-5">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.6</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.7</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
