@@ -267,11 +267,26 @@
         .img-loaded {
             opacity: 1;
         }
+
+        /* AI 氣泡：粉嫩色系 */
+        .ai-bubble {
+            background-color: #FCEBE8; /* 柔和粉 */
+            color: #9D6B60; /* 深粉褐文字 */
+            border: 1px solid #F8D7D1;
+            border-bottom-left-radius: 4px; /* 做出氣泡尖角感 */
+        }
+
+        /* 使用者氣泡：莫蘭迪綠 */
+        .user-bubble {
+            background-color: #6B705C;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -285,6 +300,16 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        // 啟用 Firestore 離線持久化
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
+            } else if (err.code == 'unimplemented') {
+                console.log('瀏覽器不支援離線持久化');
+            }
+        });
+
         const auth = getAuth(app);
         const appId = "honeymoon-2026";
         
@@ -890,7 +915,8 @@
             if(!q) input.value = '';
             
             const displayMessage = query || '📸 傳送了一張照片';
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block bg-[#6B705C] text-white p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
+            // 💡 更新：使用者氣泡採用 user-bubble 樣式
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
             const thinkingText = imageInput && imageInput.files[0] ? '管家正在看照片' : '管家思考中';
@@ -930,24 +956,20 @@
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
                 const systemPrompt = `
-                    你是 Darren & Tina 的專屬泰國蜜月私人管家兼私房導遊。
+                    你是 Darren & Tina 的專屬泰國蜜月管家。妳的個性很俏皮、愛開玩笑但非常專業。
                     
                     【自動記帳任務】
-                    當使用者傳送「收據照片」或提到「記帳」時：
-                    1. 自動辨識：品項名稱、金額、幣別（THB/TWD/USD）。
-                    2. 自動分類：從 {food, shop, massage, play, traffic, other} 中選一個最貼切的。
-                    3. 語氣回覆：用親切的口吻確認，並在回覆最後一行嚴格加上這段神祕代碼（讓系統自動存檔，必須是單行且為標準JSON格式）：
-                       SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別","category":"分類","payer":"Darren或Tina"}
+                    1. 辨識品項與金額。
+                    2. 回覆語氣要俏皮。例如：
+                       - 「這筆由老公買單！這錢花得真值得，老婆負責開心就好！💰」
+                       - 「錢錢沒有不見，只是變成了妳們在泰國的形狀！已入帳～✨」
+                       - 「吼～這筆支出很精準喔！不愧是精打細算、最有默契的夫妻檔！💳」
+                    3. 嚴格在回覆最後一行加上代碼：SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別","category":"分類","payer":"Darren或Tina"}
 
-                    【角色要求】
-                    1. [自然稱呼]：平時請以「Darren」和「Tina」來稱呼他們。**不要**過度頻繁地使用「老公、老婆」，只有在提到耍浪漫、請客買單、或是特別撒嬌的情境下，才偶爾打趣地稱呼一下。
-                    2. [專業導遊與翻譯]：提供準確的交通與避雷資訊。如果是看菜單照片，請幫忙翻譯並推薦必點菜。
-                    3. [核心貼心提醒]：每當對話提到要去某個景點、出門、或是給予活動建議時，務必在回話的結尾加上溫馨且自然的貼心囉唆，提醒他們：
-                       - ☀️ 防曬要塗好（或是帶把傘）
-                       - 💧 隨時多喝水預防中暑
-                       - 🚽 記得找時間上廁所
-                       - 👜 檢查隨身東西（錢包、手機、行動電源）帶齊了沒
-                    4. [排版]：善用 Emoji 與空行，讓手機閱讀時視覺輕鬆。
+                    【角色互動】
+                    - 稱呼他們為 Darren / Tina，或是「老公 / 老婆」。
+                    - ⚠️ 絕對不要使用 "Bae" 這個詞。
+                    - 結尾務必碎碎念：提醒防曬☀️、多喝水💧、隨身物品👜（錢包、手機、行動電源）。
                 `;
 
                 const url = "https://thailand-ai.tina09210808.workers.dev";
@@ -974,7 +996,8 @@
 
                 document.getElementById(thinkingId)?.remove();
                 
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block bg-white p-5 rounded-2xl text-lg shadow-sm border leading-relaxed text-[#4A4E40] max-w-[95%]">${text.replace(/\n/g, '<br>')}</div>`;
+                // 💡 更新：AI 氣泡採用 ai-bubble 樣式
+                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 text-lg shadow-sm leading-relaxed max-w-[95%]">${text.replace(/\n/g, '<br>')}</div>`;
                 
                 if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
