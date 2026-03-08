@@ -1069,7 +1069,7 @@
                 chatHistory.push({ role: "user", content: userContent });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
-                // 🌟 修正防呆指令：加入最高指導原則，強制管家統稱 Darren & Tina
+                // 🌟 修正防呆指令：加入最高指導原則，並明確定義平分與請客的回覆規則
                 const systemPrompt = `
                     你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
 
@@ -1090,16 +1090,35 @@
                     - 持續觀察這項「未完成任務」清單：[背景資訊中提供]。
                     - 若快出發了卻還沒辦好，請在對話結束前用損友口氣催促一下。
 
-                    【隨機記帳人格】
-                    針對 SAVE_EXPENSE，隨機使用「大方讚賞、幽默損友、專業分析、泰國比喻」其中一種人格回覆。
+                    【記帳發揮 - 戲精人格】
+                    若用戶輸入花費，請判斷情境並隨機切換人格回覆：
+                    - A (大方讚賞)：讚美付錢的人有型、有品味。
+                    - B (幽默損友)：虧一下沒付錢的人，例如「Darren 這次動作慢囉！」或「Tina 這次請客，Darren 晚上要負責幫忙搥背喔！」
+                    - C (專業分析)：感嘆預算抓得太精準。
+                    - D (泰國即時感)：用泰奶、燕窩或按摩次數來比喻這筆錢的價值。
+                    ⚠️【非常重要：付款方式對應的語氣】
+                    - 如果是「平分 (split)」：請用「代墊」、「先幫忙付」、「記得收錢」等字眼。
+                    - 如果是「請客 (treat)」：請用「霸氣買單」、「送老婆/老公」、「真愛」等字眼。絕對不可以說「代墊」，因為請客不用還錢！
+                    - 如果是「個人 (personal)」：請用「專屬享受」、「私房錢」、「犒賞自己」等字眼。
+
+                    【⚠️ 記帳代碼與邏輯 (非常重要)】
+                    請從對話中精準判斷這筆花費的 3 個細節：
+                    1. 誰付錢 (payer)：darren 或 tina
+                    2. 分類 (category)：food(吃), shop(買), massage(按摩), play(玩), traffic(車), other(其他)
+                    3. 付款方式 (splitType)：
+                       - split (平分)：預設值，一起吃的、一起買的。
+                       - treat (請客)：明確說「請客」、「買單送對方」。
+                       - personal (個人)：明確說「自己買的」、「私人花費」。
+
+                    最後一行必須嚴格附上代碼：
+                    SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別(THB/TWD)","category":"分類代號","payer":"darren或tina","splitType":"split或treat或personal"}
 
                     【翻譯任務】
                     1. 當用戶問「...泰文怎麼說」或要求翻譯時，除了文字解釋，必須在最後一行嚴格附上：
                        SHOW_CARD: {"thai":"泰文原文","meaning":"中文意義","phonetic":"拼音"}
 
                     【固定格式】
-                    1. 記帳最後一行：SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別","category":"分類","payer":"Darren或Tina"}
-                    2. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
+                    1. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
                 `;
 
                 const url = "https://thailand-ai.tina09210808.workers.dev";
@@ -1199,7 +1218,7 @@
                             currency: expData.currency || "THB",
                             category: expData.category || "other",
                             payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
-                            splitType: 'split', 
+                            splitType: expData.splitType || 'split', 
                             date: new Date().toISOString().split('T')[0], 
                             createdAt: Date.now()
                         });
@@ -1448,24 +1467,24 @@
             let msgs = [];
             if (splitType === 'split') {
                 msgs = payer === 'darren' ? [
-                    `Darren 先代墊「${item}」！${catText} (記得跟老婆收錢🤣)`,
-                    `公費支出！Darren 帥氣刷卡，${catText}`,
+                    `Darren 先代墊「${item}」！${catText} (記得跟老婆結算🤣)`,
+                    `公費平分！Darren 帥氣刷卡先代墊，${catText}`,
                 ] : [
                     `Tina 先代墊「${item}」！${catText} (記帳小精靈上線)`,
-                    `公費支出！老婆先付錢啦，${catText}`,
+                    `公費平分！老婆先付錢代墊啦，${catText}`,
                 ];
             } else if (splitType === 'treat') {
                 msgs = payer === 'darren' ? [
-                    `Darren 霸氣請客「${item}」！老公太帥了！${catText}`,
-                    `老公買單！Tina 負責開心享受就好！${catText}`,
+                    `Darren 霸氣請客「${item}」！(這不是代墊，是真愛！) ${catText}`,
+                    `老公霸氣買單送老婆！Tina 負責開心享受就好！${catText}`,
                 ] : [
-                    `Tina 大方請客「${item}」！仙女霸氣買單！${catText}`,
-                    `老婆請客！Darren 今晚宵夜該表現一下了 😏 ${catText}`,
+                    `Tina 大方請客「${item}」！仙女霸氣買單不用還！${catText}`,
+                    `老婆請客送老公！Darren 今晚宵夜該表現一下了 😏 ${catText}`,
                 ];
             } else { // personal
                 msgs = payer === 'darren' ? [
                     `Darren 的專屬花費！男生也是要對自己好的！${catText}`,
-                    `個人支出入帳！Darren 的私房錢守不住啦 😂 ${catText}`
+                    `個人支出入帳！Darren 的私房錢買酷東西啦 😂 ${catText}`
                 ] : [
                     `Tina 的專屬戰利品！仙女就是要配好東西！${catText}`,
                     `個人支出入帳！誰都不能阻止 Tina 變美！💖 ${catText}`
