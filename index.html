@@ -7,7 +7,9 @@
     <link rel="manifest" href="manifest.json">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- 更新：iOS 狀態列樣式與啟動畫面 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-startup-image" href="icon.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1698,12 +1700,13 @@
 
     <!-- Service Worker -->
     <script>
-      if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('離線快取已就緒 ✨'))
-            .catch(err => console.warn('Service Worker 註冊失敗，可能處於預覽環境:', err));
-      } else {
-        console.log('當前環境不支援 Service Worker (需為 http/https)。');
+      if ('serviceWorker' in navigator) {
+        // 只在正式環境 (http/https) 註冊，預覽環境會報錯但正常顯示
+        if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+            navigator.serviceWorker.register('./sw.js')
+                .then(() => console.log('離線快取已就緒 ✨'))
+                .catch(err => console.log('Service Worker 暫不支援此環境'));
+        }
       }
     </script>
 </body>
