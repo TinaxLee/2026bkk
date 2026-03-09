@@ -4,27 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- 🌟 解決白屏閃爍的關鍵：提早告訴手機 App 的底色 -->
     <meta name="theme-color" content="#F8F7F2">
     <meta name="background-color" content="#F8F7F2">
     
     <title>Thailand 2026 🇹🇭</title>
     
-    <!-- iOS 專用：強制主畫面名稱 -->
     <meta name="apple-mobile-web-app-title" content="Thailand 2026 🇹🇭">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-    <!-- Android 專用：透過 Query String 強制刷新 Manifest -->
     <link rel="manifest" href="manifest.json?v=20260309">
     <link rel="apple-touch-startup-image" href="icon.png">
 
-    <!-- 🌟 預先連線字體伺服器，加速字體下載 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 🌟 將 display=swap 改為 display=block，強制等字體下載好再顯示 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Dancing+Script:wght@700&display=block" rel="stylesheet">
     
     <style>
@@ -168,12 +163,8 @@
         @keyframes fadeInSplash { to { opacity: 1; } }
 
         /* Custom toggle icon */
-        .toggle-icon {
-            transition: transform 0.3s ease;
-        }
-        .toggle-icon.open {
-            transform: rotate(180deg);
-        }
+        .toggle-icon { transition: transform 0.3s ease; }
+        .toggle-icon.open { transform: rotate(180deg); }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -425,7 +416,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.33</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.34</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -445,11 +436,11 @@
                     
                     <div class="px-1 mb-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
                         <a href="tel:1155" class="shrink-0 bg-red-500 text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1"><span>🚑</span> 觀光警察 1155</a>
-                        <button onclick="window.askGemini('請教我泰國常用的禮貌用語，包含：你好、謝謝(女生說)、謝謝(男生說)、對不起/不好意思、再見。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🗣️ 查詢禮貌用語')" class="shrink-0 bg-[#4A90E2] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🗣️ 禮貌用語</button>
-                        <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🍽️ 查詢點餐用語')" class="shrink-0 bg-[#E67E22] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍽️ 點餐用語</button>
-                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">💆 按摩溝通</button>
-                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🚕 叫車小抄</button>
-                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼！', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍱 抽晚餐盲盒</button>
+                        <button onclick="window.askGemini('請教我泰國常用的禮貌用語，包含：你好、謝謝(女生說)、謝謝(男生說)、對不起/不好意思、再見。為每句翻譯獨立提供 JSON 格式代碼。', false, '🗣️ 查詢禮貌用語')" class="shrink-0 bg-[#4A90E2] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🗣️ 禮貌用語</button>
+                        <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。為每句翻譯獨立提供 JSON 格式代碼。', false, '🍽️ 查詢點餐用語')" class="shrink-0 bg-[#E67E22] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍽️ 點餐用語</button>
+                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句翻譯獨立提供 JSON 格式代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">💆 按摩溝通</button>
+                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句翻譯獨立提供 JSON 格式代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🚕 叫車小抄</button>
+                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供代碼！', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍱 抽晚餐盲盒</button>
                     </div>
 
                     <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
@@ -506,7 +497,7 @@
             <div class="centered-modal-content text-center p-6">
                 <div class="text-5xl mb-4">🗑️</div><h3 class="font-black text-xl text-[#4A4E40] mb-3">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
                 <p class="text-sm text-gray-500 font-bold mb-8 leading-relaxed">不會刪除已綁定的行程資料。</p><input type="hidden" id="delete-day-target">
-                <div class="flex gap-4"><button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button><button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-50 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認刪除</button></div>
+                <div class="flex gap-4"><button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button><button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認刪除</button></div>
             </div>
         </div>
 
@@ -855,12 +846,14 @@
             chatHistory = []; 
         };
 
+        // ==========================================
+        // 🌟 終極修復：對話渲染與格式清洗
+        // ==========================================
         window.renderChatHistory = () => {
             const chat = document.getElementById('gemini-chat');
             if (!chat) return;
             chat.innerHTML = chatHistory.map(msg => {
                 if (msg.role === 'user') {
-                    // 如果有圖片，就不只是顯示文字，還要解析並顯示圖片
                     let userMsgHtml = `<div class="mb-4 text-right">`;
                     if (msg.imgUrl) {
                         userMsgHtml += `<img src="${msg.imgUrl}" class="inline-block rounded-2xl mb-2 max-w-[80%] border-4 border-white shadow-md"><br>`;
@@ -868,9 +861,17 @@
                     userMsgHtml += `<span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${msg.content}</span></div>`;
                     return userMsgHtml;
                 } else {
-                    const text = msg.content;
+                    let text = msg.content;
                     let cardBtnHtml = '';
+                    let expenseBtnHtml = '';
+
+                    // 1. 強制移除非法換行和前綴 (處理 AI 自作主張的格式)
+                    text = text.replace(/SHOW_CARD:\s*泰文[：:]\s*(.*?)\s*英文[：:]\s*(.*?)(?=\n|$)/gi, 'SHOW_CARD: {"thai":"$1", "meaning":"$2", "phonetic":""}');
+                    
+                    // 2. 清洗 Markdown
                     let cleanText = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+                    
+                    // 3. 處理大字卡代碼
                     const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g;
                     let match;
                     while ((match = cardRegex.exec(cleanText)) !== null) {
@@ -879,11 +880,11 @@
                             const lastBrace = jsonStr.lastIndexOf('}');
                             if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
                             const cd = JSON.parse(jsonStr);
-                            cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${cd.thai.replace(/'/g, "\\'")}', '${cd.meaning.replace(/'/g, "\\'")}', '${cd.phonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${cd.meaning.replace(/'/g, "\\'")}</button></div>`;
-                        } catch (e) {}
+                            cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${(cd.thai||'').replace(/'/g, "\\'")}', '${(cd.meaning||'').replace(/'/g, "\\'")}', '${(cd.phonetic||'').replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${(cd.meaning||'').replace(/'/g, "\\'")}</button></div>`;
+                        } catch (e) { console.error("歷史字卡解析失敗", e); }
                     }
                     
-                    let expenseBtnHtml = '';
+                    // 4. 處理記帳代碼
                     if (cleanText.includes("SAVE_EXPENSE:")) {
                         try {
                             const exMatch = cleanText.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
@@ -895,10 +896,16 @@
                                 const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                                 expenseBtnHtml = `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
                             }
-                        } catch (e) { console.log("歷史記帳解析失敗", e); }
+                        } catch (e) { console.error("歷史記帳解析失敗", e); }
                     }
 
-                    let displayText = cleanText.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
+                    // 5. 將所有被解析的代碼或亂碼從畫面上徹底抹除
+                    let displayText = cleanText
+                        .replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '')
+                        .replace(/SHOW_CARD:\s*泰文.*?英文.*?(?=\n|$)/gi, '') // 清除未被正常 JSON 解析的殘留文字
+                        .replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '')
+                        .trim();
+
                     return `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${displayText.replace(/\n/g, '<br>')}${cardBtnHtml}${expenseBtnHtml}</div></div>`;
                 }
             }).join('');
@@ -932,7 +939,7 @@
             
             const displayMessage = displayOverride || query || '📸 傳送了一張照片';
             
-            // 🌟 1. 讓對話框即時顯示妳傳的照片
+            // 讓對話框即時顯示照片
             let imgUrlForDisplay = null;
             let userMessageHtml = `<div class="mb-4 text-right">`;
             if (imageInput && imageInput.files[0]) {
@@ -955,13 +962,16 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                // 🌟 2. 防止 AI 搶快亂記帳的指令
+                // 🌟 終極強制指令：不准亂排版，格式嚴格化！
                 const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
 【稱呼與語系】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文。
-【翻譯任務】支援「中翻泰」與「中翻英」。必須提供 SHOW_CARD 代碼。
+【翻譯任務】支援「中翻泰」與「中翻英」。
+⚠️ 【絕對強制規定】：提供翻譯時，你「必須」直接輸出 JSON 格式代碼。絕對禁止使用「泰文：xxx」或「英文：xxx」這種條列式文字！
+✅ 正確示範：SHOW_CARD: {"thai":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}
+❌ 錯誤示範：SHOW_CARD: 泰文：ไม่เผ็ด 英文：Not spicy
+
 【記帳對應】Darren付錢誇老公霸氣，Tina付錢誇老婆仙女。附上 SAVE_EXPENSE 代碼。
-⚠️ 只有當照片明顯是『收據』、或用戶明確說『記帳』時，才觸發 SAVE_EXPENSE。如果照片看起來是『菜單』、或用戶沒有要求記帳，請優先進行翻譯與菜色介紹，絕對不要自動產生記帳代碼。
-【字卡翻譯】多句教學時，絕對要獨立換行輸出 SHOW_CARD 代碼，禁止用1.2.3.編號！`;
+⚠️ 只有當照片明顯是『收據』、或用戶明確說『記帳』時，才觸發 SAVE_EXPENSE。如果照片看起來是『菜單』、或用戶沒有要求記帳，請優先進行翻譯與菜色介紹，絕對不要自動產生記帳代碼。`;
 
                 // 準備傳給 API 的 messages (過濾掉 UI 專用的 imgUrl 屬性)
                 const apiMessages = chatHistory.map(m => ({ role: m.role, content: m.content }));
@@ -973,7 +983,7 @@
                 chatHistory.push({ role: "assistant", content: text });
                 document.getElementById(thinkingId)?.remove();
 
-                // 🌟 保存對話至私人雲端
+                // 🌟 儲存對話後，統一呼叫 renderChatHistory 渲染，解決雙胞胎問題！
                 await addDoc(getPrivColl('chatHistory'), {
                     role: 'user', content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay || null, createdAt: Date.now()
                 });
@@ -981,56 +991,23 @@
                     role: 'assistant', content: text, createdAt: Date.now()
                 });
 
-                // --- 清洗與解析 ---
-                let cleanText = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
-                let cardBtnHtml = ''; 
-                const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g; 
-                let match;
-                while ((match = cardRegex.exec(cleanText)) !== null) {
-                    try {
-                        let jsonStr = match[1].trim(); 
-                        const lastBrace = jsonStr.lastIndexOf('}'); 
-                        if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                        if (jsonStr.includes("SAVE_EXPENSE:")) jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
-                        const cd = JSON.parse(jsonStr);
-                        cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${cd.thai.replace(/'/g, "\\'")}', '${cd.meaning.replace(/'/g, "\\'")}', '${cd.phonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${cd.meaning.replace(/'/g, "\\'")}</button></div>`;
-                    } catch (e) {}
-                }
-                
-                // 🌟 3. 處理手動確認記帳按鈕
-                let expenseBtnHtml = '';
-                if (cleanText.includes("SAVE_EXPENSE:")) {
-                    try {
-                        const exMatch = cleanText.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
-                        if (exMatch) {
-                            let jsonStr = exMatch[1]; 
-                            const lastBrace = jsonStr.lastIndexOf('}'); 
-                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                            const expData = JSON.parse(jsonStr);
-                            const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-                            expenseBtnHtml = `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
-                        }
-                    } catch (e) { console.log("記帳解析失敗", e); }
-                }
+                window.renderChatHistory();
 
-                // 徹底移除原始代碼
-                let displayText = cleanText.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
-                
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${displayText.replace(/\n/g, '<br>')}${cardBtnHtml}${expenseBtnHtml}</div></div>`;
-
-                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !expenseBtnHtml && !cardBtnHtml) {
+                // 加入推薦按鈕邏輯 (不存入歷史，只在當次顯示)
+                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
-                    if(extractedPlace.length > 1) responseHtml += `<div class="mt-3 flex gap-2 flex-wrap"><button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button></div>`;
+                    if(extractedPlace.length > 1) {
+                         const chatBox = document.getElementById('gemini-chat');
+                         chatBox.innerHTML += `<div class="mb-4 text-left"><div class="mt-3 flex gap-2 flex-wrap"><button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button></div></div>`;
+                         chatBox.scrollTop = chatBox.scrollHeight;
+                    }
                 }
-                
-                chat.innerHTML += responseHtml;
 
                 if (imageInput) { imageInput.value = ''; const ind = document.getElementById('image-indicator'); if(ind) ind.classList.add('hidden'); }
             } catch (e) { 
                 document.getElementById(thinkingId)?.remove(); 
                 chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm border border-red-100 text-red-500">管家網路不穩！</div></div>`; 
             }
-            chat.scrollTop = chat.scrollHeight;
         };
 
         onAuthStateChanged(auth, async (user) => { 
@@ -1065,7 +1042,7 @@
             onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMissions(); });
         }
 
-        // 🌟 執行畫面初始化 (把刪掉的開關加回來！)
+        // 🌟 執行畫面初始化
         window.switchTab('itinerary');
         window.getWeather();
         const expDate = document.getElementById('exp-date');
