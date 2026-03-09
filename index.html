@@ -49,64 +49,24 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .heart-text { 
-            color: var(--heart-pink); 
-            font-size: 0.75rem; 
-            letter-spacing: 0.5em; 
-            font-weight: 800; 
-            margin-bottom: 0.5rem; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .couple-name { 
-            font-family: 'Playfair Display', serif; 
-            font-size: 2.4rem; 
-            line-height: 1.1; 
-            font-weight: 700; 
-            color: #2D3128; 
-            letter-spacing: 0.05em;
-            margin: 0.5rem 0; 
-        }
+        .heart-text { color: var(--heart-pink); font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .couple-name { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1.1; font-weight: 700; color: #2D3128; letter-spacing: 0.05em; margin: 0.5rem 0; }
         .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
         
-        .main-header {
-            background: white;
-            padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 1.5rem;
-            text-align: center;
-            border-bottom: 1px solid rgba(0,0,0,0.03);
-        }
-
-        .app-card {
-            background: white;
-            border-radius: 1.2rem;
-            box-shadow: 0 4px 12px -5px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.8);
-            overflow: hidden;
-        }
+        .main-header { background: white; padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.03); }
+        .app-card { background: white; border-radius: 1.2rem; box-shadow: 0 4px 12px -5px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8); overflow: hidden; }
 
         .bottom-nav {
-            background: rgba(74, 78, 64, 0.95);
-            backdrop-filter: blur(15px);
-            position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom)); 
-            left: 50%; transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 416px; 
-            border-radius: 2rem;
-            height: 65px; 
-            z-index: 1000;
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: rgba(74, 78, 64, 0.95); backdrop-filter: blur(15px); position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+            width: calc(100% - 32px); max-width: 416px; border-radius: 2rem; height: 65px; z-index: 1000;
+            display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-
         .nav-btn { font-size: 1.25rem; cursor: pointer; transition: opacity 0.2s; padding: 12px; }
         .btn-press:active { transform: scale(0.92); }
 
         #gemini-modal, .custom-modal {
-            position: fixed; inset: 0; z-index: 2000;
-            background: rgba(0,0,0,0.4);
+            position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.4);
             visibility: hidden; opacity: 0; transition: opacity 0.3s ease;
             display: flex; align-items: center; justify-content: center;
         }
@@ -116,15 +76,13 @@
             position: absolute; bottom: 0; left: 0; right: 0;
             height: 90%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
-            padding-bottom: env(safe-area-inset-bottom); 
-            display: flex !important; flex-direction: column;
+            padding-bottom: env(safe-area-inset-bottom); display: flex !important; flex-direction: column;
         }
         #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
         
         .centered-modal-content {
-            background: white; border-radius: 1.5rem; width: 90%; max-width: 340px;
-            padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+            background: white; border-radius: 1.5rem; width: 90%; max-width: 340px; padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
         }
         .custom-modal.open .centered-modal-content { transform: scale(1); }
 
@@ -144,101 +102,51 @@
         .expand-panel.active { display: block; }
 
         .weather-card {
-            background: linear-gradient(135deg, #8E9775 0%, #6B705C 100%);
-            color: white; border-radius: 1.2rem; padding: 1.5rem; margin-bottom: 1.5rem;
-            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #8E9775 0%, #6B705C 100%); color: white;
+            border-radius: 1.2rem; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
         }
 
         .action-link {
-            font-size: 11px; font-weight: 800; color: #8E9775;
-            padding: 8px 14px; border: 1.5px solid #E5E7EB; border-radius: 20px;
-            display: inline-flex; align-items: center; gap: 4px;
-            background: white; transition: all 0.2s;
-            cursor: pointer;
-            text-decoration: none; 
-            line-height: 1.2;
+            font-size: 11px; font-weight: 800; color: #8E9775; padding: 8px 14px; border: 1.5px solid #E5E7EB;
+            border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; background: white;
+            transition: all 0.2s; cursor: pointer; text-decoration: none; line-height: 1.2;
         }
         .action-link:active { background: #f0f0f0; transform: scale(0.98); }
 
-        .converter-box {
-            background: #f1f3ef;
-            border-radius: 1.2rem;
-            padding: 1.2rem;
-            border: 1px dashed #B7B7A4;
-        }
+        .converter-box { background: #f1f3ef; border-radius: 1.2rem; padding: 1.2rem; border: 1px dashed #B7B7A4; }
 
-        .thinking-dots::after {
-            content: '.';
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-        @keyframes dots {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60% { content: '...'; }
-            80%, 100% { content: ''; }
-        }
+        .thinking-dots::after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
 
-        /* Day Tabs Styling */
         .day-tab {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-width: 75px; height: 85px; 
-            background: white; border: 1px solid #E5E7EB; border-radius: 16px;
-            margin-right: 10px; transition: all 0.3s;
-            flex-shrink: 0; 
-            cursor: pointer;
-            position: relative;
+            min-width: 75px; height: 85px; background: white; border: 1px solid #E5E7EB; border-radius: 16px;
+            margin-right: 10px; transition: all 0.3s; flex-shrink: 0; cursor: pointer; position: relative;
         }
-        .day-tab.active {
-            background: #6B705C; border-color: #6B705C; color: white; box-shadow: 0 6px 16px rgba(107, 112, 92, 0.3);
-        }
+        .day-tab.active { background: #6B705C; border-color: #6B705C; color: white; box-shadow: 0 6px 16px rgba(107, 112, 92, 0.3); }
         .day-tab-num { font-size: 14px; font-weight: 900; }
         .day-tab-date { font-size: 10px; margin-top: 4px; opacity: 0.8; font-weight: 600; padding: 0 4px; }
         
-        /* Timeline styling */
         .timeline-item { border-left: 3px solid #E5E7EB; margin-left: 12px; padding-left: 18px; position: relative; }
-        .timeline-item::before {
-            content: ''; position: absolute; left: -7px; top: 16px; width: 11px; height: 11px; border-radius: 50%; background: #E5E7EB; border: 2.5px solid white;
-        }
-        .timeline-food { border-left-color: #F8AD9D; }
-        .timeline-food::before { background: #F8AD9D; }
-        .timeline-view { border-left-color: #8E9775; }
-        .timeline-view::before { background: #8E9775; }
-        .timeline-shop { border-left-color: #DDB892; }
-        .timeline-shop::before { background: #DDB892; }
-        .timeline-note { border-left-color: #A5A58D; }
-        .timeline-note::before { background: #A5A58D; }
-        .timeline-massage { border-left-color: #B5838D; }
-        .timeline-massage::before { background: #B5838D; }
-        .timeline-play { border-left-color: #CB997E; }
-        .timeline-play::before { background: #CB997E; }
+        .timeline-item::before { content: ''; position: absolute; left: -7px; top: 16px; width: 11px; height: 11px; border-radius: 50%; background: #E5E7EB; border: 2.5px solid white; }
+        .timeline-food { border-left-color: #F8AD9D; } .timeline-food::before { background: #F8AD9D; }
+        .timeline-view { border-left-color: #8E9775; } .timeline-view::before { background: #8E9775; }
+        .timeline-shop { border-left-color: #DDB892; } .timeline-shop::before { background: #DDB892; }
+        .timeline-note { border-left-color: #A5A58D; } .timeline-note::before { background: #A5A58D; }
+        .timeline-massage { border-left-color: #B5838D; } .timeline-massage::before { background: #B5838D; }
+        .timeline-play { border-left-color: #CB997E; } .timeline-play::before { background: #CB997E; }
 
-        /* Packing Filter Tabs */
         .pack-filter-btn {
-            width: 36px; height: 36px; 
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; background: #f3f4f6; border: 1px solid #e5e7eb; transition: all 0.2s; flex-shrink: 0;
         }
-        .pack-filter-btn.active {
-            background: #6B705C; border-color: #6B705C; color: white; transform: scale(1.1);
-        }
+        .pack-filter-btn.active { background: #6B705C; border-color: #6B705C; color: white; transform: scale(1.1); }
         .pack-filter-btn-tina.active { background: #F8AD9D; border-color: #F8AD9D; }
         
         .input-base { padding: 0.6rem 0.75rem; }
 
-        .tab-content {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .tab-content:not(.hidden) {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .tab-content { opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .tab-content:not(.hidden) { opacity: 1; transform: translateY(0); }
 
         img { transition: opacity 0.3s ease-in-out; }
         img[loading="lazy"] { opacity: 0.5; }
@@ -246,1207 +154,19 @@
 
         .skeleton {
             background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite linear;
+            background-size: 200% 100%; animation: skeleton-loading 1.5s infinite linear;
         }
         @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         .img-fade-in { opacity: 0; transition: opacity 0.7s ease-in-out; }
         .img-loaded { opacity: 1; }
 
-        /* AI 氣泡：粉嫩色系 */
         .ai-bubble { background-color: #FCEBE8; color: #9D6B60; border: 1px solid #F8D7D1; border-bottom-left-radius: 4px; }
         .user-bubble { background-color: #6B705C; color: white; border-bottom-right-radius: 4px; }
 
-        /* 🌟 開場文字漸顯動畫，徹底解決字體閃爍問題 */
-        .splash-text { 
-            opacity: 0; 
-            animation: fadeInSplash 0.5s ease-out 0.15s forwards; 
-        }
-        @keyframes fadeInSplash { 
-            to { opacity: 1; } 
-        }
+        .splash-text { opacity: 0; animation: fadeInSplash 0.5s ease-out 0.15s forwards; }
+        @keyframes fadeInSplash { to { opacity: 1; } }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, getDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxcDDn80ScpW35TdJdeXOAkfJbHM0DyD0",
-            authDomain: "honeymoon-2026.firebaseapp.com",
-            projectId: "honeymoon-2026",
-            storageBucket: "honeymoon-2026.firebasestorage.app",
-            messagingSenderId: "639168649822",
-            appId: "1:639168649822:web:20399eff7d34144277f2cf"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        try {
-            enableIndexedDbPersistence(db).catch((err) => {
-                if (err.code == 'failed-precondition') console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
-                else if (err.code == 'unimplemented') console.log('瀏覽器不支援離線持久化');
-            });
-        } catch (e) { console.log('不支援 IndexedDB', e); }
-
-        const auth = getAuth(app);
-        const appId = "honeymoon-2026";
-        
-        let currentUser = null;
-        let allExpenses = []; 
-        let currentPayerFilter = 'all'; 
-        let currentDayFilter = 'Day 1'; 
-        let departureDate = null; 
-        
-        let itineraryData = []; 
-        let flightsData = [];
-        let hotelsData = [];
-        let packingData = []; 
-        let chatHistory = []; 
-        let memoriesData = []; 
-        let vaultData = []; 
-        let missionsData = []; 
-        
-        let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
-        let dayDates = {}; 
-        
-        let editingItineraryId = null;
-        let editingFlightId = null;
-        let editingHotelId = null;
-        let editingExpenseId = null;
-
-        let packFilters = { tina: 'cloth', darren: 'cloth' };
-        const packCategories = [
-            { id: 'cloth', icon: '👔', label: '衣物' }, { id: 'wash', icon: '🧼', label: '盥洗' },
-            { id: 'tech', icon: '📱', label: '3C' }, { id: 'med', icon: '💊', label: '藥品' },
-            { id: 'doc', icon: '📄', label: '文件' }, { id: 'other', icon: '🎒', label: '其他' }
-        ];
-
-        let ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 }; 
-        const fetchLiveRates = async () => {
-            try {
-                const res = await fetch('https://open.er-api.com/v6/latest/USD');
-                const data = await res.json();
-                if (data && data.rates) {
-                    ratesToTHB['THB'] = 1;
-                    ratesToTHB['USD'] = data.rates.THB;
-                    ratesToTHB['TWD'] = data.rates.THB / data.rates.TWD;
-                    if (allExpenses.length > 0) window.renderExpenses();
-                }
-            } catch (e) { console.error('Failed to fetch live rates', e); }
-        };
-
-        onAuthStateChanged(auth, async (user) => { 
-            if (user) { currentUser = user; startSyncing(); } 
-            else { await signInAnonymously(auth); } 
-        });
-
-        const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
-
-        function startSyncing() {
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => {
-                if (docSnap.exists()) {
-                    departureDate = docSnap.data().date;
-                    const dateInput = document.getElementById('departure-date-input');
-                    if (dateInput) dateInput.value = departureDate;
-                    window.updateCountdownUI();
-                }
-            });
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
-                if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list;
-                if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0];
-                renderDayTabs(); renderDayDropdown();
-                if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) renderDayManagerList();
-            });
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
-                if (docSnap.exists()) { dayDates = docSnap.data(); renderDayTabs(); }
-            });
-            onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); });
-            onSnapshot(getColl('packing'), (s) => { packingData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderPacking(); });
-            onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
-            onSnapshot(getColl('flights'), (s) => { flightsData = s.docs.map(d => ({id: d.id, ...d.data()})); renderFlights(); });
-            onSnapshot(getColl('hotels'), (s) => { hotelsData = s.docs.map(d => ({id: d.id, ...d.data()})); renderHotels(); });
-            onSnapshot(getColl('memories'), (s) => { memoriesData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderMemories) window.renderMemories(); });
-            onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderVault) window.renderVault(); });
-            onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderMissions) window.renderMissions(); });
-        }
-
-        window.showToast = (msg, icon = '✨') => {
-            let toast = document.getElementById('app-toast');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'app-toast';
-                toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[4000] pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]';
-                document.body.appendChild(toast);
-            }
-            toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892] w-[90vw] max-w-[340px] leading-relaxed"><span>${icon}</span> ${msg}</div>`;
-            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-[-20px]'); toast.classList.add('opacity-100', 'translate-y-0'); }, 10);
-            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'translate-y-[-20px]'); }, 3500);
-        };
-
-        window.addMission = async () => {
-            const task = document.getElementById('mission-task').value;
-            const cat = document.getElementById('mission-category').value;
-            if(!task || !currentUser) return;
-            await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() });
-            document.getElementById('mission-task').value = '';
-        };
-
-        window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
-
-        window.renderMissions = () => {
-            const container = document.getElementById('missions-container');
-            if (!container) return;
-            const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' };
-            container.innerHTML = Object.keys(cats).map(key => {
-                const items = missionsData.filter(m => m.category === key);
-                if (items.length === 0 && key !== 'pre') return ''; 
-                return `
-                    <div>
-                        <h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                            ${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `
-                                <div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}">
-                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">
-                                        ${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}
-                                    </div>
-                                    <span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span>
-                                    <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-2 text-lg">✕</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        window.unlockVault = () => {
-            const pin = document.getElementById('vault-pin').value;
-            const errorMsg = document.getElementById('vault-error-msg');
-            if (pin === "1112") { 
-                document.getElementById('vault-locked').classList.add('hidden');
-                document.getElementById('vault-content').classList.remove('hidden');
-                document.getElementById('vault-pin').value = "";
-                if(errorMsg) errorMsg.classList.add('hidden');
-            } else {
-                if(errorMsg) errorMsg.classList.remove('hidden');
-                document.getElementById('vault-pin').value = ""; 
-            }
-        };
-
-        window.uploadToVault = async (type, input) => {
-            if (!input.files[0] || !currentUser) return;
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                await addDoc(getColl('vault'), { type: type, image: e.target.result, createdAt: Date.now() });
-                input.value = ''; 
-            };
-            reader.readAsDataURL(input.files[0]);
-        };
-
-        window.renderVault = () => {
-            const list = document.getElementById('vault-list');
-            if (!list) return;
-            list.innerHTML = vaultData.sort((a,b) => b.createdAt - a.createdAt).map(v => `
-                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mb-3 border border-gray-100">
-                    <img src="${v.image}" onclick="window.open('${v.image}')" class="w-14 h-14 object-cover rounded-xl shadow-sm cursor-zoom-in">
-                    <div class="flex-1">
-                        <div class="text-[11px] font-black uppercase text-[#6B705C]">${v.type === 'passport' ? '🛂 護照影本' : '🏥 旅遊保險'}</div>
-                        <div class="text-[9px] text-gray-400 font-bold">${new Date(v.createdAt).toLocaleDateString()} 備份</div>
-                    </div>
-                    <button onclick="window.deleteItem('vault', '${v.id}')" class="text-red-200 hover:text-red-400 p-2">✕</button>
-                </div>
-            `).join('');
-        };
-
-        window.saveDepartureDate = async (val) => {
-            if(!currentUser || !val) return;
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), { date: val });
-        };
-
-        window.updateCountdownUI = () => {
-            const display = document.getElementById('countdown-display');
-            if (!display) return;
-            if (!departureDate) {
-                display.innerText = "蜜月籌備中... 🇹🇭";
-                display.classList.remove('bg-[#6B705C]', 'animate-bounce');
-                display.classList.add('bg-[#DDB892]'); 
-                return;
-            }
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            const target = new Date(departureDate); target.setHours(0, 0, 0, 0);
-            const diffTime = target - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            display.classList.remove('animate-bounce'); 
-            if (diffDays > 0) {
-                display.innerHTML = `距離甜蜜蜜月還有 <span class="text-base mx-1">${diffDays}</span> 天`;
-                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]'); 
-            } else if (diffDays === 0) {
-                display.innerText = "🎉 就是今天！出發去泰國！✈️";
-                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]', 'animate-bounce');
-            } else {
-                display.innerText = "❤️ 甜蜜回憶進行中...";
-                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]');
-            }
-        };
-
-        window.renderDayTabs = () => {
-            const container = document.getElementById('day-tabs-container');
-            if (!container) return;
-            let html = dayList.map(dayStr => {
-                const dateStr = dayDates[dayStr] || ''; 
-                const isActive = currentDayFilter === dayStr;
-                const formattedDate = window.formatDisplayDate(dateStr);
-                let dateDisplay = formattedDate ? formattedDate : '日期';
-                return `
-                <div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}">
-                    <div class="day-tab-num">${dayStr}</div>
-                    ${isActive && document.getElementById('day-manage-modal') && !document.getElementById('day-manage-modal').classList.contains('open')
-                        ? `<div class="relative mt-1.5 w-full flex justify-center">
-                             <div class="bg-white/20 text-center px-2 py-0.5 text-[10px] rounded-md text-white font-bold whitespace-nowrap tracking-wide">${formattedDate || '選日期 📅'}</div>
-                             <input type="date" value="${dateStr}" onclick="event.stopPropagation()" onchange="window.saveDate('${dayStr}', this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                           </div>`
-                        : `<div class="day-tab-date truncate w-full text-center px-1">${dateDisplay}</div>`
-                    }
-                </div>`;
-            }).join('');
-            html += `<div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer"><div class="text-2xl">⚙️</div></div>`;
-            container.innerHTML = html;
-        };
-
-        window.renderDayDropdown = () => {
-            const select = document.getElementById('it-day');
-            if(!select) return;
-            select.innerHTML = dayList.map(d => `<option value="${d}">${d}</option>`).join('');
-            select.value = dayList.includes(currentDayFilter) ? currentDayFilter : (dayList[0] || '');
-        };
-
-        window.setDayFilter = (day) => { 
-            currentDayFilter = day; renderDayTabs(); window.renderItinerary(); 
-            const dayLabel = document.getElementById('current-day-label');
-            if (dayLabel) dayLabel.innerText = day;
-        };
-
-        window.viewDayMap = () => {
-            const dailyItems = itineraryData.filter(item => item.day === currentDayFilter && item.type !== 'note').sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); 
-            if (dailyItems.length === 0) {
-                const btn = document.querySelector('#day-map-action button');
-                if(!btn) return;
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = "💤 今天尚未安排景點喔！";
-                setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
-                return;
-            }
-            const locations = dailyItems.map(item => encodeURIComponent(item.activity));
-            const url = `https://www.google.com/maps/dir/${locations.join('/')}`;
-            window.open(url, '_blank');
-        };
-
-        window.saveDate = async (day, val) => { if(currentUser) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [day]: val }, { merge: true }); };
-
-        window.toggleDayManager = () => {
-            const modal = document.getElementById('day-manage-modal');
-            if(!modal) return;
-            modal.classList.toggle('open');
-            if (modal.classList.contains('open')) window.renderDayManagerList();
-        };
-
-        window.renderDayManagerList = () => {
-            const container = document.getElementById('day-manager-list');
-            if(!container) return;
-            container.innerHTML = dayList.map(d => `
-                <div class="flex justify-between items-center bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3">
-                    <span class="font-bold text-base text-[#4A4E40]">${d}</span>
-                    <div class="flex gap-2">
-                        <button onclick="window.openRenameModal('${d}')" class="text-gray-400 hover:text-[#6B705C] bg-gray-50 p-2.5 rounded-lg text-base">✎</button>
-                        <button onclick="window.openDeleteModal('${d}')" class="text-gray-400 hover:text-red-400 bg-gray-50 p-2.5 rounded-lg text-base">✕</button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        window.addNewDay = async () => {
-            const input = document.getElementById('new-day-input');
-            const newDay = input.value.trim();
-            if (!newDay) return;
-            if (dayList.includes(newDay)) { input.value = ''; input.placeholder = '名稱已存在！請換一個'; return; }
-            const updatedList = [...dayList, newDay];
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
-            input.value = ''; input.placeholder = '例如: Day 8 或 普吉島第一天';
-        };
-
-        window.openRenameModal = (oldName) => {
-            document.getElementById('rename-day-old').value = oldName;
-            document.getElementById('rename-day-input').value = oldName;
-            document.getElementById('rename-day-modal').classList.add('open');
-        };
-        
-        window.closeRenameModal = () => { document.getElementById('rename-day-modal').classList.remove('open'); };
-
-        window.confirmRenameDay = async () => {
-            const oldName = document.getElementById('rename-day-old').value;
-            const newName = document.getElementById('rename-day-input').value.trim();
-            if (!newName || newName === oldName || dayList.includes(newName)) { window.closeRenameModal(); return; }
-            const updatedList = dayList.map(d => d === oldName ? newName : d);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
-
-            if (dayDates[oldName]) {
-                const newDates = { ...dayDates };
-                newDates[newName] = newDates[oldName];
-                delete newDates[oldName]; 
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [newName]: dayDates[oldName] }, { merge: true });
-            }
-            const itemsToUpdate = itineraryData.filter(i => i.day === oldName);
-            for (let item of itemsToUpdate) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', item.id), { day: newName }); }
-            if(currentDayFilter === oldName) currentDayFilter = newName;
-            window.closeRenameModal();
-        };
-
-        window.openDeleteModal = (dayName) => {
-            document.getElementById('delete-day-target').value = dayName;
-            document.getElementById('delete-day-name-display').innerText = dayName;
-            document.getElementById('delete-day-modal').classList.add('open');
-        };
-
-        window.closeDeleteModal = () => { document.getElementById('delete-day-modal').classList.remove('open'); };
-
-        window.confirmDeleteDay = async () => {
-            const dayName = document.getElementById('delete-day-target').value;
-            const updatedList = dayList.filter(d => d !== dayName);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
-            if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : '';
-            window.closeDeleteModal();
-        };
-
-        // --- Itinerary Logic ---
-        window.editItinerary = (id) => {
-            const item = itineraryData.find(i => i.id === id);
-            if (!item) return;
-            editingItineraryId = id;
-            document.getElementById('it-day').value = item.day;
-            document.getElementById('it-type').value = item.type;
-            document.getElementById('it-activity').value = item.activity;
-            if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || '';
-            if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || '';
-            if (item.time.includes('-')) {
-                const times = item.time.split('-').map(t => t.trim());
-                document.getElementById('it-time-start').value = times[0];
-                document.getElementById('it-time-end').value = times[1];
-            } else {
-                document.getElementById('it-time-start').value = item.time;
-                if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = '';
-            }
-            document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅';
-            document.getElementById('btn-cancel-itinerary').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.cancelEditItinerary = () => {
-            editingItineraryId = null;
-            document.getElementById('it-activity').value = '';
-            if (document.getElementById('it-time-end')) document.getElementById('it-time-end').value = '';
-            if (document.getElementById('it-note')) document.getElementById('it-note').value = '';
-            if (document.getElementById('it-address')) document.getElementById('it-address').value = '';
-            document.getElementById('it-day').value = currentDayFilter; 
-            document.getElementById('btn-add-itinerary').innerText = '加入行程地圖';
-            document.getElementById('btn-cancel-itinerary').classList.add('hidden');
-        };
-
-        window.addItinerary = async () => {
-            const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
-            const addrEl = document.getElementById('it-address'); const addr = addrEl ? addrEl.value : '';
-            const dayVal = document.getElementById('it-day').value;
-            const noteEl = document.getElementById('it-note'); const noteVal = noteEl ? noteEl.value : ''; 
-            const startTime = document.getElementById('it-time-start').value || '12:00';
-            const endTimeEl = document.getElementById('it-time-end'); const endTime = endTimeEl ? endTimeEl.value : '';
-            const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
-            const typeVal = document.getElementById('it-type').value;
-
-            const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal };
-            if (editingItineraryId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data); window.cancelEditItinerary(); } 
-            else { await addDoc(getColl('itinerary'), data); window.cancelEditItinerary(); }
-            window.setDayFilter(dayVal);
-        };
-
-        window.renderItinerary = () => {
-            const list = document.getElementById('it-list');
-            if (!list) return;
-            const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
-            if (sorted.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`; return; }
-
-            list.innerHTML = sorted.map(item => {
-                const safeAddr = (item.address || "").replace(/'/g, "\\'");
-                const safeAct = item.activity.replace(/'/g, "\\'");
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
-                
-                let typeClass = ''; let typeLabel = '';
-                switch(item.type) {
-                    case 'food': typeClass = 'timeline-food'; typeLabel = '🍴 美食'; break;
-                    case 'shop': typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; break;
-                    case 'view': typeClass = 'timeline-view'; typeLabel = '📸 景點'; break;
-                    case 'massage': typeClass = 'timeline-massage'; typeLabel = '💆 按摩'; break;
-                    case 'play': typeClass = 'timeline-play'; typeLabel = '🎢 玩樂'; break;
-                    case 'note': typeClass = 'timeline-note'; typeLabel = '📝 備註'; break;
-                    default: typeClass = 'timeline-view'; typeLabel = '📍 行程';
-                }
-
-                return `
-                <div class="app-card p-4 mb-4 ${typeClass} timeline-item relative">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1.5"><span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span><span class="tag tag-type">${typeLabel}</span></div>
-                            <div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>
-                            ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
-                            ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}
-                        </div>
-                        <div class="flex flex-col gap-3 ml-2">
-                            <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
-                            <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
-                        <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
-                        <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button>
-                        <button onclick="window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link">💡 攻略</button>
-                    </div>
-                </div>`;
-            }).join('');
-        };
-
-        // --- Flights & Hotels Logic ---
-        window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
-        
-        window.editFlight = (id) => {
-            const item = flightsData.find(f => f.id === id); if (!item) return;
-            editingFlightId = id;
-            document.getElementById('f-code').value = item.code; document.getElementById('f-from').value = item.from;
-            document.getElementById('f-to').value = item.to; document.getElementById('f-date').value = item.date || '';
-            document.getElementById('f-duration').value = item.duration || ''; document.getElementById('f-depTime').value = item.depTime;
-            document.getElementById('f-arrTime').value = item.arrTime; document.getElementById('f-checkinTime').value = item.checkinTime;
-            document.getElementById('f-seat').value = item.seat; document.getElementById('f-note').value = item.note || '';
-            document.getElementById('btn-add-flight').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-flight').classList.remove('hidden');
-            if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.cancelEditFlight = () => {
-            editingFlightId = null;
-            ['f-code','f-from','f-to','f-date','f-duration','f-depTime','f-arrTime','f-checkinTime','f-seat','f-note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('btn-add-flight').innerText = '儲存航班'; document.getElementById('btn-cancel-flight').classList.add('hidden');
-        };
-
-        window.addFlight = async () => {
-            const code = document.getElementById('f-code').value; if (!code || !currentUser) return;
-            const flightData = { 
-                code, from: document.getElementById('f-from').value, to: document.getElementById('f-to').value, 
-                date: document.getElementById('f-date').value, duration: document.getElementById('f-duration').value,
-                depTime: document.getElementById('f-depTime').value, arrTime: document.getElementById('f-arrTime').value, 
-                checkinTime: document.getElementById('f-checkinTime').value, seat: document.getElementById('f-seat').value, note: document.getElementById('f-note').value
-            };
-            if (editingFlightId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'flights', editingFlightId), flightData); window.cancelEditFlight(); } 
-            else { await addDoc(getColl('flights'), flightData); window.cancelEditFlight(); }
-            window.toggleSection('flight');
-        };
-
-        function renderFlights() {
-            const list = document.getElementById('flights-list');
-            if (!list) return;
-            const sortedFlights = [...flightsData].sort((a, b) => {
-                const dateA = a.date || '9999-99-99'; const dateB = b.date || '9999-99-99';
-                if (dateA !== dateB) return dateA.localeCompare(dateB);
-                return (a.depTime || '99:99').localeCompare(b.depTime || '99:99');
-            });
-            list.innerHTML = sortedFlights.map(f => {
-                const dateDisplay = f.date ? window.formatDisplayDate(f.date) : '';
-                return `
-                <div class="app-card p-5 mb-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2"><span class="bg-[#6B705C] text-white text-sm px-2 py-1 rounded font-black">${f.code}</span>${dateDisplay ? `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateDisplay}</span>` : ''}</div>
-                        <div class="flex gap-4"><span class="text-sm font-bold text-gray-400 mt-1">Seat: ${f.seat || '--'}</span><button onclick="window.editFlight('${f.id}')" class="text-gray-400 text-sm hover:text-[#6B705C]">✎</button><button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-300 text-sm">✕</button></div>
-                    </div>
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.from}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div></div>
-                        <div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] px-2"><span class="text-sm text-gray-400 leading-none">✈️</span><div class="w-full h-[1.5px] bg-gray-200 my-1.5 relative"><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -left-0.5 top-1/2 transform -translate-y-1/2"></div><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -right-0.5 top-1/2 transform -translate-y-1/2"></div></div>${f.duration ? `<span class="text-[9px] text-gray-400 font-bold tracking-tighter mt-0.5">${f.duration}</span>` : '<span class="text-[9px] opacity-0">-</span>'}</div>
-                        <div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.to}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div></div>
-                    </div>
-                    ${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-3"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${f.note}</div></div>` : ''}
-                </div>`;
-            }).join('');
-        }
-
-        window.editHotel = (id) => {
-            const item = hotelsData.find(h => h.id === id); if (!item) return;
-            editingHotelId = id;
-            document.getElementById('h-name').value = item.name; document.getElementById('h-room').value = item.room;
-            document.getElementById('h-checkin').value = item.checkin; document.getElementById('h-checkout').value = item.checkout || '';
-            document.getElementById('h-note').value = item.note || '';
-            document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-hotel').classList.remove('hidden');
-            if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.cancelEditHotel = () => {
-            editingHotelId = null;
-            ['h-name','h-room','h-checkin','h-checkout','h-note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('btn-add-hotel').innerText = '儲存飯店'; document.getElementById('btn-cancel-hotel').classList.add('hidden');
-        };
-
-        window.addHotel = async () => {
-            const name = document.getElementById('h-name').value; if (!name || !currentUser) return;
-            const hotelData = { name, room: document.getElementById('h-room').value, checkin: document.getElementById('h-checkin').value, checkout: document.getElementById('h-checkout').value, note: document.getElementById('h-note').value };
-            if (editingHotelId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'hotels', editingHotelId), hotelData); window.cancelEditHotel(); } 
-            else { await addDoc(getColl('hotels'), hotelData); window.cancelEditHotel(); }
-            window.toggleSection('hotel');
-        };
-
-        window.renderHotels = () => {
-            const list = document.getElementById('hotels-list');
-            if (!list) return;
-            const sortedHotels = [...hotelsData].sort((a, b) => (a.checkin || '9999-99-99').localeCompare(b.checkin || '9999-99-99'));
-            list.innerHTML = sortedHotels.map(h => {
-                let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--';
-                if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`;
-                return `
-                <div class="app-card p-5 mb-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="flex-1 pr-4"><div class="text-lg font-black text-[#4A4E40] leading-tight">${h.name}</div><div class="text-sm text-gray-500 font-bold mt-1.5">房號: <span class="text-[#6B705C]">${h.room || '--'}</span> | 入住: ${dateStr}</div></div>
-                        <div class="flex flex-col gap-3"><button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-300 text-lg self-end">✕</button><button onclick="window.editHotel('${h.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div>
-                    </div>
-                    ${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${h.note}</div></div>` : ''}
-                </div>`;
-            }).join('');
-        };
-
-        // --- 泰語發音功能 ---
-        window.speakThai = (text) => {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'th-TH'; 
-            utterance.rate = 0.8;    
-            utterance.pitch = 1;     
-            window.speechSynthesis.speak(utterance);
-        };
-
-        // --- 🌟 全新隨身翻譯機呼叫邏輯 ---
-        window.quickTranslate = () => {
-            const val = document.getElementById('quick-translate-input').value.trim();
-            if (!val) return;
-            const query = `請幫我把這句中文翻譯成泰語：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充這個詞在泰國的正確使用時機或文化小知識。`;
-            document.getElementById('quick-translate-input').value = '';
-            
-            window.askGemini(query, false, `🇹🇭 幫我翻譯：「${val}」`);
-        };
-
-        // --- AI 助理：看圖與聊天雙棲版 ---
-        window.askGemini = async (q = null, isAutoFood = false, displayOverride = null) => {
-            const input = document.getElementById('gemini-input');
-            const imageInput = document.getElementById('gemini-image');
-            const chat = document.getElementById('gemini-chat');
-            const query = q || input.value.trim();
-            
-            if (!query && (!imageInput || !imageInput.files[0])) return;
-
-            window.toggleGemini(true);
-            if(!q) input.value = '';
-            
-            const displayMessage = displayOverride || query || '📸 傳送了一張照片';
-            
-            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
-            
-            const thinkingId = 'think-' + Date.now();
-            const thinkingText = imageInput && imageInput.files[0] ? '管家正在戴眼鏡看照片...' : '管家正在幫你們出主意...';
-            chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">${thinkingText}<span class="thinking-dots"></span></div></div>`;
-            chat.scrollTop = chat.scrollHeight;
-            
-            try {
-                const pendingMissions = missionsData.filter(m => !m.checked).map(m => m.task).join('、');
-                const dateContext = `
-                    目前的系統資訊：
-                    - 蜜月出發日期：${departureDate || '尚未設定'}
-                    - ⚠️ 你們還有這些「未完成任務」：${pendingMissions || '暫無，太棒了！'}
-                    - 目前身處：${currentDayFilter} 的行程中
-                `;
-                const contextPrefix = `[背景資訊：${dateContext}] `;
-
-                let userContent;
-                let payloadModel = "llama-3.3-70b-versatile"; 
-                
-                if (imageInput && imageInput.files[0]) {
-                    payloadModel = "llama-3.2-11b-vision-preview"; 
-                    const base64 = await new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.readAsDataURL(imageInput.files[0]);
-                    });
-                    userContent = [
-                        { type: "text", text: contextPrefix + (query || "這張圖片是什麼？請詳細說明。") },
-                        { type: "image_url", image_url: { url: `data:${imageInput.files[0].type};base64,${base64}` } }
-                    ];
-                } else {
-                    userContent = contextPrefix + query;
-                }
-
-                chatHistory.push({ role: "user", content: userContent });
-                if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
-
-                // 🌟 終極防呆指令：強制 AI 吐出每一句代碼，不准列 1.2.3.
-                const systemPrompt = `
-                    你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
-
-                    【⚠️ 一般對話稱呼限制】
-                    1. 在「一般聊天、給予建議、翻譯」等非記帳情境時，開場或對話請「一律統稱」為『你們』或是『Darren & Tina』。
-                    2. ❌ 嚴禁在一般對話中開頭說「Darren，你好」或「Tina，你好」，因為妳不知道現在拿手機的是誰！
-                    3. ❌ 嚴禁使用「兩位新人」或任何英文愛稱（絕對禁止出現 "Bae" 這個字！）。
-                    4. 🇹🇼 必須使用「台灣在地用語」與「繁體中文」（例如：說「跳錶」不說開表、說「行動電源」不說充電寶、說「飯店」不說酒店、說「計程車」不說出租車）。
-
-                    【視覺分析任務：你的眼睛】
-                    當看到照片時，請根據照片類型主動切換功能：
-                    1. 菜單照片：自動翻譯菜色名，推薦 2-3 道必點菜。
-                    2. 路標/地標：辨識地點，給予拍照角度建議。
-                    3. 戰利品/商品：幫忙換算台幣價格，評估划不划算。
-                    4. 蜜月自拍：大聲讚美，給予構圖或姿勢的毒舌建議。
-
-                    【任務監督與倒數】
-                    - 若快出發了卻還沒辦好任務，請在對話結束前用損友口氣催促一下。
-
-                    【💰 記帳發揮 - 戲精人格】
-                    當判斷出是一筆花費時，妳必須「嚴格對應」付錢的人是誰，絕對不可以誇錯人：
-                    👉 若是 Darren 付錢：只能誇獎「Darren/老公」霸氣、帥氣、有品味，或是虧「Tina/老婆」賺到了。
-                    👉 若是 Tina 付錢：只能誇獎「Tina/老婆」仙女、霸氣、眼光好，或是虧「Darren/老公」今晚要搥背表現了。
-                    (❌ 嚴禁出現「Tina付錢卻誇老公霸氣」這種邏輯錯亂的情況！)
-                    ⚠️ 付款方式對應語氣：
-                    - 平分 (split)：代墊、先幫忙付、記得收錢。
-                    - 請客 (treat)：霸氣買單、送老婆/老公、真愛。(絕不說代墊)
-                    - 個人 (personal)：專屬享受、私房錢、犒賞自己。
-                    最後一行必須嚴格附上代碼：
-                    SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別(THB/TWD)","category":"分類代號","payer":"darren或tina","splitType":"split/treat/personal"}
-
-                    【🌟 翻譯任務與多字卡生成 (絕對指令！不能偷懶！)】
-                    當要求翻譯，或是妳提供泰文教學時（例如：教多句按摩用語、叫車用語），妳「必須」為每一句話單獨生成一行 SHOW_CARD 代碼。
-                    ❌ 絕對禁止：只給文字不給代碼，或把它們塞在同一個 JSON 裡。
-                    ❌ 絕對禁止：使用 "1. 2. 3." 編號條列式排版，請直接換行連續輸出代碼！
-                    ✅ 正確示範 (連續輸出獨立代碼)：
-                    SHOW_CARD: {"thai":"ขอผักชีเยอะๆ","meaning":"多一點香菜！","phonetic":"Kor Pak-Chee Yue-Yue"}
-                    SHOW_CARD: {"thai":"เท่าไหร่?","meaning":"這個多少錢？","phonetic":"Tao-Rai?"}
-
-                    【固定格式】
-                    1. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
-                `;
-
-                const url = "https://thailand-ai.tina09210808.workers.dev";
-                
-                const response = await fetch(url, {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        model: payloadModel,
-                        messages: [{ role: "system", content: systemPrompt }, ...chatHistory],
-                        temperature: 0.7
-                    })
-                });
-                
-                if (!response.ok) throw new Error(`[HTTP ${response.status}]`);
-                
-                const data = await response.json();
-                let text = data.choices?.[0]?.message?.content || "對不起，管家眼睛有點花...";
-                
-                // 存入聊天紀錄的是「乾淨的文字」，這樣 AI 下次看紀錄才不會亂掉
-                const textToSave = displayOverride || query || "這張圖片是什麼？";
-                chatHistory[chatHistory.length - 1] = { role: "user", content: textToSave };
-                chatHistory.push({ role: "assistant", content: text });
-
-                document.getElementById(thinkingId)?.remove();
-
-                // ✂️ 🌟 清理 AI 偷加的 Markdown 標籤，避免解析失敗
-                text = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
-
-                let responseText = text;
-                let cardBtnHtml = '';
-                const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g;
-                let match;
-
-                // 抓出所有出現的大字卡代碼，生成多顆按鈕
-                while ((match = cardRegex.exec(text)) !== null) {
-                    try {
-                        let jsonStr = match[1].trim();
-                        
-                        // 防呆：如果 AI 把結尾搞髒了，強制截斷在最後一個 }
-                        const lastBrace = jsonStr.lastIndexOf('}');
-                        if (lastBrace !== -1) {
-                            jsonStr = jsonStr.substring(0, lastBrace + 1);
-                        }
-                        
-                        // 雙重防呆：確保沒切到別的代碼
-                        if (jsonStr.includes("SAVE_EXPENSE:")) {
-                            jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
-                        }
-                        
-                        const cardData = JSON.parse(jsonStr);
-                        
-                        cardBtnHtml += `
-                            <div class="mt-2">
-                                <button onclick="window.showThaiCard('${cardData.thai.replace(/'/g, "\\'")}', '${cardData.meaning.replace(/'/g, "\\'")}', '${cardData.phonetic.replace(/'/g, "\\'")}')" 
-                                        class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">
-                                    🔊 朗讀：${cardData.meaning.replace(/'/g, "\\'")}
-                                </button>
-                            </div>
-                        `;
-                    } catch (e) { console.error("大字卡解析失敗", e); }
-                }
-
-                // 將所有代碼從畫面上抹除
-                responseText = responseText.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').trim();
-                responseText = responseText.replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
-                
-                // 渲染對話泡泡
-                let responseHtml = `
-                    <div class="mb-4 text-left">
-                        <div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">
-                            ${responseText.replace(/\n/g, '<br>')}
-                            ${cardBtnHtml ? `<div class="mt-3 border-t border-[#F8D7D1] pt-3">${cardBtnHtml}</div>` : ''} 
-                        </div>
-                    </div>
-                `;
-                
-                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
-                    const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
-                    if(extractedPlace.length > 1) {
-                        responseHtml += `
-                            <div class="mt-3 flex gap-2 flex-wrap">
-                                <button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button>
-                                <button onclick="window.askGemini('在這邊拍照有什麼姿勢建議？📸', false, '💡 查詢拍照姿勢')" class="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">📸 拍照姿勢建議</button>
-                            </div>
-                        `;
-                    }
-                }
-                chat.innerHTML += responseHtml;
-                
-                // 背景記帳邏輯
-                if (text.includes("SAVE_EXPENSE:")) {
-                    try {
-                        const expenseMatch = text.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
-                        if (expenseMatch) {
-                            let jsonStr = expenseMatch[1];
-                            const lastBrace = jsonStr.lastIndexOf('}');
-                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                            
-                            const expData = JSON.parse(jsonStr);
-                            await addDoc(getColl('expenses'), {
-                                item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB",
-                                category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
-                                splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now()
-                            });
-                        }
-                    } catch (e) { console.error("AI 記帳解析失敗", e); }
-                }
-                
-                if (imageInput) { imageInput.value = ''; document.getElementById('image-indicator').classList.add('hidden'); }
-
-            } catch (e) { 
-                console.error("AI 錯誤:", e);
-                document.getElementById(thinkingId)?.remove(); 
-                chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm border border-red-100 text-red-500">管家網路不穩，請稍後再試一次！<br><span class="text-[10px] opacity-70">Error: ${e.message}</span></div></div>`;
-            }
-            chat.scrollTop = chat.scrollHeight;
-        };
-
-        window.getFoodRecommendation = (place) => {
-            const foodQuery = `幫我們找找「${place}」附近推薦的 3-5 家海鮮或泰式美食，順便告訴我們價位和必點菜色。`;
-            const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}+restaurants`;
-            window.askGemini(foodQuery, true, `🍴 尋找「${place}」附近美食`);
-            
-            setTimeout(() => {
-                const chat = document.getElementById('gemini-chat');
-                chat.innerHTML += `
-                    <div class="mb-4 text-left">
-                        <a href="${mapsLink}" target="_blank" class="inline-flex items-center gap-2 bg-white border-2 border-[#F8AD9D] text-[#e57e6a] p-4 rounded-2xl text-sm font-black shadow-md transition-transform active:scale-95">
-                            📍 打開 Google Maps 找更多實時餐廳評價
-                        </a>
-                    </div>
-                `;
-                chat.scrollTop = chat.scrollHeight;
-            }, 1800);
-        };
-
-        window.showThaiCard = (thai, meaning, phonetic) => {
-            document.getElementById('thai-card-text').innerText = thai;
-            document.getElementById('thai-card-meaning').innerText = meaning;
-            document.getElementById('thai-card-phonetic').innerText = phonetic;
-            
-            const speakerBtn = document.getElementById('thai-speaker-btn');
-            if (speakerBtn) {
-                speakerBtn.onclick = (e) => {
-                    e.stopPropagation(); 
-                    window.speakThai(thai);
-                };
-            }
-            
-            document.getElementById('thai-card-modal').classList.add('open');
-        };
-
-        // --- 甜蜜回憶牆邏輯 ---
-        window.previewMemImage = (input) => {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('mem-preview-img').src = e.target.result;
-                    document.getElementById('mem-preview-img').classList.remove('hidden');
-                    document.getElementById('mem-preview-placeholder').classList.add('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-
-        window.addMemory = async () => {
-            const text = document.getElementById('mem-text').value.trim();
-            const mood = document.getElementById('mem-mood').value;
-            const imgFile = document.getElementById('mem-image').files[0];
-            
-            if(!text && !imgFile) return;
-
-            let base64Img = "";
-            if (imgFile) {
-                base64Img = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(imgFile);
-                });
-            }
-
-            await addDoc(getColl('memories'), {
-                text, mood, image: base64Img, author: currentUser ? currentUser.uid : 'anonymous', createdAt: Date.now()
-            });
-
-            document.getElementById('mem-text').value = '';
-            if(document.getElementById('mem-image')) document.getElementById('mem-image').value = '';
-            document.getElementById('mem-preview-img').classList.add('hidden');
-            document.getElementById('mem-preview-placeholder').classList.remove('hidden');
-        };
-
-        window.renderMemories = () => {
-            const list = document.getElementById('memories-list');
-            if (!list) return;
-            if (memoriesData.length === 0) {
-                list.innerHTML = `<div class="text-center py-20 text-gray-300 font-bold italic">還沒有紀錄任何瞬間喔... 🖋️</div>`;
-                list.classList.remove('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2');
-                return;
-            }
-
-            list.classList.add('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2');
-
-            list.innerHTML = memoriesData.sort((a,b) => b.createdAt - a.createdAt).map(m => `
-                <div class="relative group mb-6 last:mb-0">
-                    <div class="absolute -left-[27px] top-4 w-3.5 h-3.5 bg-white border-[3.5px] border-[#DDB892] rounded-full z-10 shadow-sm"></div>
-                    
-                    <div class="app-card bg-white overflow-hidden shadow-sm border border-gray-100">
-                        ${m.image ? `
-                        <div class="relative w-full h-48 skeleton overflow-hidden">
-                            <img src="${m.image}" 
-                                 loading="lazy" 
-                                 class="w-full h-48 object-cover img-fade-in" 
-                                 onload="this.classList.add('img-loaded'); this.parentElement.classList.remove('skeleton')"
-                                 onerror="window.handleImgError(this)">
-                        </div>` : ''}
-                        <div class="p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-2xl">${m.mood || '✨'}</span>
-                                <div class="text-right">
-                                    <div class="text-[10px] font-black text-gray-400">${new Date(m.createdAt).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div>
-                                    <button onclick="window.deleteItem('memories', '${m.id}')" class="text-[10px] text-red-300 font-bold mt-1 transition-colors hover:text-red-500">✕ 刪除</button>
-                                </div>
-                            </div>
-                            ${m.text ? `<p class="text-[#4A4E40] text-sm leading-relaxed font-medium mt-2">${m.text}</p>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        // --- 基底與優化功能 ---
-        window.handleImgError = (img) => {
-            img.onerror = null; 
-            img.src = 'https://img.icons8.com/plasticine/200/heart.png'; 
-            if(img.parentElement) img.parentElement.classList.remove('skeleton');
-            img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); 
-        };
-
-        window.switchTab = (id) => {
-            if (window.navigator.vibrate) window.navigator.vibrate(10); 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            const target = document.getElementById('content-' + id);
-            if (target) target.classList.remove('hidden');
-
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
-            const btn = document.getElementById('btn-' + id);
-            if (btn) btn.classList.remove('opacity-30');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.copyLocation = async (activity, address, event) => {
-            const textToCopy = (address && address.trim() !== "") ? address : activity;
-            try {
-                await navigator.clipboard.writeText(textToCopy);
-                if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]); 
-                const btn = event.currentTarget; 
-                const originalText = btn.innerHTML;
-                btn.innerHTML = "✅ 已複製";
-                setTimeout(() => { btn.innerHTML = originalText; }, 1500);
-            } catch (err) { console.error('複製失敗', err); }
-        };
-
-        window.formatDisplayDate = (d) => { if(!d) return ''; const p = d.split('-'); if(p.length!==3) return d; const dt = new Date(p[0], p[1]-1, p[2]); return `${p[1]}/${p[2]} (${['日','一','二','三','四','五','六'][dt.getDay()]})`; };
-        window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
-        window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
-        
-        window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; chatHistory = []; };
-        window.getWeather = async () => { try { const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); const data = await res.json(); document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; } catch(e){} };
-
-        window.calcIndependentRate = () => { 
-            const v = parseFloat(document.getElementById('conv-input').value) || 0; 
-            const c = document.getElementById('conv-curr').value; 
-            const r = document.getElementById('conv-res'); 
-            if (c === 'THB') { r.innerText = `台幣 NT$ ${Math.round(v * ratesToTHB['TWD']).toLocaleString()}`; } 
-            else if (c === 'USD') { r.innerText = `泰銖 ฿ ${Math.round(v * ratesToTHB['USD']).toLocaleString()}`; } 
-            else { r.innerText = `泰銖 ฿ ${Math.round(v / ratesToTHB['TWD']).toLocaleString()}`; }
-        };
-
-        window.updateExchangePreview = () => { 
-            const v = parseFloat(document.getElementById('exp-cost').value) || 0; 
-            const c = document.getElementById('exp-currency').value; 
-            const hint = document.getElementById('exchange-hint');
-            if (c === 'THB') { hint.innerText = ''; } 
-            else { hint.innerText = `≈ ฿ ${Math.round(c === 'USD' ? v * ratesToTHB['USD'] : v / ratesToTHB['TWD']).toLocaleString()}`; }
-        };
-        
-        // --- 記帳與結算邏輯 ---
-        window.addExpense = async () => {
-            const item = document.getElementById('exp-item').value; 
-            const cost = document.getElementById('exp-cost').value;
-            if(!item || !cost || !currentUser) return;
-            
-            const data = { 
-                item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, 
-                category: document.getElementById('exp-category').value, payer: document.getElementById('exp-payer').value, 
-                splitType: document.getElementById('exp-split').value, date: document.getElementById('exp-date').value, createdAt: Date.now() 
-            };
-            
-            if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } 
-            else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); }
-
-            const payer = document.getElementById('exp-payer').value;
-            const splitType = document.getElementById('exp-split').value;
-            const category = document.getElementById('exp-category').value;
-            
-            let catText = "";
-            if (category === 'food') catText = "🤤 泰國美食吃起來！回去再減肥！";
-            else if (category === 'shop') catText = "🛍️ 買啦哪次不買！戰利品+1！";
-            else if (category === 'massage') catText = "💆 鬆一下～泰式按摩按到爽！";
-            else if (category === 'play') catText = "🎢 蜜月就是要盡情玩樂體驗！";
-            else if (category === 'traffic') catText = "🚕 交通費 get，平安抵達最重要！";
-            else catText = "✨ 錢錢變成喜歡的形狀了！";
-
-            let msgs = [];
-            if (splitType === 'split') {
-                msgs = payer === 'darren' ? [
-                    `Darren 先代墊「${item}」！${catText} (記得跟老婆結算🤣)`,
-                    `公費平分！Darren 帥氣刷卡先代墊，${catText}`,
-                ] : [
-                    `Tina 先代墊「${item}」！${catText} (記帳小精靈上線)`,
-                    `公費平分！老婆先付錢代墊啦，${catText}`,
-                ];
-            } else if (splitType === 'treat') {
-                msgs = payer === 'darren' ? [
-                    `Darren 霸氣請客「${item}」！(這不是代墊，是真愛！) ${catText}`,
-                    `老公霸氣買單送老婆！Tina 負責開心享受就好！${catText}`,
-                ] : [
-                    `Tina 大方請客「${item}」！仙女霸氣買單不用還！${catText}`,
-                    `老婆請客送老公！Darren 今晚宵夜該表現一下了 😏 ${catText}`,
-                ];
-            } else { 
-                msgs = payer === 'darren' ? [
-                    `Darren 的專屬花費！男生也是要對自己好的！${catText}`,
-                    `個人支出入帳！Darren 的私房錢買酷東西啦 😂 ${catText}`
-                ] : [
-                    `Tina 的專屬戰利品！仙女就是要配好東西！${catText}`,
-                    `個人支出入帳！誰都不能阻止 Tina 變美！💖 ${catText}`
-                ];
-            }
-            
-            const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
-            window.showToast(randomMsg, '💰');
-        };
-
-        window.cancelEditExpense = () => {
-            editingExpenseId = null;
-            document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = '';
-            document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = '';
-            document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; 
-            document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden');
-        };
-
-        window.editExpense = (id) => {
-            const item = allExpenses.find(e => e.id === id); if (!item) return;
-            editingExpenseId = id;
-            document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost;
-            document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency;
-            document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; 
-            document.getElementById('exp-category').value = item.category || 'food'; 
-            document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        window.renderExpenses = () => {
-            const list = document.getElementById('exp-list');
-            if(!list) return;
-
-            let totalsByPayer = { tina: {}, darren: {} };
-            let sharedTotalTHB = 0; let tinaPaidSharedTHB = 0; let darrenPaidSharedTHB = 0;
-
-            const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
-            
-            const total = filtered.reduce((s, e) => {
-                const sType = e.splitType || 'split';
-                let thbEq = e.cost;
-                if (e.currency === 'USD') thbEq = e.cost * ratesToTHB['USD'];
-                if (e.currency === 'TWD') thbEq = e.cost / ratesToTHB['TWD'];
-                
-                if(!totalsByPayer[e.payer]) totalsByPayer[e.payer] = {}; 
-                if(!totalsByPayer[e.payer][e.currency]) totalsByPayer[e.payer][e.currency] = 0; 
-                totalsByPayer[e.payer][e.currency] += e.cost;
-
-                if (sType === 'split') {
-                    sharedTotalTHB += thbEq;
-                    if (e.payer === 'tina') tinaPaidSharedTHB += thbEq;
-                    if (e.payer === 'darren') darrenPaidSharedTHB += thbEq;
-                }
-                return s + thbEq; 
-            }, 0);
-
-            const formatPayerSummary = (p) => { let lines = []; for(let curr in totalsByPayer[p]) lines.push(`${curr} ${Math.round(totalsByPayer[p][curr]).toLocaleString()}`); return lines.length > 0 ? lines.join(' / ') : '尚未支出'; };
-            document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); 
-            document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
-            
-            document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
-
-            const halfShared = sharedTotalTHB / 2;
-            const tinaBalance = tinaPaidSharedTHB - halfShared; 
-            const darrenBalance = darrenPaidSharedTHB - halfShared; 
-            
-            const settlementEl = document.getElementById('settlement-amount');
-            if (tinaBalance > 1) settlementEl.innerHTML = `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1">฿ ${Math.round(tinaBalance).toLocaleString()}</span>`;
-            else if (darrenBalance > 1) settlementEl.innerHTML = `Tina 需給 Darren <span class="text-[#DDB892] ml-1">฿ ${Math.round(darrenBalance).toLocaleString()}</span>`;
-            else settlementEl.innerHTML = `目前帳目完美打平 ✨`;
-            
-            list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
-                let thbEq = exp.cost;
-                if (exp.currency === 'USD') thbEq = exp.cost * ratesToTHB['USD'];
-                if (exp.currency === 'TWD') thbEq = exp.cost / ratesToTHB['TWD'];
-                
-                const sType = exp.splitType || 'split';
-                let typeBadge = '';
-                if (sType === 'split') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-gray-200 text-gray-600 rounded font-bold">平分</span>`;
-                else if (sType === 'treat') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-pink-100 text-pink-600 rounded font-bold border border-pink-200">請客</span>`;
-                else if (sType === 'personal') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-blue-100 text-blue-600 rounded font-bold border border-blue-200">個人</span>`;
-
-                return `
-                <div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}">
-                    <div class="flex-1 pr-4">
-                        <div class="flex items-center gap-1 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40] ml-1">${exp.item}</div></div>
-                        <div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter flex items-center">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div>
-                    </div>
-                    <div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div>
-                    <div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3">
-                        <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button>
-                        <button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button>
-                    </div>
-                </div>`
-            }).join('');
-
-            const ctx = document.getElementById('expenseChart').getContext('2d');
-            const chartContainer = document.getElementById('chart-container');
-            if (window.myChart) window.myChart.destroy(); 
-            if (filtered.length === 0) { chartContainer.classList.add('hidden'); } 
-            else {
-                chartContainer.classList.remove('hidden');
-                const categories = { 'food': '🍴 食物', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'traffic': '🚗 交通', 'other': '🎒 其他' };
-                let dataMap = {};
-                filtered.forEach(e => {
-                    let thb = e.cost;
-                    if (e.currency === 'USD') thb *= ratesToTHB['USD'];
-                    if (e.currency === 'TWD') thb /= ratesToTHB['TWD'];
-                    const cat = e.category || 'other';
-                    dataMap[cat] = (dataMap[cat] || 0) + thb;
-                });
-                window.myChart = new Chart(ctx, {
-                    type: 'doughnut', 
-                    data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] },
-                    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' }
-                });
-            }
-        };
-        
-        window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); window.renderExpenses(); };
-
-        window.addPacking = async () => { const v = document.getElementById('pack-item').value; const c = document.getElementById('pack-category').value; const o = document.getElementById('pack-owner').value; if(!v || !currentUser) return; await addDoc(getColl('packing'), { item: v, owner: o, checked: false, category: c }); document.getElementById('pack-item').value = ''; };
-        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
-        window.renderPacking = () => {
-            const draw = (o, cid) => {
-                const container = document.getElementById(cid);
-                if(!container) return;
-                const items = packingData.filter(i => i.owner === o && i.category === packFilters[o]);
-                const tabs = `<div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar">${packCategories.map(c => `<button onclick="window.setPackFilter('${o}','${c.id}')" class="pack-filter-btn ${o==='tina'?'pack-filter-btn-tina':''} ${packFilters[o]===c.id?'active':''}">${c.icon}</button>`).join('')}</div>`;
-                container.innerHTML = tabs + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${items.map(i => `<div class="p-3.5 flex items-center gap-3 border-b last:border-0"><div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 ${i.checked?'bg-[#6B705C] border-[#6B705C]':'border-gray-300'}"></div><span class="flex-1 ${i.checked?'line-through text-gray-300':'font-bold'}">${i.item}</span><button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300">✕</button></div>`).join('')}</div>`;
-            };
-            draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
-        };
-        window.setPackFilter = (o, c) => { packFilters[o] = c; renderPacking(); };
-
-        document.addEventListener('DOMContentLoaded', () => { 
-            const expDate = document.getElementById('exp-date');
-            if(expDate) expDate.valueAsDate = new Date(); 
-            fetchLiveRates(); 
-        });
-        window.switchTab('itinerary');
-        window.getWeather();
-
-        // 🌍 網路狀態監測邏輯
-        window.addEventListener('online', () => {
-            const offlineToast = document.getElementById('offline-toast');
-            if (offlineToast) offlineToast.classList.add('hidden');
-            const onlineToast = document.getElementById('online-toast');
-            if (onlineToast) { onlineToast.classList.remove('hidden'); setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); }
-        });
-
-        window.addEventListener('offline', () => {
-            const offlineToast = document.getElementById('offline-toast');
-            if (offlineToast) offlineToast.classList.remove('hidden');
-        });
-
-        if (!navigator.onLine) {
-            const offlineToast = document.getElementById('offline-toast');
-            if (offlineToast) offlineToast.classList.remove('hidden');
-        }
-
-        // --- PWA 開場動畫 (Splash Screen) 邏輯 ---
-        const hideSplashScreen = () => {
-            const splash = document.getElementById('app-splash');
-            if (splash && !splash.classList.contains('opacity-0')) {
-                splash.classList.add('opacity-0');
-                setTimeout(() => splash.remove(), 700); 
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(hideSplashScreen, 800);
-        });
-
-        setTimeout(hideSplashScreen, 2000);
-        
-    </script>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
     
@@ -1457,7 +177,7 @@
         <p class="text-[10px] font-bold text-[#6B705C] tracking-[0.3em] animate-pulse mt-2 splash-text">🙏 管家連線準備中...</p>
     </div>
 
-    <!-- 🌍 網路狀態提示框 (加入 pointer-events-none 避免阻擋點擊) -->
+    <!-- 🌍 網路狀態提示框 -->
     <div id="offline-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] hidden pointer-events-none">
         <div class="bg-red-500 text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-black text-xs transition-all animate-bounce whitespace-nowrap">
             <span>⚠️</span> 網路斷線中，功能受限但仍可看行程
@@ -1532,38 +252,15 @@
                     <button onclick="window.toggleSection('flight')" class="text-xs bg-[#6B705C] text-white px-4 py-1.5 rounded-full font-bold shadow-sm">＋新增</button>
                 </div>
                 
-                <!-- 🌟 升級版航班輸入區塊 -->
                 <div id="flight-grid" class="expand-panel app-card p-5 mb-5 bg-white border border-gray-100">
                     <input type="text" id="f-code" placeholder="航班號 (如 TG635)" class="w-full p-3 rounded-xl mb-4 font-black outline-none border border-gray-200">
-                    
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <input type="text" id="f-from" placeholder="出發地" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
-                        <input type="text" id="f-to" placeholder="目的地" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
-                    </div>
-
-                    <div class="flex gap-3 mb-1 px-1">
-                        <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 飛行日期</span>
-                        <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">⏱️ 總飛行時間</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <input type="date" id="f-date" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
-                        <input type="text" id="f-duration" placeholder="例如: 3h 50m" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-3 mb-1 px-1">
-                        <span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛫 出發</span>
-                        <span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛬 抵達</span>
-                        <span class="text-[9px] font-black text-[#F8AD9D] uppercase text-center">⌚ 報到</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-3 mb-4">
-                        <input type="time" id="f-depTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
-                        <input type="time" id="f-arrTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
-                        <input type="time" id="f-checkinTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
-                    </div>
-
+                    <div class="grid grid-cols-2 gap-3 mb-4"><input type="text" id="f-from" placeholder="出發地" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="text" id="f-to" placeholder="目的地" class="p-3 rounded-xl text-sm outline-none border border-gray-200"></div>
+                    <div class="flex gap-3 mb-1 px-1"><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 飛行日期</span><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">⏱️ 總飛行時間</span></div>
+                    <div class="grid grid-cols-2 gap-3 mb-4"><input type="date" id="f-date" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="text" id="f-duration" placeholder="例如: 3h 50m" class="p-3 rounded-xl text-sm outline-none border border-gray-200"></div>
+                    <div class="grid grid-cols-3 gap-3 mb-1 px-1"><span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛫 出發</span><span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛬 抵達</span><span class="text-[9px] font-black text-[#F8AD9D] uppercase text-center">⌚ 報到</span></div>
+                    <div class="grid grid-cols-3 gap-3 mb-4"><input type="time" id="f-depTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"><input type="time" id="f-arrTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"><input type="time" id="f-checkinTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"></div>
                     <input type="text" id="f-seat" placeholder="座位號碼" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200">
                     <input type="text" id="f-note" placeholder="備註 (如：行李重量、餐點)" class="w-full p-3 rounded-xl text-sm mb-5 outline-none border border-gray-200">
-                    
                     <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-4 rounded-xl text-sm font-bold shadow-md">儲存航班</button>
                     <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="w-full mt-2 bg-gray-100 text-gray-500 py-3.5 rounded-xl text-sm font-bold hidden">取消修改</button>
                 </div>
@@ -1576,18 +273,10 @@
                 </div>
                 <div id="hotel-grid" class="expand-panel app-card p-5 mb-5 bg-gray-50">
                     <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-3 rounded-xl mb-3 font-black outline-none border border-gray-200">
-                    
                     <div class="mb-3">
-                        <div class="flex gap-3 mb-1 px-1">
-                            <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 入住日期</span>
-                            <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 退房日期</span>
-                        </div>
-                        <div class="flex gap-3">
-                            <input type="date" id="h-checkin" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
-                            <input type="date" id="h-checkout" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
-                        </div>
+                        <div class="flex gap-3 mb-1 px-1"><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 入住日期</span><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 退房日期</span></div>
+                        <div class="flex gap-3"><input type="date" id="h-checkin" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white"><input type="date" id="h-checkout" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white"></div>
                     </div>
-
                     <input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200"><input type="text" id="h-note" placeholder="備註" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200"><button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold">儲存飯店</button><button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
                 </div>
                 <div id="hotels-list"></div>
@@ -1604,14 +293,12 @@
                             <button onclick="window.unlockVault()" class="bg-[#4A4E40] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md">解鎖</button>
                         </div>
                     </div>
-
                     <div id="vault-content" class="hidden">
                         <div class="app-card p-5 bg-white border-2 border-[#6B705C]">
                             <div class="flex justify-between items-center mb-4">
                                 <span class="text-xs font-black text-[#6B705C]">📂 雲端備份證件</span>
                                 <button onclick="document.getElementById('vault-content').classList.add('hidden'); document.getElementById('vault-locked').classList.remove('hidden');" class="text-[10px] bg-gray-100 px-2 py-1 rounded font-bold hover:bg-gray-200 transition-colors">重新上鎖</button>
                             </div>
-                            
                             <div class="grid grid-cols-2 gap-3 mb-4">
                                 <label class="bg-gray-50 border border-gray-100 p-3 rounded-xl text-center cursor-pointer transition-colors hover:bg-gray-100">
                                     <input type="file" class="hidden" onchange="window.uploadToVault('passport', this)">
@@ -1622,7 +309,6 @@
                                     <span class="text-lg">🏥</span><span class="block text-[9px] font-bold text-gray-400 mt-1">上傳保險單</span>
                                 </label>
                             </div>
-
                             <div id="vault-list" class="space-y-3"></div>
                         </div>
                     </div>
@@ -1635,21 +321,16 @@
                     <h3 class="text-xl font-black text-[#4A4E40]">蜜月重要任務 📝</h3>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Honeymoon Milestones</p>
                 </div>
-
                 <div class="app-card p-5 mb-6 border-2 border-dashed border-[#6B705C]/30">
                     <div class="flex gap-2 mb-3">
                         <select id="mission-category" class="bg-gray-100 px-3 rounded-xl text-xs font-bold border-none outline-none">
-                            <option value="pre">✈️ 出發前</option>
-                            <option value="day">🇹🇭 抵達當天</option>
-                            <option value="trip">❤️ 旅程中</option>
+                            <option value="pre">✈️ 出發前</option><option value="day">🇹🇭 抵達當天</option><option value="trip">❤️ 旅程中</option>
                         </select>
                         <input type="text" id="mission-task" placeholder="例如：買 eSIM 卡..." class="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 outline-none">
                     </div>
                     <button onclick="window.addMission()" class="w-full bg-[#6B705C] text-white py-3 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">指 派 任 務</button>
                 </div>
-
-                <div id="missions-container" class="space-y-6">
-                </div>
+                <div id="missions-container" class="space-y-6"></div>
             </div>
 
             <!-- 回憶分頁 -->
@@ -1658,93 +339,48 @@
                     <h3 class="text-xl font-black text-[#4A4E40]">甜蜜瞬間 📖</h3>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Our Honeymoon Journal</p>
                 </div>
-
                 <div class="app-card p-5 mb-8 bg-white border-2 border-dashed border-[#DDB892]">
                     <div class="flex gap-3 mb-3">
                         <label class="w-16 h-16 shrink-0 bg-gray-50 rounded-2xl border-2 border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative">
                             <input type="file" id="mem-image" accept="image/*" class="hidden" onchange="window.previewMemImage(this)">
                             <div id="mem-preview-placeholder" class="text-center absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-xl">📸</span>
-                                <span class="block text-[8px] font-black text-gray-400 mt-1">上傳照片</span>
+                                <span class="text-xl">📸</span><span class="block text-[8px] font-black text-gray-400 mt-1">上傳照片</span>
                             </div>
                             <img id="mem-preview-img" class="hidden w-full h-full object-cover relative z-10">
                         </label>
                         <textarea id="mem-text" placeholder="這一刻的心情是...？" class="flex-1 bg-gray-50 p-3 rounded-2xl text-sm outline-none resize-none h-16 border border-gray-100"></textarea>
                     </div>
-                    
                     <div class="flex gap-2 items-center mb-4">
                         <span class="text-xs font-black text-gray-400">當前心情：</span>
                         <select id="mem-mood" class="bg-gray-100 px-3 py-1.5 rounded-full text-xs font-black outline-none border-none">
-                            <option value="🥰">🥰 超甜蜜</option>
-                            <option value="🤩">🤩 太驚艷</option>
-                            <option value="🤤">🤤 好好吃</option>
-                            <option value="😎">😎 買瘋了</option>
-                            <option value="😴">😴 累攤了</option>
+                            <option value="🥰">🥰 超甜蜜</option><option value="🤩">🤩 太驚艷</option><option value="🤤">🤤 好好吃</option><option value="😎">😎 買瘋了</option><option value="😴">😴 累攤了</option>
                         </select>
                     </div>
-
                     <button onclick="window.addMemory()" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">發 布 瞬 間</button>
                 </div>
-
                 <div id="memories-list" class="relative"></div>
             </div>
 
             <!-- 記帳分頁 -->
             <div id="content-budget" class="tab-content hidden">
                 <div class="converter-box mb-6"><div class="flex gap-2"><input type="number" id="conv-input" oninput="window.calcIndependentRate()" class="flex-1 p-3 rounded-xl shadow-sm text-sm" placeholder="輸入金額"><select id="conv-curr" onchange="window.calcIndependentRate()" class="bg-white p-3 rounded-xl text-xs font-black"><option value="TWD">TWD 台幣</option><option value="THB">THB 泰銖</option></select></div><div id="conv-res" class="mt-2 text-sm font-black italic">泰銖 ฿ 0</div></div>
-                
                 <div class="app-card bg-[#6B705C] p-6 text-white mb-5 shadow-lg relative">
                     <p class="text-[10px] opacity-80 font-bold uppercase mb-1">Honeymoon Total</p>
                     <h2 id="total-amount" class="text-4xl font-black mb-4">฿ 0</h2>
                     <div class="bg-white/10 rounded-xl p-3 flex justify-between items-center backdrop-blur-sm border border-white/20">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">⚖️</span>
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold opacity-80">共同結算 (已扣除個人/請客)</span>
-                                <span id="settlement-amount" class="text-sm font-black mt-0.5">計算中...</span>
-                            </div>
-                        </div>
+                        <div class="flex items-center gap-2"><span class="text-xl">⚖️</span><div class="flex flex-col"><span class="text-[10px] font-bold opacity-80">共同結算 (已扣除個人/請客)</span><span id="settlement-amount" class="text-sm font-black mt-0.5">計算中...</span></div></div>
                     </div>
                 </div>
-                
-                <!-- 圖表區塊 -->
-                <div id="chart-container" class="app-card p-4 mb-5 bg-white hidden">
-                    <canvas id="expenseChart" style="max-height: 250px;"></canvas>
-                </div>
-
+                <div id="chart-container" class="app-card p-4 mb-5 bg-white hidden"><canvas id="expenseChart" style="max-height: 250px;"></canvas></div>
                 <div class="flex gap-3 mb-5 overflow-x-auto pb-2 no-scrollbar"><button onclick="window.setPayerFilter('all')" id="chip-all" class="filter-chip active flex-shrink-0 shadow-sm">全部</button><button onclick="window.setPayerFilter('tina')" id="chip-tina" class="filter-chip flex-shrink-0 shadow-sm"><div class="font-black text-sm">Tina</div><div id="chip-tina-amt" class="text-[10px] font-bold mt-1 opacity-80"></div></button><button onclick="window.setPayerFilter('darren')" id="chip-darren" class="filter-chip flex-shrink-0 shadow-sm"><div class="font-black text-sm">Darren</div><div id="chip-darren-amt" class="text-[10px] font-bold mt-1 opacity-80"></div></button></div>
                 
                 <div class="app-card p-5 space-y-3 mb-5">
                     <input type="date" id="exp-date" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold border border-gray-100">
                     <input type="text" id="exp-item" placeholder="支出項目" class="w-full bg-gray-50 p-3 rounded-xl text-sm border border-gray-100">
-                    
-                    <select id="exp-category" class="w-full bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100">
-                        <option value="food">🍴 美食料理</option>
-                        <option value="shop">🛍️ 購物採買</option>
-                        <option value="massage">💆 舒壓按摩</option>
-                        <option value="play">🎢 玩樂門票</option>
-                        <option value="traffic">🚗 交通車資</option>
-                        <option value="other">🎒 其他雜項</option>
-                    </select>
-
-                    <div class="flex gap-2 pt-1">
-                        <select id="exp-currency" onchange="window.updateExchangePreview()" class="w-1/3 bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100"><option value="THB">THB</option><option value="TWD">TWD</option></select>
-                        <input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm font-bold border border-gray-100">
-                    </div>
+                    <select id="exp-category" class="w-full bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100"><option value="food">🍴 美食料理</option><option value="shop">🛍️ 購物採買</option><option value="massage">💆 舒壓按摩</option><option value="play">🎢 玩樂門票</option><option value="traffic">🚗 交通車資</option><option value="other">🎒 其他雜項</option></select>
+                    <div class="flex gap-2 pt-1"><select id="exp-currency" onchange="window.updateExchangePreview()" class="w-1/3 bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100"><option value="THB">THB</option><option value="TWD">TWD</option></select><input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm font-bold border border-gray-100"></div>
                     <div id="exchange-hint" class="text-[10px] text-gray-400 italic px-1 h-2"></div>
-                    
-                    <div class="flex gap-2">
-                        <select id="exp-payer" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none">
-                            <option value="tina">Tina 支付 💰</option>
-                            <option value="darren">Darren 支付 💳</option>
-                        </select>
-                        <select id="exp-split" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none text-[#6B705C]">
-                            <option value="split">👫 甜蜜平分</option>
-                            <option value="treat">🎁 大方請客</option>
-                            <option value="personal">👤 個人支出</option>
-                        </select>
-                    </div>
-
+                    <div class="flex gap-2"><select id="exp-payer" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none"><option value="tina">Tina 支付 💰</option><option value="darren">Darren 支付 💳</option></select><select id="exp-split" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none text-[#6B705C]"><option value="split">👫 甜蜜平分</option><option value="treat">🎁 大方請客</option><option value="personal">👤 個人支出</option></select></div>
                     <button onclick="window.addExpense()" id="btn-add-expense" class="w-full bg-[#2D3128] text-white py-3.5 rounded-xl font-bold shadow-md mt-2">新 增 記 帳</button>
                     <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl font-bold hidden">取消修改</button>
                 </div>
@@ -1767,14 +403,11 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.21</span></h3>
-                            <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
-                        </div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.27</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
-                    <!-- 🌟 全新升級：隨身翻譯機 (直接在管家對話框頂部輸入) -->
+                    <!-- 🌟 隨身翻譯機 -->
                     <div class="px-1 mb-4">
                         <div class="bg-white p-2 rounded-2xl flex gap-2 border-2 border-[#DDB892]/50 shadow-sm items-center">
                             <span class="text-xl pl-1">🇹🇭</span>
@@ -1785,33 +418,18 @@
                     
                     <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1 no-scrollbar"></div>
                     
-                    <!-- 🌟 重新設計的快捷按鈕區，加入禮貌與點餐用語，完美呼叫多重字卡 -->
                     <div class="px-1 mb-4 flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                        <a href="tel:1155" class="shrink-0 bg-red-500 text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1">
-                            <span>🚑</span> 觀光警察 1155
-                        </a>
-                        <button onclick="window.askGemini('請教我泰國常用的禮貌用語，包含：你好、謝謝(女生說)、謝謝(男生說)、對不起/不好意思、再見。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🗣️ 查詢禮貌用語')" class="shrink-0 bg-[#4A90E2] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">
-                            🗣️ 禮貌用語
-                        </button>
-                        <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🍽️ 查詢點餐用語')" class="shrink-0 bg-[#E67E22] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">
-                            🍽️ 點餐用語
-                        </button>
-                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">
-                            💆 按摩溝通
-                        </button>
-                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">
-                            🚕 叫車小抄
-                        </button>
-                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼。', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">
-                            🍱 抽晚餐盲盒
-                        </button>
+                        <a href="tel:1155" class="shrink-0 bg-red-500 text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1"><span>🚑</span> 觀光警察 1155</a>
+                        <button onclick="window.askGemini('請教我泰國常用的禮貌用語，包含：你好、謝謝(女生說)、謝謝(男生說)、對不起/不好意思、再見。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🗣️ 查詢禮貌用語')" class="shrink-0 bg-[#4A90E2] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🗣️ 禮貌用語</button>
+                        <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🍽️ 查詢點餐用語')" class="shrink-0 bg-[#E67E22] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍽️ 點餐用語</button>
+                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">💆 按摩溝通</button>
+                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🚕 叫車小抄</button>
+                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼。', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍱 抽晚餐盲盒</button>
                     </div>
 
-                    <!-- 修復後的底部輸入區塊 -->
                     <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
                         <label class="p-3 cursor-pointer text-gray-400 hover:text-[#6B705C] transition-colors flex items-center justify-center">
-                            <input type="file" id="gemini-image" accept="image/*" class="hidden" onchange="document.getElementById('image-indicator').classList.remove('hidden')">
-                            <span class="text-xl">📷</span>
+                            <input type="file" id="gemini-image" accept="image/*" class="hidden" onchange="document.getElementById('image-indicator').classList.remove('hidden')"><span class="text-xl">📷</span>
                         </label>
                         <div class="flex-1 relative flex items-center">
                             <input type="text" id="gemini-input" placeholder="問問或拍照給管家..." class="w-full p-3.5 text-base outline-none bg-transparent">
@@ -1819,7 +437,6 @@
                         </div>
                         <button onclick="window.askGemini()" class="bg-[#6B705C] text-white px-6 rounded-xl font-bold transition-transform active:scale-95">發送</button>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -1837,51 +454,34 @@
         <!-- 管理天數的 Modals -->
         <div id="day-manage-modal" class="custom-modal" onclick="if(event.target === this) window.toggleDayManager()">
             <div class="modal-panel flex flex-col p-6" onclick="event.stopPropagation()">
-                <div class="flex justify-between items-center mb-5">
-                    <h3 class="font-black text-xl text-[#4A4E40]">⚙️ 設定中心</h3>
-                    <button onclick="window.toggleDayManager()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button>
-                </div>
-
+                <div class="flex justify-between items-center mb-5"><h3 class="font-black text-xl text-[#4A4E40]">⚙️ 設定中心</h3><button onclick="window.toggleDayManager()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button></div>
                 <div class="bg-[#F1F3EF] p-4 rounded-2xl mb-6 border border-[#B7B7A4]">
                     <div class="text-[10px] font-black text-[#6B705C] mb-2 uppercase tracking-wider">✈️ 設定蜜月出發日</div>
                     <input type="date" id="departure-date-input" onchange="window.saveDepartureDate(this.value)" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-gray-100 outline-none">
                     <div class="text-[9px] text-gray-400 mt-2 font-bold italic">設定後，首頁會自動顯示倒數天數喔！</div>
                 </div>
-                
                 <div class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider px-1">📅 天數名稱管理</div>
                 <div id="day-manager-list" class="flex-1 overflow-y-auto pb-4 px-1"></div>
                 <div class="bg-white p-5 rounded-2xl shadow-md border border-gray-100 mt-3">
                     <div class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">新增天數</div>
-                    <div class="flex gap-3">
-                        <input type="text" id="new-day-input" placeholder="如: Day 8" class="flex-1 p-3 bg-gray-50 rounded-xl text-base font-bold outline-none border border-gray-200">
-                        <button onclick="window.addNewDay()" class="bg-[#6B705C] text-white px-6 rounded-xl text-sm font-bold shadow-sm">新增</button>
-                    </div>
+                    <div class="flex gap-3"><input type="text" id="new-day-input" placeholder="如: Day 8" class="flex-1 p-3 bg-gray-50 rounded-xl text-base font-bold outline-none border border-gray-200"><button onclick="window.addNewDay()" class="bg-[#6B705C] text-white px-6 rounded-xl text-sm font-bold shadow-sm">新增</button></div>
                 </div>
             </div>
         </div>
 
         <div id="rename-day-modal" class="custom-modal">
             <div class="centered-modal-content p-6">
-                <h3 class="font-black text-xl text-[#4A4E40] mb-5">修改名稱</h3>
-                <input type="hidden" id="rename-day-old">
+                <h3 class="font-black text-xl text-[#4A4E40] mb-5">修改名稱</h3><input type="hidden" id="rename-day-old">
                 <input type="text" id="rename-day-input" class="w-full p-4 bg-gray-50 rounded-xl text-lg font-bold outline-none mb-5 border border-gray-200 text-center">
-                <div class="flex gap-4">
-                    <button onclick="window.closeRenameModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button>
-                    <button onclick="window.confirmRenameDay()" class="flex-1 bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認修改</button>
-                </div>
+                <div class="flex gap-4"><button onclick="window.closeRenameModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button><button onclick="window.confirmRenameDay()" class="flex-1 bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認修改</button></div>
             </div>
         </div>
 
         <div id="delete-day-modal" class="custom-modal">
             <div class="centered-modal-content text-center p-6">
-                <div class="text-5xl mb-4">🗑️</div>
-                <h3 class="font-black text-xl text-[#4A4E40] mb-3">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
-                <p class="text-sm text-gray-500 font-bold mb-8 leading-relaxed">不會刪除已綁定的行程資料。</p>
-                <input type="hidden" id="delete-day-target">
-                <div class="flex gap-4">
-                    <button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button>
-                    <button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認刪除</button>
-                </div>
+                <div class="text-5xl mb-4">🗑️</div><h3 class="font-black text-xl text-[#4A4E40] mb-3">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
+                <p class="text-sm text-gray-500 font-bold mb-8 leading-relaxed">不會刪除已綁定的行程資料。</p><input type="hidden" id="delete-day-target">
+                <div class="flex gap-4"><button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button><button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認刪除</button></div>
             </div>
         </div>
 
@@ -1890,42 +490,371 @@
             <div class="centered-modal-content text-center p-8 bg-white rounded-3xl shadow-2xl border-4 border-[#6B705C]" onclick="event.stopPropagation()">
                 <div id="thai-card-meaning" class="text-gray-400 font-bold text-sm mb-2 uppercase tracking-widest"></div>
                 <div id="thai-card-text" class="text-5xl font-black text-[#2D3128] mb-6 leading-tight"></div>
-                
-                <button id="thai-speaker-btn" class="bg-[#F8AD9D] text-white w-14 h-14 rounded-full shadow-lg mb-6 active:scale-90 transition-transform">
-                    <span class="text-2xl">🔊</span>
-                </button>
-                <br>
-                
+                <button id="thai-speaker-btn" class="bg-[#F8AD9D] text-white w-14 h-14 rounded-full shadow-lg mb-6 active:scale-90 transition-transform"><span class="text-2xl">🔊</span></button><br>
                 <div id="thai-card-phonetic" class="text-lg font-bold text-[#6B705C] italic bg-[#F1F3EF] py-2 px-4 rounded-full inline-block"></div>
                 <div class="mt-8 text-gray-400 text-[10px] font-bold tracking-widest animate-pulse">點擊任何地方關閉</div>
             </div>
         </div>
-
     </div>
 
-    <!-- 🌍 自動化無感更新邏輯：以後妳改代碼，管家會自己下載 -->
-    <script>
-      if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
-          // 透過時間戳記 (?t=...) 確保每次開啟 App，瀏覽器都會去雲端檢查 sw.js 是否有變動
-          const swUrl = `./sw.js?t=${new Date().getTime()}`;
+    <!-- 🌟 單一無敵模組腳本：所有核心邏輯、UI 綁定與 Firebase 通通在這裡依序執行，保證不卡死不遺失 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-          navigator.serviceWorker.register(swUrl).then(reg => {
-              // 監聽是否有新版本下載中
-              reg.onupdatefound = () => {
-                  const installingWorker = reg.installing;
-                  installingWorker.onstatechange = () => {
-                      // 當新版本下載完成並就緒
-                      if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                          console.log('發現新版蜜月管家！正在自動更新... ✨');
-                          // 核心動作：強制重整頁面，讓妳的手機瞬間載入最新代碼
-                          window.location.reload();
-                      }
-                  };
-              };
-          }).catch(err => console.log('離線支援準備中 ✈️', err));
-      } else {
-          console.log('當前預覽環境跳過 Service Worker 註冊。');
-      }
+        const firebaseConfig = { apiKey: "AIzaSyBxcDDn80ScpW35TdJdeXOAkfJbHM0DyD0", authDomain: "honeymoon-2026.firebaseapp.com", projectId: "honeymoon-2026", storageBucket: "honeymoon-2026.firebasestorage.app", messagingSenderId: "639168649822", appId: "1:639168649822:web:20399eff7d34144277f2cf" };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        try { enableIndexedDbPersistence(db).catch(e => console.log(e)); } catch(e){}
+        const auth = getAuth(app);
+        const appId = "honeymoon-2026";
+        
+        let currentUser = null, allExpenses = [], currentPayerFilter = 'all', currentDayFilter = 'Day 1', departureDate = null;
+        let itineraryData = [], flightsData = [], hotelsData = [], packingData = [], chatHistory = [], memoriesData = [], vaultData = [], missionsData = [];
+        let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], dayDates = {};
+        let editingItineraryId = null, editingFlightId = null, editingHotelId = null, editingExpenseId = null;
+        let packFilters = { tina: 'cloth', darren: 'cloth' };
+        const packCategories = [ { id: 'cloth', icon: '👔', label: '衣物' }, { id: 'wash', icon: '🧼', label: '盥洗' }, { id: 'tech', icon: '📱', label: '3C' }, { id: 'med', icon: '💊', label: '藥品' }, { id: 'doc', icon: '📄', label: '文件' }, { id: 'other', icon: '🎒', label: '其他' } ];
+        
+        window.ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
+
+        const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
+
+        // ==========================================
+        // 🌟 1. 全局 UI 與互動核心函式 (強制優先註冊)
+        // ==========================================
+        window.switchTab = (id) => {
+            if (window.navigator.vibrate) window.navigator.vibrate(10); 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            const target = document.getElementById('content-' + id);
+            if (target) target.classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.add('opacity-30'));
+            const btn = document.getElementById('btn-' + id);
+            if (btn) btn.classList.remove('opacity-30');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
+        window.toggleSection = (id) => { const el = document.getElementById(id+'-grid'); if(el) el.classList.toggle('active'); };
+        window.showToast = (msg, icon = '✨') => {
+            let toast = document.getElementById('app-toast');
+            if (!toast) {
+                toast = document.createElement('div'); toast.id = 'app-toast';
+                toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[4000] pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]';
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892] w-[90vw] max-w-[340px] leading-relaxed"><span>${icon}</span> ${msg}</div>`;
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-[-20px]'); toast.classList.add('opacity-100', 'translate-y-0'); }, 10);
+            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'translate-y-[-20px]'); }, 3500);
+        };
+        window.formatDisplayDate = (d) => { if(!d) return ''; const p = d.split('-'); if(p.length!==3) return d; const dt = new Date(p[0], p[1]-1, p[2]); return `${p[1]}/${p[2]} (${['日','一','二','三','四','五','六'][dt.getDay()]})`; };
+        window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
+        window.copyLocation = async (activity, address, event) => {
+            const textToCopy = (address && address.trim() !== "") ? address : activity;
+            try {
+                if(navigator.clipboard) await navigator.clipboard.writeText(textToCopy);
+                else { const t = document.createElement("textarea"); t.value = textToCopy; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); }
+                if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]); 
+                const btn = event.currentTarget; const orig = btn.innerHTML; btn.innerHTML = "✅ 已複製"; setTimeout(() => { btn.innerHTML = orig; }, 1500);
+            } catch (err) { console.error('複製失敗', err); }
+        };
+        window.handleImgError = (img) => { img.onerror = null; img.src = 'https://img.icons8.com/plasticine/200/heart.png'; if(img.parentElement) img.parentElement.classList.remove('skeleton'); img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); };
+
+        // 天氣與匯率
+        window.getWeather = async () => { 
+            try { 
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
+                const data = await res.json(); 
+                document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; 
+            } catch(e) { document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 33°C / 普吉 31°C</div><div class="text-[11px] mt-1 font-bold opacity-70">連線稍慢，管家待命備援中 ✨</div>`; } 
+        };
+        window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); if (c === 'THB') r.innerText = `台幣 NT$ ${Math.round(v * window.ratesToTHB['TWD']).toLocaleString()}`; else if (c === 'USD') r.innerText = `泰銖 ฿ ${Math.round(v * window.ratesToTHB['USD']).toLocaleString()}`; else r.innerText = `泰銖 ฿ ${Math.round(v / window.ratesToTHB['TWD']).toLocaleString()}`; };
+        window.updateExchangePreview = () => { const v = parseFloat(document.getElementById('exp-cost').value) || 0; const c = document.getElementById('exp-currency').value; const hint = document.getElementById('exchange-hint'); if (c === 'THB') hint.innerText = ''; else hint.innerText = `≈ ฿ ${Math.round(c === 'USD' ? v * window.ratesToTHB['USD'] : v / window.ratesToTHB['TWD']).toLocaleString()}`; };
+
+        // 倒數計時與天數管理
+        window.updateCountdownUI = () => {
+            const display = document.getElementById('countdown-display');
+            if (!display) return;
+            if (!departureDate) { display.innerText = "蜜月籌備中... 🇹🇭"; display.classList.remove('bg-[#6B705C]', 'animate-bounce'); display.classList.add('bg-[#DDB892]'); return; }
+            const today = new Date(); today.setHours(0, 0, 0, 0); const target = new Date(departureDate); target.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+            display.classList.remove('animate-bounce'); 
+            if (diffDays > 0) { display.innerHTML = `距離甜蜜蜜月還有 <span class="text-base mx-1">${diffDays}</span> 天`; display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]'); } 
+            else if (diffDays === 0) { display.innerText = "🎉 就是今天！出發去泰國！✈️"; display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]', 'animate-bounce'); } 
+            else { display.innerText = "❤️ 甜蜜回憶進行中..."; display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]'); }
+        };
+        window.saveDepartureDate = async (val) => { if(currentUser && val) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), { date: val }); };
+        window.renderDayTabs = () => {
+            const container = document.getElementById('day-tabs-container'); if (!container) return;
+            let html = dayList.map(dayStr => {
+                const dateStr = dayDates[dayStr] || ''; const isActive = currentDayFilter === dayStr; const formattedDate = window.formatDisplayDate(dateStr); let dateDisplay = formattedDate ? formattedDate : '日期';
+                return `<div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}"><div class="day-tab-num">${dayStr}</div>${isActive && document.getElementById('day-manage-modal') && !document.getElementById('day-manage-modal').classList.contains('open') ? `<div class="relative mt-1.5 w-full flex justify-center"><div class="bg-white/20 text-center px-2 py-0.5 text-[10px] rounded-md text-white font-bold whitespace-nowrap tracking-wide">${formattedDate || '選日期 📅'}</div><input type="date" value="${dateStr}" onclick="event.stopPropagation()" onchange="window.saveDate('${dayStr}', this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"></div>` : `<div class="day-tab-date truncate w-full text-center px-1">${dateDisplay}</div>`}</div>`;
+            }).join('');
+            html += `<div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer"><div class="text-2xl">⚙️</div></div>`;
+            container.innerHTML = html;
+        };
+        window.renderDayDropdown = () => { const select = document.getElementById('it-day'); if(select) { select.innerHTML = dayList.map(d => `<option value="${d}">${d}</option>`).join(''); select.value = dayList.includes(currentDayFilter) ? currentDayFilter : (dayList[0] || ''); } };
+        window.setDayFilter = (day) => { currentDayFilter = day; window.renderDayTabs(); window.renderItinerary(); const dayLabel = document.getElementById('current-day-label'); if (dayLabel) dayLabel.innerText = day; };
+        window.viewDayMap = () => {
+            const dailyItems = itineraryData.filter(item => item.day === currentDayFilter && item.type !== 'note').sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); 
+            if (dailyItems.length === 0) { const btn = document.querySelector('#day-map-action button'); if(btn){ const orig = btn.innerHTML; btn.innerHTML = "💤 今天尚未安排景點喔！"; setTimeout(() => { btn.innerHTML = orig; }, 2000); } return; }
+            window.open(`https://www.google.com/maps/dir/${dailyItems.map(i => encodeURIComponent(i.activity)).join('/')}`, '_blank');
+        };
+        window.saveDate = async (day, val) => { if(currentUser) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [day]: val }, { merge: true }); };
+        window.toggleDayManager = () => { const modal = document.getElementById('day-manage-modal'); if(!modal) return; modal.classList.toggle('open'); if (modal.classList.contains('open')) window.renderDayManagerList(); };
+        window.renderDayManagerList = () => { const container = document.getElementById('day-manager-list'); if(!container) return; container.innerHTML = dayList.map(d => `<div class="flex justify-between items-center bg-white p-3.5 rounded-xl border border-gray-100 shadow-sm mb-3"><span class="font-bold text-base text-[#4A4E40]">${d}</span><div class="flex gap-2"><button onclick="window.openRenameModal('${d}')" class="text-gray-400 hover:text-[#6B705C] bg-gray-50 p-2.5 rounded-lg text-base">✎</button><button onclick="window.openDeleteModal('${d}')" class="text-gray-400 hover:text-red-400 bg-gray-50 p-2.5 rounded-lg text-base">✕</button></div></div>`).join(''); };
+        window.addNewDay = async () => { const input = document.getElementById('new-day-input'); const newDay = input.value.trim(); if (!newDay || dayList.includes(newDay)) { input.value = ''; return; } const updatedList = [...dayList, newDay]; await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); input.value = ''; };
+        window.openRenameModal = (oldName) => { document.getElementById('rename-day-old').value = oldName; document.getElementById('rename-day-input').value = oldName; document.getElementById('rename-day-modal').classList.add('open'); };
+        window.closeRenameModal = () => { document.getElementById('rename-day-modal').classList.remove('open'); };
+        window.confirmRenameDay = async () => { const oldName = document.getElementById('rename-day-old').value; const newName = document.getElementById('rename-day-input').value.trim(); if (!newName || newName === oldName || dayList.includes(newName)) { window.closeRenameModal(); return; } const updatedList = dayList.map(d => d === oldName ? newName : d); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); if (dayDates[oldName]) { const newDates = { ...dayDates }; newDates[newName] = newDates[oldName]; delete newDates[oldName]; await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [newName]: dayDates[oldName] }, { merge: true }); } for (let item of itineraryData.filter(i => i.day === oldName)) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', item.id), { day: newName }); } if(currentDayFilter === oldName) currentDayFilter = newName; window.closeRenameModal(); };
+        window.openDeleteModal = (dayName) => { document.getElementById('delete-day-target').value = dayName; document.getElementById('delete-day-name-display').innerText = dayName; document.getElementById('delete-day-modal').classList.add('open'); };
+        window.closeDeleteModal = () => { document.getElementById('delete-day-modal').classList.remove('open'); };
+        window.confirmDeleteDay = async () => { const dayName = document.getElementById('delete-day-target').value; const updatedList = dayList.filter(d => d !== dayName); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : ''; window.closeDeleteModal(); };
+
+        // 渲染函數群 (核心)
+        window.renderItinerary = () => {
+            const list = document.getElementById('it-list'); if (!list) return;
+            const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
+            if (sorted.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`; return; }
+            list.innerHTML = sorted.map(item => {
+                const safeAddr = (item.address || "").replace(/'/g, "\\'"); const safeAct = item.activity.replace(/'/g, "\\'");
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
+                let typeClass = '', typeLabel = '';
+                switch(item.type) { case 'food': typeClass = 'timeline-food'; typeLabel = '🍴 美食'; break; case 'shop': typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; break; case 'view': typeClass = 'timeline-view'; typeLabel = '📸 景點'; break; case 'massage': typeClass = 'timeline-massage'; typeLabel = '💆 按摩'; break; case 'play': typeClass = 'timeline-play'; typeLabel = '🎢 玩樂'; break; case 'note': typeClass = 'timeline-note'; typeLabel = '📝 備註'; break; default: typeClass = 'timeline-view'; typeLabel = '📍 行程'; }
+                return `<div class="app-card p-4 mb-4 ${typeClass} timeline-item relative"><div class="flex justify-between items-start"><div class="flex-1"><div class="flex items-center gap-2 mb-1.5"><span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span><span class="tag tag-type">${typeLabel}</span></div><div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}</div><div class="flex flex-col gap-3 ml-2"><button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button><button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div></div><div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50"><a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a><button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button><button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link">💡 攻略</button></div></div>`;
+            }).join('');
+        };
+        window.editItinerary = (id) => { const item = itineraryData.find(i => i.id === id); if (!item) return; editingItineraryId = id; document.getElementById('it-day').value = item.day; document.getElementById('it-type').value = item.type; document.getElementById('it-activity').value = item.activity; if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || ''; if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || ''; if (item.time.includes('-')) { const times = item.time.split('-').map(t => t.trim()); document.getElementById('it-time-start').value = times[0]; document.getElementById('it-time-end').value = times[1]; } else { document.getElementById('it-time-start').value = item.time; if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; } document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-itinerary').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        window.cancelEditItinerary = () => { editingItineraryId = null; document.getElementById('it-activity').value = ''; if (document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; if (document.getElementById('it-note')) document.getElementById('it-note').value = ''; if (document.getElementById('it-address')) document.getElementById('it-address').value = ''; document.getElementById('it-day').value = currentDayFilter; document.getElementById('btn-add-itinerary').innerText = '加入行程地圖'; document.getElementById('btn-cancel-itinerary').classList.add('hidden'); };
+        window.addItinerary = async () => { const act = document.getElementById('it-activity').value; if(!act || !currentUser) return; const addrEl = document.getElementById('it-address'); const addr = addrEl ? addrEl.value : ''; const dayVal = document.getElementById('it-day').value; const noteEl = document.getElementById('it-note'); const noteVal = noteEl ? noteEl.value : ''; const startTime = document.getElementById('it-time-start').value || '12:00'; const endTimeEl = document.getElementById('it-time-end'); const endTime = endTimeEl ? endTimeEl.value : ''; const timeVal = endTime ? `${startTime} - ${endTime}` : startTime; const typeVal = document.getElementById('it-type').value; const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal }; if (editingItineraryId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data); window.cancelEditItinerary(); } else { await addDoc(getColl('itinerary'), data); window.cancelEditItinerary(); } window.setDayFilter(dayVal); };
+
+        window.renderFlights = () => {
+            const list = document.getElementById('flights-list'); if (!list) return;
+            const sortedFlights = [...flightsData].sort((a, b) => (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99') || (a.depTime || '99:99').localeCompare(b.depTime || '99:99'));
+            list.innerHTML = sortedFlights.map(f => { const dateDisplay = f.date ? window.formatDisplayDate(f.date) : ''; return `<div class="app-card p-5 mb-4"><div class="flex justify-between items-center mb-4"><div class="flex items-center gap-2"><span class="bg-[#6B705C] text-white text-sm px-2 py-1 rounded font-black">${f.code}</span>${dateDisplay ? `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateDisplay}</span>` : ''}</div><div class="flex gap-4"><span class="text-sm font-bold text-gray-400 mt-1">Seat: ${f.seat || '--'}</span><button onclick="window.editFlight('${f.id}')" class="text-gray-400 text-sm hover:text-[#6B705C]">✎</button><button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-300 text-sm">✕</button></div></div><div class="flex items-center justify-between mb-2"><div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.from}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div></div><div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] px-2"><span class="text-sm text-gray-400 leading-none">✈️</span><div class="w-full h-[1.5px] bg-gray-200 my-1.5 relative"><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -left-0.5 top-1/2 transform -translate-y-1/2"></div><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -right-0.5 top-1/2 transform -translate-y-1/2"></div></div>${f.duration ? `<span class="text-[9px] text-gray-400 font-bold tracking-tighter mt-0.5">${f.duration}</span>` : '<span class="text-[9px] opacity-0">-</span>'}</div><div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.to}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div></div></div>${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-3"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${f.note}</div></div>` : ''}</div>`; }).join('');
+        };
+        window.editFlight = (id) => { const item = flightsData.find(f => f.id === id); if (!item) return; editingFlightId = id; document.getElementById('f-code').value = item.code; document.getElementById('f-from').value = item.from; document.getElementById('f-to').value = item.to; document.getElementById('f-date').value = item.date || ''; document.getElementById('f-duration').value = item.duration || ''; document.getElementById('f-depTime').value = item.depTime; document.getElementById('f-arrTime').value = item.arrTime; document.getElementById('f-checkinTime').value = item.checkinTime; document.getElementById('f-seat').value = item.seat; document.getElementById('f-note').value = item.note || ''; document.getElementById('btn-add-flight').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-flight').classList.remove('hidden'); if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        window.cancelEditFlight = () => { editingFlightId = null; ['f-code','f-from','f-to','f-date','f-duration','f-depTime','f-arrTime','f-checkinTime','f-seat','f-note'].forEach(id => document.getElementById(id).value = ''); document.getElementById('btn-add-flight').innerText = '儲存航班'; document.getElementById('btn-cancel-flight').classList.add('hidden'); };
+        window.addFlight = async () => { const code = document.getElementById('f-code').value; if (!code || !currentUser) return; const flightData = { code, from: document.getElementById('f-from').value, to: document.getElementById('f-to').value, date: document.getElementById('f-date').value, duration: document.getElementById('f-duration').value, depTime: document.getElementById('f-depTime').value, arrTime: document.getElementById('f-arrTime').value, checkinTime: document.getElementById('f-checkinTime').value, seat: document.getElementById('f-seat').value, note: document.getElementById('f-note').value }; if (editingFlightId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'flights', editingFlightId), flightData); window.cancelEditFlight(); } else { await addDoc(getColl('flights'), flightData); window.cancelEditFlight(); } window.toggleSection('flight'); };
+
+        window.renderHotels = () => {
+            const list = document.getElementById('hotels-list'); if (!list) return;
+            const sortedHotels = [...hotelsData].sort((a, b) => (a.checkin || '9999-99-99').localeCompare(b.checkin || '9999-99-99'));
+            list.innerHTML = sortedHotels.map(h => { let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--'; if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`; return `<div class="app-card p-5 mb-4"><div class="flex justify-between items-center mb-3"><div class="flex-1 pr-4"><div class="text-lg font-black text-[#4A4E40] leading-tight">${h.name}</div><div class="text-sm text-gray-500 font-bold mt-1.5">房號: <span class="text-[#6B705C]">${h.room || '--'}</span> | 入住: ${dateStr}</div></div><div class="flex flex-col gap-3"><button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-300 text-lg self-end">✕</button><button onclick="window.editHotel('${h.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div></div>${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${h.note}</div></div>` : ''}</div>`; }).join('');
+        };
+        window.editHotel = (id) => { const item = hotelsData.find(h => h.id === id); if (!item) return; editingHotelId = id; document.getElementById('h-name').value = item.name; document.getElementById('h-room').value = item.room; document.getElementById('h-checkin').value = item.checkin; document.getElementById('h-checkout').value = item.checkout || ''; document.getElementById('h-note').value = item.note || ''; document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-hotel').classList.remove('hidden'); if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        window.cancelEditHotel = () => { editingHotelId = null; ['h-name','h-room','h-checkin','h-checkout','h-note'].forEach(id => document.getElementById(id).value = ''); document.getElementById('btn-add-hotel').innerText = '儲存飯店'; document.getElementById('btn-cancel-hotel').classList.add('hidden'); };
+        window.addHotel = async () => { const name = document.getElementById('h-name').value; if (!name || !currentUser) return; const hotelData = { name, room: document.getElementById('h-room').value, checkin: document.getElementById('h-checkin').value, checkout: document.getElementById('h-checkout').value, note: document.getElementById('h-note').value }; if (editingHotelId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'hotels', editingHotelId), hotelData); window.cancelEditHotel(); } else { await addDoc(getColl('hotels'), hotelData); window.cancelEditHotel(); } window.toggleSection('hotel'); };
+
+        window.renderExpenses = () => {
+            const list = document.getElementById('exp-list'); if(!list) return;
+            let totalsByPayer = { tina: {}, darren: {} }, sharedTotalTHB = 0, tinaPaidSharedTHB = 0, darrenPaidSharedTHB = 0;
+            const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
+            const total = filtered.reduce((s, e) => {
+                const sType = e.splitType || 'split'; let thbEq = e.cost;
+                if (e.currency === 'USD') thbEq = e.cost * window.ratesToTHB['USD'];
+                if (e.currency === 'TWD') thbEq = e.cost / window.ratesToTHB['TWD'];
+                if(!totalsByPayer[e.payer]) totalsByPayer[e.payer] = {}; 
+                if(!totalsByPayer[e.payer][e.currency]) totalsByPayer[e.payer][e.currency] = 0; 
+                totalsByPayer[e.payer][e.currency] += e.cost;
+                if (sType === 'split') { sharedTotalTHB += thbEq; if (e.payer === 'tina') tinaPaidSharedTHB += thbEq; if (e.payer === 'darren') darrenPaidSharedTHB += thbEq; }
+                return s + thbEq; 
+            }, 0);
+
+            const formatPayerSummary = (p) => { let lines = []; for(let curr in totalsByPayer[p]) lines.push(`${curr} ${Math.round(totalsByPayer[p][curr]).toLocaleString()}`); return lines.length > 0 ? lines.join(' / ') : '尚未支出'; };
+            document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
+            document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
+            
+            const halfShared = sharedTotalTHB / 2; const tinaBalance = tinaPaidSharedTHB - halfShared; const darrenBalance = darrenPaidSharedTHB - halfShared; 
+            const settlementEl = document.getElementById('settlement-amount');
+            if (tinaBalance > 1) settlementEl.innerHTML = `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1">฿ ${Math.round(tinaBalance).toLocaleString()}</span>`;
+            else if (darrenBalance > 1) settlementEl.innerHTML = `Tina 需給 Darren <span class="text-[#DDB892] ml-1">฿ ${Math.round(darrenBalance).toLocaleString()}</span>`;
+            else settlementEl.innerHTML = `目前帳目完美打平 ✨`;
+            
+            list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
+                let thbEq = exp.cost; if (exp.currency === 'USD') thbEq = exp.cost * window.ratesToTHB['USD']; if (exp.currency === 'TWD') thbEq = exp.cost / window.ratesToTHB['TWD'];
+                const sType = exp.splitType || 'split'; let typeBadge = '';
+                if (sType === 'split') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-gray-200 text-gray-600 rounded font-bold">平分</span>`;
+                else if (sType === 'treat') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-pink-100 text-pink-600 rounded font-bold border border-pink-200">請客</span>`;
+                else if (sType === 'personal') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-blue-100 text-blue-600 rounded font-bold border border-blue-200">個人</span>`;
+                return `<div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}"><div class="flex-1 pr-4"><div class="flex items-center gap-1 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40] ml-1">${exp.item}</div></div><div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter flex items-center">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div></div><div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div><div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3"><button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button><button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button></div></div>`;
+            }).join('');
+
+            const chartContainer = document.getElementById('chart-container');
+            if (window.myChart) window.myChart.destroy(); 
+            if (filtered.length === 0) { chartContainer.classList.add('hidden'); } else {
+                chartContainer.classList.remove('hidden');
+                const categories = { 'food': '🍴 食物', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'traffic': '🚗 交通', 'other': '🎒 其他' };
+                let dataMap = {}; filtered.forEach(e => { let thb = e.cost; if (e.currency === 'USD') thb *= window.ratesToTHB['USD']; if (e.currency === 'TWD') thb /= window.ratesToTHB['TWD']; const cat = e.category || 'other'; dataMap[cat] = (dataMap[cat] || 0) + thb; });
+                window.myChart = new Chart(document.getElementById('expenseChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' } });
+            }
+        };
+        window.editExpense = (id) => { const item = allExpenses.find(e => e.id === id); if (!item) return; editingExpenseId = id; document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost; document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency; document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; document.getElementById('exp-category').value = item.category || 'food'; document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); };
+        window.addExpense = async () => { const item = document.getElementById('exp-item').value; const cost = document.getElementById('exp-cost').value; if(!item || !cost || !currentUser) return; const data = { item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, category: document.getElementById('exp-category').value, payer: document.getElementById('exp-payer').value, splitType: document.getElementById('exp-split').value, date: document.getElementById('exp-date').value, createdAt: Date.now() }; if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); } const randomMsg = `記帳成功：${item}！💰`; window.showToast(randomMsg, '💰'); };
+        window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); window.renderExpenses(); };
+
+        window.renderPacking = () => {
+            const draw = (o, cid) => { const container = document.getElementById(cid); if(!container) return; const items = packingData.filter(i => i.owner === o && i.category === packFilters[o]); const tabs = `<div class="flex gap-2 mb-3 overflow-x-auto no-scrollbar">${packCategories.map(c => `<button onclick="window.setPackFilter('${o}','${c.id}')" class="pack-filter-btn ${o==='tina'?'pack-filter-btn-tina':''} ${packFilters[o]===c.id?'active':''}">${c.icon}</button>`).join('')}</div>`; container.innerHTML = tabs + `<div class="bg-white rounded-xl shadow-sm border border-gray-100">${items.map(i => `<div class="p-3.5 flex items-center gap-3 border-b last:border-0"><div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded border-2 ${i.checked?'bg-[#6B705C] border-[#6B705C]':'border-gray-300'}"></div><span class="flex-1 ${i.checked?'line-through text-gray-300':'font-bold'}">${i.item}</span><button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300">✕</button></div>`).join('')}</div>`; };
+            draw('tina', 'pk-list-tina'); draw('darren', 'pk-list-darren');
+        };
+        window.addPacking = async () => { const v = document.getElementById('pack-item').value; const c = document.getElementById('pack-category').value; const o = document.getElementById('pack-owner').value; if(!v || !currentUser) return; await addDoc(getColl('packing'), { item: v, owner: o, checked: false, category: c }); document.getElementById('pack-item').value = ''; };
+        window.togglePack = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'packing', id), { checked: !s }); };
+        window.setPackFilter = (o, c) => { packFilters[o] = c; window.renderPacking(); };
+
+        window.renderMemories = () => {
+            const list = document.getElementById('memories-list'); if (!list) return;
+            if (memoriesData.length === 0) { list.innerHTML = `<div class="text-center py-20 text-gray-300 font-bold italic">還沒有紀錄任何瞬間喔... 🖋️</div>`; list.classList.remove('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2'); return; }
+            list.classList.add('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2');
+            list.innerHTML = memoriesData.sort((a,b) => b.createdAt - a.createdAt).map(m => `<div class="relative group mb-6 last:mb-0"><div class="absolute -left-[27px] top-4 w-3.5 h-3.5 bg-white border-[3.5px] border-[#DDB892] rounded-full z-10 shadow-sm"></div><div class="app-card bg-white overflow-hidden shadow-sm border border-gray-100">${m.image ? `<div class="relative w-full h-48 skeleton overflow-hidden"><img src="${m.image}" loading="lazy" class="w-full h-48 object-cover img-fade-in" onload="this.classList.add('img-loaded'); this.parentElement.classList.remove('skeleton')" onerror="window.handleImgError(this)"></div>` : ''}<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="text-2xl">${m.mood || '✨'}</span><div class="text-right"><div class="text-[10px] font-black text-gray-400">${new Date(m.createdAt).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div><button onclick="window.deleteItem('memories', '${m.id}')" class="text-[10px] text-red-300 font-bold mt-1 transition-colors hover:text-red-500">✕ 刪除</button></div></div>${m.text ? `<p class="text-[#4A4E40] text-sm leading-relaxed font-medium mt-2">${m.text}</p>` : ''}</div></div></div>`).join('');
+        };
+        window.addMemory = async () => { const text = document.getElementById('mem-text').value.trim(); const mood = document.getElementById('mem-mood').value; const imgFile = document.getElementById('mem-image').files[0]; if(!text && !imgFile) return; let base64Img = ""; if (imgFile) { base64Img = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(imgFile); }); } await addDoc(getColl('memories'), { text, mood, image: base64Img, author: currentUser ? currentUser.uid : 'anonymous', createdAt: Date.now() }); document.getElementById('mem-text').value = ''; if(document.getElementById('mem-image')) document.getElementById('mem-image').value = ''; document.getElementById('mem-preview-img').classList.add('hidden'); document.getElementById('mem-preview-placeholder').classList.remove('hidden'); };
+        window.previewMemImage = (input) => { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('mem-preview-img').src = e.target.result; document.getElementById('mem-preview-img').classList.remove('hidden'); document.getElementById('mem-preview-placeholder').classList.add('hidden'); }; reader.readAsDataURL(input.files[0]); } };
+
+        window.unlockVault = () => { const pin = document.getElementById('vault-pin').value; const errorMsg = document.getElementById('vault-error-msg'); if (pin === "1112") { document.getElementById('vault-locked').classList.add('hidden'); document.getElementById('vault-content').classList.remove('hidden'); document.getElementById('vault-pin').value = ""; if(errorMsg) errorMsg.classList.add('hidden'); } else { if(errorMsg) errorMsg.classList.remove('hidden'); document.getElementById('vault-pin').value = ""; } };
+        window.uploadToVault = async (type, input) => { if (!input.files[0] || !currentUser) return; const reader = new FileReader(); reader.onload = async (e) => { await addDoc(getColl('vault'), { type: type, image: e.target.result, createdAt: Date.now() }); input.value = ''; }; reader.readAsDataURL(input.files[0]); };
+        window.renderVault = () => { const list = document.getElementById('vault-list'); if (!list) return; list.innerHTML = vaultData.sort((a,b) => b.createdAt - a.createdAt).map(v => `<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mb-3 border border-gray-100"><img src="${v.image}" onclick="window.open('${v.image}')" class="w-14 h-14 object-cover rounded-xl shadow-sm cursor-zoom-in"><div class="flex-1"><div class="text-[11px] font-black uppercase text-[#6B705C]">${v.type === 'passport' ? '🛂 護照影本' : '🏥 旅遊保險'}</div><div class="text-[9px] text-gray-400 font-bold">${new Date(v.createdAt).toLocaleDateString()} 備份</div></div><button onclick="window.deleteItem('vault', '${v.id}')" class="text-red-200 hover:text-red-400 p-2">✕</button></div>`).join(''); };
+
+        window.addMission = async () => { const task = document.getElementById('mission-task').value; const cat = document.getElementById('mission-category').value; if(!task || !currentUser) return; await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); document.getElementById('mission-task').value = ''; };
+        window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
+        window.renderMissions = () => { const container = document.getElementById('missions-container'); if (!container) return; const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; container.innerHTML = Object.keys(cats).map(key => { const items = missionsData.filter(m => m.category === key); if (items.length === 0 && key !== 'pre') return ''; return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}</div><span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-2 text-lg">✕</button></div>`).join('')}</div></div>`; }).join(''); };
+
+        // 語音與 AI
+        window.speakThai = (text) => { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'th-TH'; utterance.rate = 0.8; utterance.pitch = 1; window.speechSynthesis.speak(utterance); };
+        window.showThaiCard = (thai, meaning, phonetic) => { document.getElementById('thai-card-text').innerText = thai; document.getElementById('thai-card-meaning').innerText = meaning; document.getElementById('thai-card-phonetic').innerText = phonetic; const speakerBtn = document.getElementById('thai-speaker-btn'); if (speakerBtn) speakerBtn.onclick = (e) => { e.stopPropagation(); window.speakThai(thai); }; document.getElementById('thai-card-modal').classList.add('open'); };
+        window.quickTranslate = () => { const val = document.getElementById('quick-translate-input').value.trim(); if (!val) return; const query = `請幫我把這句中文翻譯成泰語：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充使用時機。`; document.getElementById('quick-translate-input').value = ''; window.askGemini(query, false, `🇹🇭 幫我翻譯：「${val}」`); };
+        window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; chatHistory = []; };
+        window.getFoodRecommendation = (place) => { const foodQuery = `幫找「${place}」附近推薦的 3-5 家海鮮或泰式美食。`; const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}+restaurants`; window.askGemini(foodQuery, true, `🍴 尋找「${place}」附近美食`); setTimeout(() => { document.getElementById('gemini-chat').innerHTML += `<div class="mb-4 text-left"><a href="${mapsLink}" target="_blank" class="inline-flex items-center gap-2 bg-white border-2 border-[#F8AD9D] text-[#e57e6a] p-4 rounded-2xl text-sm font-black shadow-md">📍 打開 Google Maps</a></div>`; const chat = document.getElementById('gemini-chat'); chat.scrollTop = chat.scrollHeight; }, 1800); };
+        
+        window.askGemini = async (q = null, isAutoFood = false, displayOverride = null) => {
+            const input = document.getElementById('gemini-input'); const imageInput = document.getElementById('gemini-image'); const chat = document.getElementById('gemini-chat'); const query = q || (input ? input.value.trim() : '');
+            if (!query && (!imageInput || !imageInput.files[0])) return; window.toggleGemini(true); if(!q && input) input.value = '';
+            const displayMessage = displayOverride || query || '📸 傳送了一張照片';
+            chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
+            const thinkingId = 'think-' + Date.now(); chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">管家處理中...<span class="thinking-dots"></span></div></div>`; chat.scrollTop = chat.scrollHeight;
+            try {
+                const pendingMissions = missionsData.filter(m => !m.checked).map(m => m.task).join('、');
+                let userContent; let payloadModel = "llama-3.3-70b-versatile"; 
+                if (imageInput && imageInput.files[0]) {
+                    payloadModel = "llama-3.2-11b-vision-preview"; const base64 = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(imageInput.files[0]); });
+                    userContent = [ { type: "text", text: query || "這張圖片是什麼？請詳細說明。" }, { type: "image_url", image_url: { url: `data:${imageInput.files[0].type};base64,${base64}` } } ];
+                } else { userContent = `[背景：出發${departureDate} 目前Day:${currentDayFilter} 未完任務:${pendingMissions}] ` + query; }
+                chatHistory.push({ role: "user", content: userContent }); if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+
+                const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
+【稱呼】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae或兩位新人。使用台灣繁體中文(跳錶、行動電源、飯店)。
+【記帳對應】(限有花費時) Darren付錢誇老公霸氣，Tina付錢誇老婆仙女。
+付錢方式對應: split(代墊/平分), treat(霸氣買單/請客), personal(專屬享受/私房錢)。
+必須嚴格附上代碼: SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"THB/TWD","category":"food/shop/massage/play/traffic/other","payer":"darren或tina","splitType":"split/treat/personal"}
+【字卡翻譯】多句教學時，絕對要獨立換行輸出 SHOW_CARD 代碼，禁止用1.2.3.編號！
+範例: SHOW_CARD: {"thai":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}`;
+
+                const response = await fetch("https://thailand-ai.tina09210808.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: payloadModel, messages: [{ role: "system", content: systemPrompt }, ...chatHistory], temperature: 0.7 }) });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json(); let text = data.choices?.[0]?.message?.content || "對不起管家眼花了...";
+                chatHistory[chatHistory.length - 1] = { role: "user", content: displayOverride || query || "這張圖片是什麼？" };
+                chatHistory.push({ role: "assistant", content: text }); document.getElementById(thinkingId)?.remove();
+
+                text = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+                let cardBtnHtml = ''; const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g; let match;
+                while ((match = cardRegex.exec(text)) !== null) {
+                    try {
+                        let jsonStr = match[1].trim(); const lastBrace = jsonStr.lastIndexOf('}'); if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                        if (jsonStr.includes("SAVE_EXPENSE:")) jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
+                        const cd = JSON.parse(jsonStr);
+                        cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${cd.thai.replace(/'/g, "\\'")}', '${cd.meaning.replace(/'/g, "\\'")}', '${cd.phonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${cd.meaning.replace(/'/g, "\\'")}</button></div>`;
+                    } catch (e) {}
+                }
+                let responseText = text.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
+                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${responseText.replace(/\n/g, '<br>')}${cardBtnHtml ? `<div class="mt-3 border-t border-[#F8D7D1] pt-3">${cardBtnHtml}</div>` : ''}</div></div>`;
+                
+                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
+                    const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
+                    if(extractedPlace.length > 1) responseHtml += `<div class="mt-3 flex gap-2 flex-wrap"><button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button></div>`;
+                }
+                chat.innerHTML += responseHtml;
+
+                if (text.includes("SAVE_EXPENSE:")) {
+                    try {
+                        const exMatch = text.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
+                        if (exMatch) {
+                            let jsonStr = exMatch[1]; const lastBrace = jsonStr.lastIndexOf('}'); if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                            const expData = JSON.parse(jsonStr);
+                            await addDoc(getColl('expenses'), { item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB", category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina", splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now() });
+                        }
+                    } catch (e) { console.log("記帳失敗", e); }
+                }
+                if (imageInput) { imageInput.value = ''; const ind = document.getElementById('image-indicator'); if(ind) ind.classList.add('hidden'); }
+            } catch (e) { document.getElementById(thinkingId)?.remove(); chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm border border-red-100 text-red-500">管家網路不穩！<br><span class="text-[10px] opacity-70">Error: ${e.message}</span></div></div>`; }
+            chat.scrollTop = chat.scrollHeight;
+        };
+
+        // ==========================================
+        // 🌟 2. 初始畫面與連線防卡死 (防護罩機制)
+        // ==========================================
+        window.hideSplash = () => {
+            const splash = document.getElementById('app-splash');
+            if (splash && splash.style.display !== 'none') {
+                splash.classList.add('opacity-0');
+                setTimeout(() => { splash.style.display = 'none'; }, 700);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.switchTab('itinerary');
+            window.getWeather();
+            const expDate = document.getElementById('exp-date');
+            if(expDate) expDate.valueAsDate = new Date();
+            
+            setTimeout(window.hideSplash, 600); // 正常關閉
+            
+            if (!navigator.onLine) {
+                const offlineToast = document.getElementById('offline-toast');
+                if (offlineToast) offlineToast.classList.remove('hidden');
+            }
+        });
+
+        // 終極防呆
+        setTimeout(window.hideSplash, 1500);
+
+        window.addEventListener('online', () => {
+            const offlineToast = document.getElementById('offline-toast');
+            if (offlineToast) offlineToast.classList.add('hidden');
+            const onlineToast = document.getElementById('online-toast');
+            if (onlineToast) { onlineToast.classList.remove('hidden'); setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); }
+        });
+
+        window.addEventListener('offline', () => {
+            const offlineToast = document.getElementById('offline-toast');
+            if (offlineToast) offlineToast.classList.remove('hidden');
+        });
+
+        // ==========================================
+        // 🌟 3. Firebase 資料綁定與監聽 (絕對放在最後)
+        // ==========================================
+        function startSyncing() {
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => {
+                if (docSnap.exists()) { departureDate = docSnap.data().date; const dateInput = document.getElementById('departure-date-input'); if (dateInput) dateInput.value = departureDate; window.updateCountdownUI(); }
+            });
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list;
+                if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0];
+                window.renderDayTabs(); window.renderDayDropdown();
+                if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) window.renderDayManagerList();
+            });
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
+                if (docSnap.exists()) { dayDates = docSnap.data(); window.renderDayTabs(); }
+            });
+            onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); });
+            onSnapshot(getColl('packing'), (s) => { packingData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderPacking(); });
+            onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
+            onSnapshot(getColl('flights'), (s) => { flightsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderFlights(); });
+            onSnapshot(getColl('hotels'), (s) => { hotelsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderHotels(); });
+            onSnapshot(getColl('memories'), (s) => { memoriesData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMemories(); });
+            onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderVault(); });
+            onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMissions(); });
+        }
+
     </script>
 </body>
 </html>
