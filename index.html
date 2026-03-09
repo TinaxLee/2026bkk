@@ -403,7 +403,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.27</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.28</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -570,6 +570,18 @@
         };
         window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); if (c === 'THB') r.innerText = `台幣 NT$ ${Math.round(v * window.ratesToTHB['TWD']).toLocaleString()}`; else if (c === 'USD') r.innerText = `泰銖 ฿ ${Math.round(v * window.ratesToTHB['USD']).toLocaleString()}`; else r.innerText = `泰銖 ฿ ${Math.round(v / window.ratesToTHB['TWD']).toLocaleString()}`; };
         window.updateExchangePreview = () => { const v = parseFloat(document.getElementById('exp-cost').value) || 0; const c = document.getElementById('exp-currency').value; const hint = document.getElementById('exchange-hint'); if (c === 'THB') hint.innerText = ''; else hint.innerText = `≈ ฿ ${Math.round(c === 'USD' ? v * window.ratesToTHB['USD'] : v / window.ratesToTHB['TWD']).toLocaleString()}`; };
+        window.fetchLiveRates = async () => {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                const data = await res.json();
+                if (data && data.rates) {
+                    window.ratesToTHB['THB'] = 1;
+                    window.ratesToTHB['USD'] = data.rates.THB;
+                    window.ratesToTHB['TWD'] = data.rates.THB / data.rates.TWD;
+                    if (allExpenses.length > 0) window.renderExpenses();
+                }
+            } catch (e) { console.error('Failed to fetch live rates', e); }
+        };
 
         // 倒數計時與天數管理
         window.updateCountdownUI = () => {
@@ -830,8 +842,20 @@
         });
 
         // ==========================================
-        // 🌟 3. Firebase 資料綁定與監聽 (絕對放在最後)
+        // 🌟 3. Firebase 資料綁定與登入驗證 (修復資料消失的關鍵)
         // ==========================================
+        
+        // 【核心修復】：正確監聽登入狀態並啟動同步
+        onAuthStateChanged(auth, async (user) => { 
+            if (user) { 
+                currentUser = user; 
+                window.fetchLiveRates(); // 先抓匯率
+                startSyncing();   // 再開始把雲端的行程、記帳都抓下來！
+            } else { 
+                await signInAnonymously(auth); 
+            } 
+        });
+
         function startSyncing() {
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => {
                 if (docSnap.exists()) { departureDate = docSnap.data().date; const dateInput = document.getElementById('departure-date-input'); if (dateInput) dateInput.value = departureDate; window.updateCountdownUI(); }
