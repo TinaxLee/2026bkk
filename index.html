@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- 🌟 解決白屏閃爍的關鍵：提早告訴手機 App 的底色 -->
+    <meta name="theme-color" content="#F8F7F2">
+    <meta name="background-color" content="#F8F7F2">
+    
     <title>Thailand 2026 🇹🇭</title>
     
     <!-- iOS 專用：強制主畫面名稱 -->
@@ -12,12 +16,16 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
     <!-- Android 專用：透過 Query String 強制刷新 Manifest -->
-    <link rel="manifest" href="manifest.json?v=20260308">
+    <link rel="manifest" href="manifest.json?v=20260309">
     <link rel="apple-touch-startup-image" href="icon.png">
 
+    <!-- 🌟 預先連線字體伺服器，加速字體下載 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <!-- 🌟 將 display=swap 改為 display=block，強制等字體下載好再顯示 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Dancing+Script:wght@700&display=block" rel="stylesheet">
     
     <style>
         :root {
@@ -106,10 +114,10 @@
         
         #gemini-panel, .modal-panel {
             position: absolute; bottom: 0; left: 0; right: 0;
-            height: 85%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
+            height: 90%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
             padding-bottom: env(safe-area-inset-bottom); 
-            display: block !important;
+            display: flex !important; flex-direction: column;
         }
         #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
         
@@ -151,8 +159,6 @@
             line-height: 1.2;
         }
         .action-link:active { background: #f0f0f0; transform: scale(0.98); }
-        .ai-btn { border-color: #DDB892; color: #b08d55; }
-        .food-btn { border-color: #F8AD9D; color: #e57e6a; }
 
         .converter-box {
             background: #f1f3ef;
@@ -219,46 +225,6 @@
         }
         .pack-filter-btn.active {
             background: #6B705C; border-color: #6B705C; color: white; transform: scale(1.1);
-        }
-        .pack-filter-btn-tina.active { background: #F8AD9D; border-color: #F8AD9D; }
-        
-        /* Input & Button Base Paddings for Large Phones */
-        .input-base { padding: 0.6rem 0.75rem; }
-
-        /* 平滑切換動畫 */
-        .tab-content {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .tab-content:not(.hidden) {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 圖片延遲載入的過渡效果 */
-        img {
-            transition: opacity 0.3s ease-in-out;
-        }
-        img[loading="lazy"] {
-            opacity: 0.5;
-        }
-        img.loaded {
-            opacity: 1;
-        }
-
-        /* 骨架屏主體：呼吸感灰色區塊 */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: skeleton-loading 1.5s infinite linear;
-        }
-
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
         /* 讓圖片載入前保持隱形，載入後淡入 */
         .img-fade-in {
             opacity: 0;
@@ -282,6 +248,15 @@
             color: white;
             border-bottom-right-radius: 4px;
         }
+        
+        /* 🌟 開場文字漸顯動畫，徹底解決字體閃爍問題 */
+        .splash-text { 
+            opacity: 0; 
+            animation: fadeInSplash 0.5s ease-out 0.15s forwards; 
+        }
+        @keyframes fadeInSplash { 
+            to { opacity: 1; } 
+        }
     </style>
 
     <script type="module">
@@ -301,18 +276,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // 🟢 啟用 Firestore 離線持久化 (加上 try-catch 保護預覽沙盒環境)
         try {
             enableIndexedDbPersistence(db).catch((err) => {
-                if (err.code == 'failed-precondition') {
-                    console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
-                } else if (err.code == 'unimplemented') {
-                    console.log('瀏覽器不支援離線持久化');
-                }
+                if (err.code == 'failed-precondition') console.log('多個分頁開啟，離線持久化僅能在一個分頁運作');
+                else if (err.code == 'unimplemented') console.log('瀏覽器不支援離線持久化');
             });
-        } catch (e) {
-            console.log('當前預覽環境不支援 IndexedDB 離線存儲，將以連線模式執行', e);
-        }
+        } catch (e) { console.log('不支援 IndexedDB', e); }
 
         const auth = getAuth(app);
         const appId = "honeymoon-2026";
@@ -323,7 +292,6 @@
         let currentDayFilter = 'Day 1'; 
         let departureDate = null; 
         
-        // Data Stores
         let itineraryData = []; 
         let flightsData = [];
         let hotelsData = [];
@@ -333,57 +301,38 @@
         let vaultData = []; 
         let missionsData = []; 
         
-        // Day Management State
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7']; 
         let dayDates = {}; 
         
-        // Edit State
         let editingItineraryId = null;
         let editingFlightId = null;
         let editingHotelId = null;
         let editingExpenseId = null;
 
-        // Default packing filters
         let packFilters = { tina: 'cloth', darren: 'cloth' };
-        
         const packCategories = [
-            { id: 'cloth', icon: '👔', label: '衣物' },
-            { id: 'wash', icon: '🧼', label: '盥洗' },
-            { id: 'tech', icon: '📱', label: '3C' },
-            { id: 'med', icon: '💊', label: '藥品' },
-            { id: 'doc', icon: '📄', label: '文件' },
-            { id: 'other', icon: '🎒', label: '其他' }
+            { id: 'cloth', icon: '👔', label: '衣物' }, { id: 'wash', icon: '🧼', label: '盥洗' },
+            { id: 'tech', icon: '📱', label: '3C' }, { id: 'med', icon: '💊', label: '藥品' },
+            { id: 'doc', icon: '📄', label: '文件' }, { id: 'other', icon: '🎒', label: '其他' }
         ];
 
-        // Live Exchange Rates
         let ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 }; 
-
         const fetchLiveRates = async () => {
             try {
                 const res = await fetch('https://open.er-api.com/v6/latest/USD');
                 const data = await res.json();
                 if (data && data.rates) {
-                    const usdToThb = data.rates.THB;
-                    const usdToTwd = data.rates.TWD;
-                    
                     ratesToTHB['THB'] = 1;
-                    ratesToTHB['USD'] = usdToThb;
-                    ratesToTHB['TWD'] = usdToThb / usdToTwd;
-                    
+                    ratesToTHB['USD'] = data.rates.THB;
+                    ratesToTHB['TWD'] = data.rates.THB / data.rates.TWD;
                     if (allExpenses.length > 0) window.renderExpenses();
                 }
-            } catch (e) {
-                console.error('Failed to fetch live rates, using defaults', e);
-            }
+            } catch (e) { console.error('Failed to fetch live rates', e); }
         };
 
         onAuthStateChanged(auth, async (user) => { 
-            if (user) { 
-                currentUser = user; 
-                startSyncing(); 
-            } else { 
-                await signInAnonymously(auth); 
-            } 
+            if (user) { currentUser = user; startSyncing(); } 
+            else { await signInAnonymously(auth); } 
         });
 
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
@@ -397,60 +346,25 @@
                     window.updateCountdownUI();
                 }
             });
-
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
                 if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list;
                 if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0];
-                renderDayTabs();
-                renderDayDropdown();
+                renderDayTabs(); renderDayDropdown();
                 if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) renderDayManagerList();
             });
-
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
-                if (docSnap.exists()) {
-                    dayDates = docSnap.data();
-                    renderDayTabs();
-                }
+                if (docSnap.exists()) { dayDates = docSnap.data(); renderDayTabs(); }
             });
-
-            onSnapshot(getColl('itinerary'), (s) => {
-                itineraryData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderItinerary();
-            });
-            onSnapshot(getColl('packing'), (s) => {
-                packingData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderPacking();
-            });
-            onSnapshot(getColl('expenses'), (s) => {
-                allExpenses = s.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderExpenses();
-            });
-            onSnapshot(getColl('flights'), (s) => {
-                flightsData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderFlights();
-            });
-            onSnapshot(getColl('hotels'), (s) => {
-                hotelsData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                renderHotels();
-            });
-            
-            onSnapshot(getColl('memories'), (s) => {
-                memoriesData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                if (window.renderMemories) window.renderMemories();
-            });
-
-            onSnapshot(getColl('vault'), (s) => {
-                vaultData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                if (window.renderVault) window.renderVault();
-            });
-
-            onSnapshot(getColl('missions'), (s) => {
-                missionsData = s.docs.map(d => ({id: d.id, ...d.data()}));
-                if (window.renderMissions) window.renderMissions();
-            });
+            onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); });
+            onSnapshot(getColl('packing'), (s) => { packingData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderPacking(); });
+            onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
+            onSnapshot(getColl('flights'), (s) => { flightsData = s.docs.map(d => ({id: d.id, ...d.data()})); renderFlights(); });
+            onSnapshot(getColl('hotels'), (s) => { hotelsData = s.docs.map(d => ({id: d.id, ...d.data()})); renderHotels(); });
+            onSnapshot(getColl('memories'), (s) => { memoriesData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderMemories) window.renderMemories(); });
+            onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderVault) window.renderVault(); });
+            onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); if (window.renderMissions) window.renderMissions(); });
         }
 
-        // --- 全局 UI 提示功能 (Toast) ---
         window.showToast = (msg, icon = '✨') => {
             let toast = document.getElementById('app-toast');
             if (!toast) {
@@ -460,46 +374,27 @@
                 document.body.appendChild(toast);
             }
             toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892] w-[90vw] max-w-[340px] leading-relaxed"><span>${icon}</span> ${msg}</div>`;
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-0', 'translate-y-[-20px]');
-                toast.classList.add('opacity-100', 'translate-y-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', 'translate-y-[-20px]');
-            }, 3500); // 延長顯示時間讓字多的吐槽可以看完
+            setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-[-20px]'); toast.classList.add('opacity-100', 'translate-y-0'); }, 10);
+            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'translate-y-[-20px]'); }, 3500);
         };
 
-        // --- 任務清單邏輯 ---
         window.addMission = async () => {
             const task = document.getElementById('mission-task').value;
             const cat = document.getElementById('mission-category').value;
             if(!task || !currentUser) return;
-            await addDoc(getColl('missions'), { 
-                task, 
-                category: cat, 
-                checked: false, 
-                createdAt: Date.now() 
-            });
+            await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() });
             document.getElementById('mission-task').value = '';
         };
 
-        window.toggleMission = async (id, s) => { 
-            if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); 
-        };
+        window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
 
         window.renderMissions = () => {
             const container = document.getElementById('missions-container');
             if (!container) return;
-
             const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' };
-            
             container.innerHTML = Object.keys(cats).map(key => {
                 const items = missionsData.filter(m => m.category === key);
                 if (items.length === 0 && key !== 'pre') return ''; 
-
                 return `
                     <div>
                         <h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4>
@@ -519,11 +414,9 @@
             }).join('');
         };
 
-        // --- 保險箱邏輯 ---
         window.unlockVault = () => {
             const pin = document.getElementById('vault-pin').value;
             const errorMsg = document.getElementById('vault-error-msg');
-            
             if (pin === "1112") { 
                 document.getElementById('vault-locked').classList.add('hidden');
                 document.getElementById('vault-content').classList.remove('hidden');
@@ -537,14 +430,9 @@
 
         window.uploadToVault = async (type, input) => {
             if (!input.files[0] || !currentUser) return;
-            
             const reader = new FileReader();
             reader.onload = async (e) => {
-                await addDoc(getColl('vault'), {
-                    type: type,
-                    image: e.target.result,
-                    createdAt: Date.now()
-                });
+                await addDoc(getColl('vault'), { type: type, image: e.target.result, createdAt: Date.now() });
                 input.value = ''; 
             };
             reader.readAsDataURL(input.files[0]);
@@ -553,7 +441,6 @@
         window.renderVault = () => {
             const list = document.getElementById('vault-list');
             if (!list) return;
-
             list.innerHTML = vaultData.sort((a,b) => b.createdAt - a.createdAt).map(v => `
                 <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mb-3 border border-gray-100">
                     <img src="${v.image}" onclick="window.open('${v.image}')" class="w-14 h-14 object-cover rounded-xl shadow-sm cursor-zoom-in">
@@ -566,7 +453,6 @@
             `).join('');
         };
 
-        // --- 倒數計時邏輯 ---
         window.saveDepartureDate = async (val) => {
             if(!currentUser || !val) return;
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), { date: val });
@@ -575,50 +461,37 @@
         window.updateCountdownUI = () => {
             const display = document.getElementById('countdown-display');
             if (!display) return;
-
             if (!departureDate) {
                 display.innerText = "蜜月籌備中... 🇹🇭";
                 display.classList.remove('bg-[#6B705C]', 'animate-bounce');
                 display.classList.add('bg-[#DDB892]'); 
                 return;
             }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const target = new Date(departureDate);
-            target.setHours(0, 0, 0, 0);
-            
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const target = new Date(departureDate); target.setHours(0, 0, 0, 0);
             const diffTime = target - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
             display.classList.remove('animate-bounce'); 
-
             if (diffDays > 0) {
                 display.innerHTML = `距離甜蜜蜜月還有 <span class="text-base mx-1">${diffDays}</span> 天`;
-                display.classList.remove('bg-[#DDB892]');
-                display.classList.add('bg-[#6B705C]'); 
+                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]'); 
             } else if (diffDays === 0) {
                 display.innerText = "🎉 就是今天！出發去泰國！✈️";
-                display.classList.remove('bg-[#DDB892]');
-                display.classList.add('bg-[#6B705C]', 'animate-bounce');
+                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]', 'animate-bounce');
             } else {
                 display.innerText = "❤️ 甜蜜回憶進行中...";
-                display.classList.remove('bg-[#DDB892]');
-                display.classList.add('bg-[#6B705C]');
+                display.classList.remove('bg-[#DDB892]'); display.classList.add('bg-[#6B705C]');
             }
         };
 
-        // --- UI Rendering Helpers ---
         window.renderDayTabs = () => {
             const container = document.getElementById('day-tabs-container');
             if (!container) return;
-            
             let html = dayList.map(dayStr => {
                 const dateStr = dayDates[dayStr] || ''; 
                 const isActive = currentDayFilter === dayStr;
                 const formattedDate = window.formatDisplayDate(dateStr);
                 let dateDisplay = formattedDate ? formattedDate : '日期';
-                
                 return `
                 <div onclick="window.setDayFilter('${dayStr}')" class="day-tab ${isActive ? 'active' : ''}">
                     <div class="day-tab-num">${dayStr}</div>
@@ -631,7 +504,6 @@
                     }
                 </div>`;
             }).join('');
-
             html += `<div onclick="window.toggleDayManager()" class="day-tab bg-gray-50 border-dashed border-2 flex items-center justify-center opacity-70 hover:opacity-100 cursor-pointer"><div class="text-2xl">⚙️</div></div>`;
             container.innerHTML = html;
         };
@@ -644,18 +516,13 @@
         };
 
         window.setDayFilter = (day) => { 
-            currentDayFilter = day; 
-            renderDayTabs(); 
-            window.renderItinerary(); 
+            currentDayFilter = day; renderDayTabs(); window.renderItinerary(); 
             const dayLabel = document.getElementById('current-day-label');
             if (dayLabel) dayLabel.innerText = day;
         };
 
         window.viewDayMap = () => {
-            const dailyItems = itineraryData
-                .filter(item => item.day === currentDayFilter && item.type !== 'note') 
-                .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); 
-
+            const dailyItems = itineraryData.filter(item => item.day === currentDayFilter && item.type !== 'note').sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); 
             if (dailyItems.length === 0) {
                 const btn = document.querySelector('#day-map-action button');
                 if(!btn) return;
@@ -664,7 +531,6 @@
                 setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
                 return;
             }
-
             const locations = dailyItems.map(item => encodeURIComponent(item.activity));
             const url = `https://www.google.com/maps/dir/${locations.join('/')}`;
             window.open(url, '_blank');
@@ -672,7 +538,6 @@
 
         window.saveDate = async (day, val) => { if(currentUser) await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [day]: val }, { merge: true }); };
 
-        // --- Day Management Modals ---
         window.toggleDayManager = () => {
             const modal = document.getElementById('day-manage-modal');
             if(!modal) return;
@@ -698,9 +563,7 @@
             const input = document.getElementById('new-day-input');
             const newDay = input.value.trim();
             if (!newDay) return;
-            if (dayList.includes(newDay)) {
-                input.value = ''; input.placeholder = '名稱已存在！請換一個'; return;
-            }
+            if (dayList.includes(newDay)) { input.value = ''; input.placeholder = '名稱已存在！請換一個'; return; }
             const updatedList = [...dayList, newDay];
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
             input.value = ''; input.placeholder = '例如: Day 8 或 普吉島第一天';
@@ -717,9 +580,7 @@
         window.confirmRenameDay = async () => {
             const oldName = document.getElementById('rename-day-old').value;
             const newName = document.getElementById('rename-day-input').value.trim();
-            
             if (!newName || newName === oldName || dayList.includes(newName)) { window.closeRenameModal(); return; }
-
             const updatedList = dayList.map(d => d === oldName ? newName : d);
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
 
@@ -729,12 +590,8 @@
                 delete newDates[oldName]; 
                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), { [newName]: dayDates[oldName] }, { merge: true });
             }
-
             const itemsToUpdate = itineraryData.filter(i => i.day === oldName);
-            for (let item of itemsToUpdate) {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', item.id), { day: newName });
-            }
-
+            for (let item of itemsToUpdate) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', item.id), { day: newName }); }
             if(currentDayFilter === oldName) currentDayFilter = newName;
             window.closeRenameModal();
         };
@@ -751,7 +608,6 @@
             const dayName = document.getElementById('delete-day-target').value;
             const updatedList = dayList.filter(d => d !== dayName);
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true });
-            
             if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : '';
             window.closeDeleteModal();
         };
@@ -760,14 +616,12 @@
         window.editItinerary = (id) => {
             const item = itineraryData.find(i => i.id === id);
             if (!item) return;
-            
             editingItineraryId = id;
             document.getElementById('it-day').value = item.day;
             document.getElementById('it-type').value = item.type;
             document.getElementById('it-activity').value = item.activity;
             if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || '';
             if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || '';
-            
             if (item.time.includes('-')) {
                 const times = item.time.split('-').map(t => t.trim());
                 document.getElementById('it-time-start').value = times[0];
@@ -776,7 +630,6 @@
                 document.getElementById('it-time-start').value = item.time;
                 if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = '';
             }
-
             document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅';
             document.getElementById('btn-cancel-itinerary').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -789,39 +642,23 @@
             if (document.getElementById('it-note')) document.getElementById('it-note').value = '';
             if (document.getElementById('it-address')) document.getElementById('it-address').value = '';
             document.getElementById('it-day').value = currentDayFilter; 
-            
             document.getElementById('btn-add-itinerary').innerText = '加入行程地圖';
             document.getElementById('btn-cancel-itinerary').classList.add('hidden');
         };
 
         window.addItinerary = async () => {
             const act = document.getElementById('it-activity').value; if(!act || !currentUser) return;
-            const addrEl = document.getElementById('it-address');
-            const addr = addrEl ? addrEl.value : '';
+            const addrEl = document.getElementById('it-address'); const addr = addrEl ? addrEl.value : '';
             const dayVal = document.getElementById('it-day').value;
-            const noteEl = document.getElementById('it-note');
-            const noteVal = noteEl ? noteEl.value : ''; 
+            const noteEl = document.getElementById('it-note'); const noteVal = noteEl ? noteEl.value : ''; 
             const startTime = document.getElementById('it-time-start').value || '12:00';
-            const endTimeEl = document.getElementById('it-time-end');
-            const endTime = endTimeEl ? endTimeEl.value : '';
+            const endTimeEl = document.getElementById('it-time-end'); const endTime = endTimeEl ? endTimeEl.value : '';
             const timeVal = endTime ? `${startTime} - ${endTime}` : startTime;
             const typeVal = document.getElementById('it-type').value;
 
-            const data = { 
-                day: dayVal, time: timeVal, activity: act, 
-                address: addr, note: noteVal, type: typeVal 
-            };
-
-            if (editingItineraryId) {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data);
-                window.cancelEditItinerary(); 
-            } else {
-                await addDoc(getColl('itinerary'), data);
-                document.getElementById('it-activity').value = '';
-                if (endTimeEl) endTimeEl.value = '';
-                if (noteEl) noteEl.value = '';
-                if (addrEl) addrEl.value = '';
-            }
+            const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal };
+            if (editingItineraryId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data); window.cancelEditItinerary(); } 
+            else { await addDoc(getColl('itinerary'), data); window.cancelEditItinerary(); }
             window.setDayFilter(dayVal);
         };
 
@@ -829,20 +666,14 @@
             const list = document.getElementById('it-list');
             if (!list) return;
             const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
-            
-            if (sorted.length === 0) {
-                list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`;
-                return;
-            }
+            if (sorted.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`; return; }
 
             list.innerHTML = sorted.map(item => {
                 const safeAddr = (item.address || "").replace(/'/g, "\\'");
                 const safeAct = item.activity.replace(/'/g, "\\'");
-                // 🌟 修正：使用正確的 Google Maps 搜尋 URL
                 const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
                 
-                let typeClass = '';
-                let typeLabel = '';
+                let typeClass = ''; let typeLabel = '';
                 switch(item.type) {
                     case 'food': typeClass = 'timeline-food'; typeLabel = '🍴 美食'; break;
                     case 'shop': typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; break;
@@ -857,10 +688,7 @@
                 <div class="app-card p-4 mb-4 ${typeClass} timeline-item relative">
                     <div class="flex justify-between items-start">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span>
-                                <span class="tag tag-type">${typeLabel}</span>
-                            </div>
+                            <div class="flex items-center gap-2 mb-1.5"><span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span><span class="tag tag-type">${typeLabel}</span></div>
                             <div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>
                             ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
                             ${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}
@@ -870,11 +698,10 @@
                             <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
                         </div>
                     </div>
-                    
                     <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
                         <a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a>
                         <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button>
-                        <button onclick="window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？')" class="action-link">💡 攻略</button>
+                        <button onclick="window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link">💡 攻略</button>
                     </div>
                 </div>`;
             }).join('');
@@ -884,17 +711,14 @@
         window.toggleSection = (id) => { document.getElementById(id+'-grid').classList.toggle('active'); };
         
         window.editFlight = (id) => {
-            const item = flightsData.find(f => f.id === id);
-            if (!item) return;
+            const item = flightsData.find(f => f.id === id); if (!item) return;
             editingFlightId = id;
             document.getElementById('f-code').value = item.code; document.getElementById('f-from').value = item.from;
             document.getElementById('f-to').value = item.to; document.getElementById('f-date').value = item.date || '';
             document.getElementById('f-duration').value = item.duration || ''; document.getElementById('f-depTime').value = item.depTime;
             document.getElementById('f-arrTime').value = item.arrTime; document.getElementById('f-checkinTime').value = item.checkinTime;
             document.getElementById('f-seat').value = item.seat; document.getElementById('f-note').value = item.note || '';
-
-            document.getElementById('btn-add-flight').innerText = '確認修改 ✅';
-            document.getElementById('btn-cancel-flight').classList.remove('hidden');
+            document.getElementById('btn-add-flight').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-flight').classList.remove('hidden');
             if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -902,8 +726,7 @@
         window.cancelEditFlight = () => {
             editingFlightId = null;
             ['f-code','f-from','f-to','f-date','f-duration','f-depTime','f-arrTime','f-checkinTime','f-seat','f-note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('btn-add-flight').innerText = '儲存航班';
-            document.getElementById('btn-cancel-flight').classList.add('hidden');
+            document.getElementById('btn-add-flight').innerText = '儲存航班'; document.getElementById('btn-cancel-flight').classList.add('hidden');
         };
 
         window.addFlight = async () => {
@@ -946,15 +769,12 @@
         }
 
         window.editHotel = (id) => {
-            const item = hotelsData.find(h => h.id === id);
-            if (!item) return;
+            const item = hotelsData.find(h => h.id === id); if (!item) return;
             editingHotelId = id;
             document.getElementById('h-name').value = item.name; document.getElementById('h-room').value = item.room;
             document.getElementById('h-checkin').value = item.checkin; document.getElementById('h-checkout').value = item.checkout || '';
             document.getElementById('h-note').value = item.note || '';
-
-            document.getElementById('btn-add-hotel').innerText = '確認修改 ✅';
-            document.getElementById('btn-cancel-hotel').classList.remove('hidden');
+            document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-hotel').classList.remove('hidden');
             if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -962,8 +782,7 @@
         window.cancelEditHotel = () => {
             editingHotelId = null;
             ['h-name','h-room','h-checkin','h-checkout','h-note'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('btn-add-hotel').innerText = '儲存飯店';
-            document.getElementById('btn-cancel-hotel').classList.add('hidden');
+            document.getElementById('btn-add-hotel').innerText = '儲存飯店'; document.getElementById('btn-cancel-hotel').classList.add('hidden');
         };
 
         window.addHotel = async () => {
@@ -994,22 +813,29 @@
 
         // --- 泰語發音功能 ---
         window.speakThai = (text) => {
-            // 檢查瀏覽器是否支援語音
             if (!window.speechSynthesis) return;
-            
-            // 停止目前正在播放的聲音
             window.speechSynthesis.cancel();
-
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'th-TH'; // 設定為泰語
-            utterance.rate = 0.8;    // 語速稍微放慢一點，讓你們聽得更清楚
-            utterance.pitch = 1;     // 音調正常
-            
+            utterance.lang = 'th-TH'; 
+            utterance.rate = 0.8;    
+            utterance.pitch = 1;     
             window.speechSynthesis.speak(utterance);
         };
 
-        // --- AI 助理：看圖與聊天雙棲版 (v7.3 日期感應版) ---
-        window.askGemini = async (q = null, isAutoFood = false) => {
+        // --- 🌟 全新隨身翻譯機呼叫邏輯 ---
+        window.quickTranslate = () => {
+            const val = document.getElementById('quick-translate-input').value.trim();
+            if (!val) return;
+            const query = `請幫我把這句中文翻譯成泰語：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充這個詞在泰國的正確使用時機或文化小知識。`;
+            document.getElementById('quick-translate-input').value = '';
+            
+            // 第三個參數是「在畫面上顯示給妳看的乾淨文字」
+            window.askGemini(query, false, `🇹🇭 幫我翻譯：「${val}」`);
+        };
+
+        // --- AI 助理：看圖與聊天雙棲版 ---
+        // 加入了第三個參數 displayOverride，讓快捷按鈕送出複雜指令時，畫面上只顯示乾淨的短句
+        window.askGemini = async (q = null, isAutoFood = false, displayOverride = null) => {
             const input = document.getElementById('gemini-input');
             const imageInput = document.getElementById('gemini-image');
             const chat = document.getElementById('gemini-chat');
@@ -1020,8 +846,9 @@
             window.toggleGemini(true);
             if(!q) input.value = '';
             
-            const displayMessage = query || '📸 傳送了一張照片';
-            // 使用者氣泡採用 user-bubble 樣式，加入 rounded-2xl
+            // 畫面顯示的文字（優先使用 override）
+            const displayMessage = displayOverride || query || '📸 傳送了一張照片';
+            
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             
             const thinkingId = 'think-' + Date.now();
@@ -1030,17 +857,10 @@
             chat.scrollTop = chat.scrollHeight;
             
             try {
-                // 整理未完成任務，讓管家記住
-                const pendingMissions = missionsData
-                    .filter(m => !m.checked)
-                    .map(m => m.task)
-                    .join('、');
-
+                const pendingMissions = missionsData.filter(m => !m.checked).map(m => m.task).join('、');
                 const dateContext = `
                     目前的系統資訊：
                     - 蜜月出發日期：${departureDate || '尚未設定'}
-                    - 各行程天數對應日期：${JSON.stringify(dayDates)}
-                    - 今天日期是：${new Date().toLocaleDateString('zh-TW')}
                     - ⚠️ 你們還有這些「未完成任務」：${pendingMissions || '暫無，太棒了！'}
                     - 目前身處：${currentDayFilter} 的行程中
                 `;
@@ -1051,13 +871,11 @@
                 
                 if (imageInput && imageInput.files[0]) {
                     payloadModel = "llama-3.2-11b-vision-preview"; 
-                    
                     const base64 = await new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result.split(',')[1]);
                         reader.readAsDataURL(imageInput.files[0]);
                     });
-                    
                     userContent = [
                         { type: "text", text: contextPrefix + (query || "這張圖片是什麼？請詳細說明。") },
                         { type: "image_url", image_url: { url: `data:${imageInput.files[0].type};base64,${base64}` } }
@@ -1069,15 +887,15 @@
                 chatHistory.push({ role: "user", content: userContent });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
-                // 🌟 修正防呆指令：加入最高指導原則，並明確定義平分與請客的回覆規則
+                // 🌟 修正防呆指令：加入嚴格的「付款人對應邏輯」，絕對不准誇錯人！
                 const systemPrompt = `
                     你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
 
-                    【⚠️ 最高指導原則：稱呼限制】
-                    1. 妳「絕對不可以」只單獨叫 Darren 或單獨叫 Tina！
-                    2. 開場或對話時，請「一律統稱」為『你們』或是『Darren & Tina』。
-                    3. ❌ 嚴禁使用「兩位新人」或 "Bae"。
-                    4. ❌ 嚴禁開頭說「Darren，你好」或「Tina，你好」，因為妳不知道現在拿手機的是誰！
+                    【⚠️ 一般對話稱呼限制】
+                    1. 在「一般聊天、給予建議、翻譯」等非記帳情境時，開場或對話請「一律統稱」為『你們』或是『Darren & Tina』。
+                    2. ❌ 嚴禁在一般對話中開頭說「Darren，你好」或「Tina，你好」，因為妳不知道現在拿手機的是誰！
+                    3. ❌ 嚴禁使用「兩位新人」或任何英文愛稱（絕對禁止出現 "Bae" 這個字！）。
+                    4. 🇹🇼 必須使用「台灣在地用語」與「繁體中文」（例如：說「跳錶」不說開表、說「行動電源」不說充電寶、說「飯店」不說酒店、說「計程車」不說出租車）。
 
                     【視覺分析任務：你的眼睛】
                     當看到照片時，請根據照片類型主動切換功能：
@@ -1090,12 +908,17 @@
                     - 持續觀察這項「未完成任務」清單：[背景資訊中提供]。
                     - 若快出發了卻還沒辦好，請在對話結束前用損友口氣催促一下。
 
-                    【記帳發揮 - 戲精人格】
-                    若用戶輸入花費，請判斷情境並隨機切換人格回覆：
-                    - A (大方讚賞)：讚美付錢的人有型、有品味。
-                    - B (幽默損友)：虧一下沒付錢的人，例如「Darren 這次動作慢囉！」或「Tina 這次請客，Darren 晚上要負責幫忙搥背喔！」
-                    - C (專業分析)：感嘆預算抓得太精準。
-                    - D (泰國即時感)：用泰奶、燕窩或按摩次數來比喻這筆錢的價值。
+                    【💰 記帳發揮 - 戲精人格 (這時可以單獨稱呼)】
+                    當判斷出是一筆花費時，妳必須「嚴格對應」付錢的人是誰，絕對不可以誇錯人：
+                    👉 若是 Darren 付錢：只能誇獎「Darren/老公」霸氣、帥氣、有品味，或是虧「Tina/老婆」賺到了。
+                    👉 若是 Tina 付錢：只能誇獎「Tina/老婆」仙女、霸氣、眼光好，或是虧「Darren/老公」今晚要搥背表現了。
+                    (❌ 嚴禁出現「Tina付錢卻誇老公霸氣」或「Darren付錢卻誇仙女」這種邏輯錯亂的情況！)
+
+                    隨機切換以下人格回覆：
+                    - A (大方讚賞)：讚美付錢的人。
+                    - B (幽默損友)：虧一下沒付錢的人。
+                    - C (泰國即時感)：用泰奶、燕窩或按摩次數來比喻這筆錢的價值。
+
                     ⚠️【非常重要：付款方式對應的語氣】
                     - 如果是「平分 (split)」：請用「代墊」、「先幫忙付」、「記得收錢」等字眼。
                     - 如果是「請客 (treat)」：請用「霸氣買單」、「送老婆/老公」、「真愛」等字眼。絕對不可以說「代墊」，因為請客不用還錢！
@@ -1111,11 +934,12 @@
                        - personal (個人)：明確說「自己買的」、「私人花費」。
 
                     最後一行必須嚴格附上代碼：
-                    SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別(THB/TWD)","category":"分類代號","payer":"darren或tina","splitType":"split或treat或personal"}
+                    SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別(THB/TWD)","category":"分類代號","payer":"darren或tina","splitType":"split/treat/personal"}
 
-                    【翻譯任務】
-                    1. 當用戶問「...泰文怎麼說」或要求翻譯時，除了文字解釋，必須在最後一行嚴格附上：
-                       SHOW_CARD: {"thai":"泰文原文","meaning":"中文意義","phonetic":"拼音"}
+                    【🌟 翻譯任務與多字卡生成 (非常重要)】
+                    1. 當要求翻譯，或是妳主動提供泰文教學時（例如：教按摩用語、叫車用語），請「務必」使用代碼：
+                       SHOW_CARD: {"thai":"泰文","meaning":"中文","phonetic":"拼音"}
+                    2. ⚠️ 關鍵：如果你一次提供了「多個」詞彙教學（例如 4 句按摩用語），請為【每一個】詞彙都獨立輸出一次 SHOW_CARD 代碼！請換行連續輸出，不要把它們塞在同一個 JSON 裡。
 
                     【固定格式】
                     1. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
@@ -1138,54 +962,50 @@
                 const data = await response.json();
                 let text = data.choices?.[0]?.message?.content || "對不起，管家眼睛有點花...";
                 
-                const textToSave = query || "這張圖片是什麼？";
+                // 存入聊天紀錄的是「乾淨的文字」，這樣 AI 下次看紀錄才不會亂掉
+                const textToSave = displayOverride || query || "這張圖片是什麼？";
                 chatHistory[chatHistory.length - 1] = { role: "user", content: textToSave };
-                
                 chatHistory.push({ role: "assistant", content: text });
 
                 document.getElementById(thinkingId)?.remove();
 
-                // ✂️ 處理管家回覆並檢查是否有代碼
+                // ✂️ 🌟 處理「多重」字卡代碼的新邏輯 (正則表達式)
                 let responseText = text;
                 let cardBtnHtml = '';
+                const cardRegex = /SHOW_CARD:\s*(\{.*?\})/g;
+                let match;
 
-                // 1. 檢查是否有大字卡代碼 (SHOW_CARD)
-                if (responseText.includes("SHOW_CARD:")) {
+                // 抓出所有出現的大字卡代碼，生成多顆按鈕
+                while ((match = cardRegex.exec(text)) !== null) {
                     try {
-                        const parts = responseText.split("SHOW_CARD:");
-                        responseText = parts[0].trim(); // 把代碼從文字中拿掉，保持對話乾淨
-                        
-                        // 防呆處理：確保沒切到 SAVE_EXPENSE
-                        let jsonStr = parts[1].trim();
+                        let jsonStr = match[1].trim();
+                        // 雙重防呆：確保沒切到別的代碼
                         if (jsonStr.includes("SAVE_EXPENSE:")) {
-                             jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
+                            jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
                         }
-                        
                         const cardData = JSON.parse(jsonStr);
                         
-                        // 生成一個漂亮的翻譯按鈕 (加上取代單引號的防護)
-                        cardBtnHtml = `
-                            <div class="mt-3">
+                        cardBtnHtml += `
+                            <div class="mt-2">
                                 <button onclick="window.showThaiCard('${cardData.thai.replace(/'/g, "\\'")}', '${cardData.meaning.replace(/'/g, "\\'")}', '${cardData.phonetic.replace(/'/g, "\\'")}')" 
-                                        class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2 rounded-xl text-xs font-black shadow-sm flex items-center gap-2 active:scale-95 transition-transform">
-                                    🔍 開啟動態大字卡 (支援語音)
+                                        class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">
+                                    🔊 朗讀：${cardData.meaning.replace(/'/g, "\\'")}
                                 </button>
                             </div>
                         `;
                     } catch (e) { console.error("大字卡解析失敗", e); }
                 }
 
-                // 2. 處理記帳代碼隱藏 (SAVE_EXPENSE)
-                if (responseText.includes("SAVE_EXPENSE:")) {
-                    responseText = responseText.split("SAVE_EXPENSE:")[0].trim();
-                }
+                // 將所有代碼從畫面上抹除
+                responseText = responseText.replace(/SHOW_CARD:\s*\{.*?\}/g, '').trim();
+                responseText = responseText.replace(/SAVE_EXPENSE:\s*\{.*?\}/g, '').trim();
                 
-                // 3. 渲染對話泡泡
+                // 渲染對話泡泡
                 let responseHtml = `
                     <div class="mb-4 text-left">
                         <div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">
                             ${responseText.replace(/\n/g, '<br>')}
-                            ${cardBtnHtml} 
+                            ${cardBtnHtml ? `<div class="mt-3 border-t border-[#F8D7D1] pt-3">${cardBtnHtml}</div>` : ''} 
                         </div>
                     </div>
                 `;
@@ -1196,42 +1016,29 @@
                         responseHtml += `
                             <div class="mt-3 flex gap-2 flex-wrap">
                                 <button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button>
-                                <button onclick="window.askGemini('在這邊拍照有什麼姿勢建議？📸')" class="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">📸 拍照姿勢建議</button>
+                                <button onclick="window.askGemini('在這邊拍照有什麼姿勢建議？📸', false, '💡 查詢拍照姿勢')" class="bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">📸 拍照姿勢建議</button>
                             </div>
                         `;
                     }
                 }
                 chat.innerHTML += responseHtml;
                 
-                // 這裡依然使用完整的 text 來執行背景的記帳邏輯
+                // 背景記帳邏輯
                 if (text.includes("SAVE_EXPENSE:")) {
                     try {
-                        let jsonStr = text.split("SAVE_EXPENSE:")[1].trim();
-                        if (jsonStr.startsWith('```')) {
-                            jsonStr = jsonStr.replace(/```(json)?/g, '').trim();
+                        const expenseMatch = text.match(/SAVE_EXPENSE:\s*(\{.*?\})/);
+                        if (expenseMatch) {
+                            const expData = JSON.parse(expenseMatch[1]);
+                            await addDoc(getColl('expenses'), {
+                                item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB",
+                                category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
+                                splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now()
+                            });
                         }
-                        const expData = JSON.parse(jsonStr);
-                        
-                        await addDoc(getColl('expenses'), {
-                            item: expData.item,
-                            cost: parseFloat(expData.cost),
-                            currency: expData.currency || "THB",
-                            category: expData.category || "other",
-                            payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
-                            splitType: expData.splitType || 'split', 
-                            date: new Date().toISOString().split('T')[0], 
-                            createdAt: Date.now()
-                        });
-                        console.log("AI 已自動完成記帳！✨");
-                    } catch (e) {
-                        console.error("AI 格式解析失敗", e);
-                    }
+                    } catch (e) { console.error("AI 記帳解析失敗", e); }
                 }
                 
-                if (imageInput) {
-                    imageInput.value = '';
-                    document.getElementById('image-indicator').classList.add('hidden');
-                }
+                if (imageInput) { imageInput.value = ''; document.getElementById('image-indicator').classList.add('hidden'); }
 
             } catch (e) { 
                 console.error("AI 錯誤:", e);
@@ -1244,7 +1051,7 @@
         window.getFoodRecommendation = (place) => {
             const foodQuery = `幫我們找找「${place}」附近推薦的 3-5 家海鮮或泰式美食，順便告訴我們價位和必點菜色。`;
             const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}+restaurants`;
-            window.askGemini(foodQuery, true);
+            window.askGemini(foodQuery, true, `🍴 尋找「${place}」附近美食`);
             
             setTimeout(() => {
                 const chat = document.getElementById('gemini-chat');
@@ -1264,20 +1071,16 @@
             document.getElementById('thai-card-meaning').innerText = meaning;
             document.getElementById('thai-card-phonetic').innerText = phonetic;
             
-            // 這一行是關鍵：讓喇叭按鈕知道要讀哪段泰文
             const speakerBtn = document.getElementById('thai-speaker-btn');
             if (speakerBtn) {
                 speakerBtn.onclick = (e) => {
-                    e.stopPropagation(); // 阻止事件冒泡，避免點擊喇叭時關閉 Modal
+                    e.stopPropagation(); 
                     window.speakThai(thai);
                 };
             }
             
             document.getElementById('thai-card-modal').classList.add('open');
-            
-            const chat = document.getElementById('gemini-chat');
-            chat.innerHTML += `<div class="mb-4 text-center"><span class="inline-block bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[10px] font-bold italic">妳使用了泰文小抄：${meaning}</span></div>`;
-            chat.scrollTop = chat.scrollHeight;
+            // 改為不發送訊息至聊天室，以免干擾版面
         };
 
         // --- 甜蜜回憶牆邏輯 ---
@@ -1310,11 +1113,7 @@
             }
 
             await addDoc(getColl('memories'), {
-                text,
-                mood,
-                image: base64Img,
-                author: currentUser ? currentUser.uid : 'anonymous', 
-                createdAt: Date.now()
+                text, mood, image: base64Img, author: currentUser ? currentUser.uid : 'anonymous', createdAt: Date.now()
             });
 
             document.getElementById('mem-text').value = '';
@@ -1373,9 +1172,7 @@
 
         // 升級版分頁切換：支援動畫與震動
         window.switchTab = (id) => {
-            // Android 專屬震動 (iOS 會自動跳過不報錯)
             if (window.navigator.vibrate) window.navigator.vibrate(10); 
-
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             const target = document.getElementById('content-' + id);
             if (target) target.classList.remove('hidden');
@@ -1386,14 +1183,12 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // 📍 一鍵複製功能：優先抓備註
+        // 📍 一鍵複製功能
         window.copyLocation = async (activity, address, event) => {
             const textToCopy = (address && address.trim() !== "") ? address : activity;
             try {
                 await navigator.clipboard.writeText(textToCopy);
                 if (window.navigator.vibrate) window.navigator.vibrate([30, 50, 30]); 
-                
-                // 🌟 修正點：使用傳入的 event 來精確抓到那個按鈕
                 const btn = event.currentTarget; 
                 const originalText = btn.innerHTML;
                 btn.innerHTML = "✅ 已複製";
@@ -1432,30 +1227,19 @@
             if(!item || !cost || !currentUser) return;
             
             const data = { 
-                item, 
-                cost: parseFloat(cost), 
-                currency: document.getElementById('exp-currency').value, 
-                category: document.getElementById('exp-category').value, 
-                payer: document.getElementById('exp-payer').value, 
-                splitType: document.getElementById('exp-split').value, 
-                date: document.getElementById('exp-date').value, 
-                createdAt: Date.now() 
+                item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, 
+                category: document.getElementById('exp-category').value, payer: document.getElementById('exp-payer').value, 
+                splitType: document.getElementById('exp-split').value, date: document.getElementById('exp-date').value, createdAt: Date.now() 
             };
             
-            if(editingExpenseId) { 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); 
-                window.cancelEditExpense(); 
-            } else { 
-                await addDoc(getColl('expenses'), data); 
-                window.cancelEditExpense(); 
-            }
+            if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } 
+            else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); }
 
-            // --- 趣味記帳提示 (加入分類與付款方式綜合判斷) ---
+            // --- 趣味記帳提示 ---
             const payer = document.getElementById('exp-payer').value;
             const splitType = document.getElementById('exp-split').value;
             const category = document.getElementById('exp-category').value;
             
-            // 根據分類加上特色吐槽
             let catText = "";
             if (category === 'food') catText = "🤤 泰國美食吃起來！回去再減肥！";
             else if (category === 'shop') catText = "🛍️ 買啦哪次不買！戰利品+1！";
@@ -1497,28 +1281,20 @@
 
         window.cancelEditExpense = () => {
             editingExpenseId = null;
-            document.getElementById('exp-item').value = ''; 
-            document.getElementById('exp-cost').value = '';
-            document.getElementById('exp-date').valueAsDate = new Date(); 
-            document.getElementById('exchange-hint').innerText = '';
-            document.getElementById('exp-split').value = 'split'; 
-            document.getElementById('exp-category').value = 'food'; 
-            document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; 
-            document.getElementById('btn-cancel-expense').classList.add('hidden');
+            document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = '';
+            document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = '';
+            document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; 
+            document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden');
         };
 
         window.editExpense = (id) => {
             const item = allExpenses.find(e => e.id === id); if (!item) return;
             editingExpenseId = id;
-            document.getElementById('exp-item').value = item.item; 
-            document.getElementById('exp-cost').value = item.cost;
-            document.getElementById('exp-payer').value = item.payer; 
-            document.getElementById('exp-currency').value = item.currency;
-            document.getElementById('exp-date').value = item.date;
-            document.getElementById('exp-split').value = item.splitType || 'split'; 
+            document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost;
+            document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency;
+            document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; 
             document.getElementById('exp-category').value = item.category || 'food'; 
-            document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; 
-            document.getElementById('btn-cancel-expense').classList.remove('hidden');
+            document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
@@ -1527,10 +1303,7 @@
             if(!list) return;
 
             let totalsByPayer = { tina: {}, darren: {} };
-            
-            let sharedTotalTHB = 0;
-            let tinaPaidSharedTHB = 0;
-            let darrenPaidSharedTHB = 0;
+            let sharedTotalTHB = 0; let tinaPaidSharedTHB = 0; let darrenPaidSharedTHB = 0;
 
             const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
             
@@ -1549,7 +1322,6 @@
                     if (e.payer === 'tina') tinaPaidSharedTHB += thbEq;
                     if (e.payer === 'darren') darrenPaidSharedTHB += thbEq;
                 }
-
                 return s + thbEq; 
             }, 0);
 
@@ -1564,13 +1336,9 @@
             const darrenBalance = darrenPaidSharedTHB - halfShared; 
             
             const settlementEl = document.getElementById('settlement-amount');
-            if (tinaBalance > 1) {
-                settlementEl.innerHTML = `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1">฿ ${Math.round(tinaBalance).toLocaleString()}</span>`;
-            } else if (darrenBalance > 1) {
-                settlementEl.innerHTML = `Tina 需給 Darren <span class="text-[#DDB892] ml-1">฿ ${Math.round(darrenBalance).toLocaleString()}</span>`;
-            } else {
-                settlementEl.innerHTML = `目前帳目完美打平 ✨`;
-            }
+            if (tinaBalance > 1) settlementEl.innerHTML = `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1">฿ ${Math.round(tinaBalance).toLocaleString()}</span>`;
+            else if (darrenBalance > 1) settlementEl.innerHTML = `Tina 需給 Darren <span class="text-[#DDB892] ml-1">฿ ${Math.round(darrenBalance).toLocaleString()}</span>`;
+            else settlementEl.innerHTML = `目前帳目完美打平 ✨`;
             
             list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
                 let thbEq = exp.cost;
@@ -1597,51 +1365,25 @@
                 </div>`
             }).join('');
 
-            // 📊 繪製圓環圖表 
             const ctx = document.getElementById('expenseChart').getContext('2d');
             const chartContainer = document.getElementById('chart-container');
-            
             if (window.myChart) window.myChart.destroy(); 
-
-            if (filtered.length === 0) {
-                chartContainer.classList.add('hidden');
-            } else {
+            if (filtered.length === 0) { chartContainer.classList.add('hidden'); } 
+            else {
                 chartContainer.classList.remove('hidden');
-                
-                const categories = { 
-                    'food': '🍴 食物', 
-                    'shop': '🛍️ 購物', 
-                    'massage': '💆 按摩', 
-                    'play': '🎢 玩樂', 
-                    'traffic': '🚗 交通', 
-                    'other': '🎒 其他' 
-                };
-
+                const categories = { 'food': '🍴 食物', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'traffic': '🚗 交通', 'other': '🎒 其他' };
                 let dataMap = {};
                 filtered.forEach(e => {
                     let thb = e.cost;
                     if (e.currency === 'USD') thb *= ratesToTHB['USD'];
                     if (e.currency === 'TWD') thb /= ratesToTHB['TWD'];
-                    
                     const cat = e.category || 'other';
                     dataMap[cat] = (dataMap[cat] || 0) + thb;
                 });
-
                 window.myChart = new Chart(ctx, {
                     type: 'doughnut', 
-                    data: {
-                        labels: Object.keys(dataMap).map(k => categories[k] || k),
-                        datasets: [{
-                            data: Object.values(dataMap),
-                            backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] 
-                        }]
-                    },
-                    options: { 
-                        plugins: { 
-                            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } 
-                        },
-                        cutout: '65%' 
-                    }
+                    data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] },
+                    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' }
                 });
             }
         };
@@ -1674,12 +1416,8 @@
         window.addEventListener('online', () => {
             const offlineToast = document.getElementById('offline-toast');
             if (offlineToast) offlineToast.classList.add('hidden');
-            
             const onlineToast = document.getElementById('online-toast');
-            if (onlineToast) {
-                onlineToast.classList.remove('hidden');
-                setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); // 3秒後消失
-            }
+            if (onlineToast) { onlineToast.classList.remove('hidden'); setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); }
         });
 
         window.addEventListener('offline', () => {
@@ -1687,14 +1425,30 @@
             if (offlineToast) offlineToast.classList.remove('hidden');
         });
 
-        // 初始化檢查一次
         if (!navigator.onLine) {
             const offlineToast = document.getElementById('offline-toast');
             if (offlineToast) offlineToast.classList.remove('hidden');
         }
+
+        // --- PWA 開場動畫 (Splash Screen) 邏輯 ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('app-splash');
+                if (splash) { splash.classList.add('opacity-0'); setTimeout(() => splash.remove(), 700); }
+            }, 800); 
+        });
     </script>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
+    
+    <!-- 🚀 質感開場動畫 Splash Screen -->
+    <div id="app-splash" class="fixed inset-0 z-[9999] bg-[#F8F7F2] flex flex-col items-center justify-center transition-opacity duration-700 pointer-events-none">
+        <div class="text-6xl mb-6 animate-bounce">✈️</div>
+        <!-- 🌟 加上 splash-text 類別，讓字體下載好才浮現 -->
+        <h1 class="font-['Dancing_Script'] text-5xl font-bold text-[#2D3128] mb-2 splash-text">Sawasdee Thailand</h1>
+        <p class="text-[10px] font-bold text-[#6B705C] tracking-[0.3em] animate-pulse mt-2 splash-text">🙏 管家連線準備中...</p>
+    </div>
+
     <!-- 🌍 網路狀態提示框 (加入 pointer-events-none 避免阻擋點擊) -->
     <div id="offline-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] hidden pointer-events-none">
         <div class="bg-red-500 text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-black text-xs transition-all animate-bounce whitespace-nowrap">
@@ -1721,7 +1475,7 @@
         <main class="p-4">
             <!-- 行程分頁 -->
             <div id="content-itinerary" class="tab-content">
-                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer" onclick="window.askGemini('幫我看看曼谷今天天氣如何，有什麼蜜月行程建議或該注意的嗎？')">
+                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer" onclick="window.askGemini('幫我看看曼谷今天天氣如何，有什麼蜜月行程建議或該注意的嗎？', false, '💡 查詢今日天氣')">
                     <div id="weather-display">
                         <div class="text-xl font-black">正在抓取天氣...</div>
                     </div>
@@ -1769,9 +1523,43 @@
                     <h3 class="text-base font-black text-[#4A4E40]">航班資訊 ✈️</h3>
                     <button onclick="window.toggleSection('flight')" class="text-xs bg-[#6B705C] text-white px-4 py-1.5 rounded-full font-bold shadow-sm">＋新增</button>
                 </div>
-                <div id="flight-grid" class="expand-panel app-card p-5 mb-5 bg-gray-50">
-                    <input type="text" id="f-code" placeholder="航班號 (如 TG635)" class="w-full p-3 rounded-xl mb-3 font-black outline-none border border-gray-200"><div class="grid grid-cols-2 gap-3 mb-3"><input type="text" id="f-from" placeholder="出發地" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="text" id="f-to" placeholder="目的地" class="p-3 rounded-xl text-sm outline-none border border-gray-200"></div><div class="grid grid-cols-2 gap-3 mb-3"><input type="date" id="f-date" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="text" id="f-duration" placeholder="飛行時間" class="p-3 rounded-xl text-sm outline-none border border-gray-200"></div><div class="grid grid-cols-3 gap-3 mb-3"><input type="time" id="f-depTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="time" id="f-arrTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="time" id="f-checkinTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200"></div><input type="text" id="f-seat" placeholder="座位" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200"><input type="text" id="f-note" placeholder="備註" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200"><button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold">儲存航班</button><button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
+                
+                <!-- 🌟 升級版航班輸入區塊 -->
+                <div id="flight-grid" class="expand-panel app-card p-5 mb-5 bg-white border border-gray-100">
+                    <input type="text" id="f-code" placeholder="航班號 (如 TG635)" class="w-full p-3 rounded-xl mb-4 font-black outline-none border border-gray-200">
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <input type="text" id="f-from" placeholder="出發地" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
+                        <input type="text" id="f-to" placeholder="目的地" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
+                    </div>
+
+                    <div class="flex gap-3 mb-1 px-1">
+                        <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 飛行日期</span>
+                        <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">⏱️ 總飛行時間</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <input type="date" id="f-date" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
+                        <input type="text" id="f-duration" placeholder="例如: 3h 50m" class="p-3 rounded-xl text-sm outline-none border border-gray-200">
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3 mb-1 px-1">
+                        <span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛫 出發</span>
+                        <span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛬 抵達</span>
+                        <span class="text-[9px] font-black text-[#F8AD9D] uppercase text-center">⌚ 報到</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <input type="time" id="f-depTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
+                        <input type="time" id="f-arrTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
+                        <input type="time" id="f-checkinTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center">
+                    </div>
+
+                    <input type="text" id="f-seat" placeholder="座位號碼" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200">
+                    <input type="text" id="f-note" placeholder="備註 (如：行李重量、餐點)" class="w-full p-3 rounded-xl text-sm mb-5 outline-none border border-gray-200">
+                    
+                    <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-4 rounded-xl text-sm font-bold shadow-md">儲存航班</button>
+                    <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="w-full mt-2 bg-gray-100 text-gray-500 py-3.5 rounded-xl text-sm font-bold hidden">取消修改</button>
                 </div>
+                
                 <div id="flights-list"></div>
                 
                 <div class="flex justify-between items-center mt-8 mb-4 px-1">
@@ -1779,7 +1567,20 @@
                     <button onclick="window.toggleSection('hotel')" class="text-xs bg-[#DDB892] text-white px-4 py-1.5 rounded-full font-bold shadow-sm">＋新增</button>
                 </div>
                 <div id="hotel-grid" class="expand-panel app-card p-5 mb-5 bg-gray-50">
-                    <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-3 rounded-xl mb-3 font-black outline-none border border-gray-200"><div class="flex gap-3 mb-3"><input type="date" id="h-checkin" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200"><input type="date" id="h-checkout" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200"></div><input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200"><input type="text" id="h-note" placeholder="備註" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200"><button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold">儲存飯店</button><button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
+                    <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-3 rounded-xl mb-3 font-black outline-none border border-gray-200">
+                    
+                    <div class="mb-3">
+                        <div class="flex gap-3 mb-1 px-1">
+                            <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 入住日期</span>
+                            <span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 退房日期</span>
+                        </div>
+                        <div class="flex gap-3">
+                            <input type="date" id="h-checkin" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
+                            <input type="date" id="h-checkout" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
+                        </div>
+                    </div>
+
+                    <input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200"><input type="text" id="h-note" placeholder="備註" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200"><button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold">儲存飯店</button><button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
                 </div>
                 <div id="hotels-list"></div>
 
@@ -1957,12 +1758,21 @@
         <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-5">
+                    <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.8</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.18</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
+                    </div>
+
+                    <!-- 🌟 全新升級：隨身翻譯機 (直接在管家對話框頂部輸入) -->
+                    <div class="px-1 mb-4">
+                        <div class="bg-white p-2 rounded-2xl flex gap-2 border-2 border-[#DDB892]/50 shadow-sm items-center">
+                            <span class="text-xl pl-1">🇹🇭</span>
+                            <input type="text" id="quick-translate-input" placeholder="隨身翻譯機：輸入中文秒翻泰文..." class="flex-1 bg-transparent text-sm outline-none font-bold text-[#4A4E40] placeholder-gray-400">
+                            <button onclick="window.quickTranslate()" class="bg-[#DDB892] text-white px-4 py-2 rounded-xl font-black text-xs shadow-sm active:scale-95 transition-transform whitespace-nowrap">翻譯 🔊</button>
+                        </div>
                     </div>
                     
                     <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1 no-scrollbar"></div>
@@ -1971,27 +1781,19 @@
                         <a href="tel:1155" class="shrink-0 bg-red-500 text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md flex items-center gap-1">
                             <span>🚑</span> 觀光警察 1155
                         </a>
-                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼。', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
                             🍱 抽晚餐盲盒
                         </button>
-                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的開表(By Meter)、去這裡(Go here)的泰文與發音，並提醒我泰國叫車避雷針。')" class="shrink-0 bg-yellow-400 text-black px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                        <!-- 🌟 將開表改為跳錶，並限定為台灣用語 -->
+                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
                             🚕 叫車小抄
                         </button>
-                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
+                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-md">
                             💆 按摩溝通
                         </button>
                     </div>
 
                     <div class="px-1 mb-3 overflow-x-auto no-scrollbar flex gap-2 opacity-70">
-                        <button onclick="window.showThaiCard('ขอผักชีเยอะๆ', '多一點香菜！', 'Kor Pak-Chee Yue-Yue')" class="shrink-0 bg-green-50 text-green-700 border border-green-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">🌿 多點香菜</button>
-                        <button onclick="window.showThaiCard('เท่าไหร่?', '這個多少錢？', 'Tao-Rai?')" class="shrink-0 bg-orange-50 text-orange-700 border border-orange-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">💰 問價錢</button>
-                        <button onclick="window.showThaiCard('ลดหน่อยได้ไหม?', '算便宜一點嘛～', 'Lod-Noi-Dai-Mai?')" class="shrink-0 bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-lg text-[10px] font-bold">💸 算便宜點</button>
-                        <button onclick="window.showThaiCard('ขอบคุณค่ะ', '謝謝 (Tina 用)', 'Kob-Khun-Ka')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝 (Tina)</button>
-                        <button onclick="window.showThaiCard('ขอบคุณครับ', '謝謝 (Darren 用)', 'Kob-Khun-Krab')" class="shrink-0 bg-gray-50 text-gray-700 border border-gray-100 px-4 py-2 rounded-xl text-[11px] font-black shadow-sm">🙏 謝謝 (Darren)</button>
-                    </div>
-
-                    <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
-                        <label class="p-3 cursor-pointer text-gray-400 hover:text-[#6B705C] transition-colors flex items-center justify-center">
                             <input type="file" id="gemini-image" accept="image/*" class="hidden" onchange="document.getElementById('image-indicator').classList.remove('hidden')">
                             <span class="text-xl">📷</span>
                         </label>
