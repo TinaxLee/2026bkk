@@ -341,7 +341,8 @@
                         </select>
                         <input type="text" id="mission-task" placeholder="例如：買 eSIM 卡..." class="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 outline-none">
                     </div>
-                    <button onclick="window.addMission()" class="w-full bg-[#6B705C] text-white py-3 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">指 派 任 務</button>
+                    <button onclick="window.addMission()" id="btn-add-mission" class="w-full bg-[#6B705C] text-white py-3 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">指 派 任 務</button>
+                    <button onclick="window.cancelEditMission()" id="btn-cancel-mission" class="w-full mt-2 bg-gray-200 text-gray-600 py-3 rounded-xl font-black text-sm hidden transition-transform active:scale-95">取消修改</button>
                 </div>
                 <div id="missions-container" class="space-y-6"></div>
             </div>
@@ -529,7 +530,7 @@
         let currentUser = null, allExpenses = [], currentPayerFilter = 'all', currentDayFilter = 'Day 1', departureDate = null;
         let itineraryData = [], flightsData = [], hotelsData = [], packingData = [], chatHistory = [], memoriesData = [], vaultData = [], missionsData = [];
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], dayDates = {};
-        let editingItineraryId = null, editingFlightId = null, editingHotelId = null, editingExpenseId = null;
+        let editingItineraryId = null, editingFlightId = null, editingHotelId = null, editingExpenseId = null, editingMissionId = null;
         let packFilters = { tina: 'cloth', darren: 'cloth' };
         const packCategories = [ { id: 'cloth', icon: '👔', label: '衣物' }, { id: 'wash', icon: '🧼', label: '盥洗' }, { id: 'tech', icon: '📱', label: '3C' }, { id: 'med', icon: '💊', label: '藥品' }, { id: 'doc', icon: '📄', label: '文件' }, { id: 'other', icon: '🎒', label: '其他' } ];
         
@@ -581,8 +582,12 @@
             try { 
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
                 const data = await res.json(); 
+                // 🌟 正確讀取陣列格式的溫度資料
                 document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; 
-            } catch(e) { document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 33°C / 普吉 31°C</div><div class="text-[11px] mt-1 font-bold opacity-70">連線稍慢，管家待命備援中 ✨</div>`; } 
+            } catch(e) { 
+                console.error("天氣抓取失敗:", e);
+                document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 33°C / 普吉 31°C</div><div class="text-[11px] mt-1 font-bold opacity-70">連線稍慢，管家待命備援中 ✨</div>`; 
+            } 
         };
         window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); if (c === 'THB') r.innerText = `台幣 NT$ ${Math.round(v * window.ratesToTHB['TWD']).toLocaleString()}`; else if (c === 'USD') r.innerText = `泰銖 ฿ ${Math.round(v * window.ratesToTHB['USD']).toLocaleString()}`; else r.innerText = `泰銖 ฿ ${Math.round(v / window.ratesToTHB['TWD']).toLocaleString()}`; };
         window.updateExchangePreview = () => { const v = parseFloat(document.getElementById('exp-cost').value) || 0; const c = document.getElementById('exp-currency').value; const hint = document.getElementById('exchange-hint'); if (c === 'THB') hint.innerText = ''; else hint.innerText = `≈ ฿ ${Math.round(c === 'USD' ? v * window.ratesToTHB['USD'] : v / window.ratesToTHB['TWD']).toLocaleString()}`; };
@@ -741,9 +746,11 @@
         window.uploadToVault = async (type, input) => { if (!input.files[0] || !currentUser) return; const reader = new FileReader(); reader.onload = async (e) => { await addDoc(getColl('vault'), { type: type, image: e.target.result, createdAt: Date.now() }); input.value = ''; }; reader.readAsDataURL(input.files[0]); };
         window.renderVault = () => { const list = document.getElementById('vault-list'); if (!list) return; list.innerHTML = vaultData.sort((a,b) => b.createdAt - a.createdAt).map(v => `<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mb-3 border border-gray-100"><img src="${v.image}" onclick="window.open('${v.image}')" class="w-14 h-14 object-cover rounded-xl shadow-sm cursor-zoom-in"><div class="flex-1"><div class="text-[11px] font-black uppercase text-[#6B705C]">${v.type === 'passport' ? '🛂 護照影本' : '🏥 旅遊保險'}</div><div class="text-[9px] text-gray-400 font-bold">${new Date(v.createdAt).toLocaleDateString()} 備份</div></div><button onclick="window.deleteItem('vault', '${v.id}')" class="text-red-200 hover:text-red-400 p-2">✕</button></div>`).join(''); };
 
-        window.addMission = async () => { const task = document.getElementById('mission-task').value; const cat = document.getElementById('mission-category').value; if(!task || !currentUser) return; await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); document.getElementById('mission-task').value = ''; };
+        window.editMission = (id) => { const item = missionsData.find(m => m.id === id); if (!item) return; editingMissionId = id; document.getElementById('mission-category').value = item.category; document.getElementById('mission-task').value = item.task; document.getElementById('btn-add-mission').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-mission').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+        window.cancelEditMission = () => { editingMissionId = null; document.getElementById('mission-task').value = ''; document.getElementById('mission-category').value = 'pre'; document.getElementById('btn-add-mission').innerText = '指 派 任 務'; document.getElementById('btn-cancel-mission').classList.add('hidden'); };
+        window.addMission = async () => { const task = document.getElementById('mission-task').value; const cat = document.getElementById('mission-category').value; if(!task || !currentUser) return; if (editingMissionId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', editingMissionId), { task, category: cat }); window.cancelEditMission(); } else { await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); document.getElementById('mission-task').value = ''; } };
         window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
-        window.renderMissions = () => { const container = document.getElementById('missions-container'); if (!container) return; const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; container.innerHTML = Object.keys(cats).map(key => { const items = missionsData.filter(m => m.category === key); if (items.length === 0 && key !== 'pre') return ''; return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}</div><span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-2 text-lg">✕</button></div>`).join('')}</div></div>`; }).join(''); };
+        window.renderMissions = () => { const container = document.getElementById('missions-container'); if (!container) return; const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; container.innerHTML = Object.keys(cats).map(key => { const items = missionsData.filter(m => m.category === key); if (items.length === 0 && key !== 'pre') return ''; return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}</div><span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; }).join(''); };
 
         window.speakThai = (text) => { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'th-TH'; utterance.rate = 0.8; utterance.pitch = 1; window.speechSynthesis.speak(utterance); };
         window.showThaiCard = (thai, meaning, phonetic) => { 
@@ -896,6 +903,13 @@
             onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderVault(); });
             onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMissions(); });
         }
+
+        // 🌟 執行畫面初始化 (把刪掉的開關加回來！)
+        window.switchTab('itinerary');
+        window.getWeather();
+        const expDate = document.getElementById('exp-date');
+        if(expDate) expDate.valueAsDate = new Date();
+
     </script>
 </body>
 </html>
