@@ -177,6 +177,19 @@
         <p class="text-[10px] font-bold text-[#6B705C] tracking-[0.3em] animate-pulse mt-2 splash-text">🙏 管家連線準備中...</p>
     </div>
 
+    <!-- 🌟 絕對獨立的防卡死關閉腳本 -->
+    <script>
+        window.hideSplash = () => {
+            const splash = document.getElementById('app-splash');
+            if (splash && splash.style.display !== 'none') {
+                splash.classList.add('opacity-0');
+                setTimeout(() => { splash.style.display = 'none'; }, 700);
+            }
+        };
+        window.addEventListener('load', () => setTimeout(window.hideSplash, 600));
+        setTimeout(window.hideSplash, 1500);
+    </script>
+
     <!-- 🌍 網路狀態提示框 -->
     <div id="offline-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] hidden pointer-events-none">
         <div class="bg-red-500 text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-2 font-black text-xs transition-all animate-bounce whitespace-nowrap">
@@ -403,15 +416,18 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.28</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.30</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
                     <!-- 🌟 隨身翻譯機 -->
                     <div class="px-1 mb-4">
                         <div class="bg-white p-2 rounded-2xl flex gap-2 border-2 border-[#DDB892]/50 shadow-sm items-center">
-                            <span class="text-xl pl-1">🇹🇭</span>
-                            <input type="text" id="quick-translate-input" placeholder="隨身翻譯機：輸入中文秒翻泰文..." class="flex-1 bg-transparent text-sm outline-none font-bold text-[#4A4E40] placeholder-gray-400">
+                            <select id="translate-lang-selector" class="bg-gray-100 px-2 py-1 rounded-lg text-lg outline-none font-bold">
+                                <option value="泰文">🇹🇭</option>
+                                <option value="英文">🇺🇸</option>
+                            </select>
+                            <input type="text" id="quick-translate-input" placeholder="輸入中文秒翻譯..." class="flex-1 bg-transparent text-sm outline-none font-bold text-[#4A4E40] placeholder-gray-400">
                             <button onclick="window.quickTranslate()" class="bg-[#DDB892] text-white px-4 py-2 rounded-xl font-black text-xs shadow-sm active:scale-95 transition-transform whitespace-nowrap">翻譯 🔊</button>
                         </div>
                     </div>
@@ -424,7 +440,7 @@
                         <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🍽️ 查詢點餐用語')" class="shrink-0 bg-[#E67E22] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍽️ 點餐用語</button>
                         <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '💆 查詢按摩溝通')" class="shrink-0 bg-[#B5838D] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">💆 按摩溝通</button>
                         <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。為每句泰文獨立提供 SHOW_CARD 代碼。', false, '🚕 查詢叫車小抄')" class="shrink-0 bg-yellow-400 text-black px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🚕 叫車小抄</button>
-                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼。', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍱 抽晚餐盲盒</button>
+                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的晚餐菜色，並附上泰文名稱！提供 SHOW_CARD 代碼！', false, '🍱 抽晚餐盲盒')" class="shrink-0 bg-[#6B705C] text-white px-4 py-2.5 rounded-xl text-[11px] font-black shadow-md">🍱 抽晚餐盲盒</button>
                     </div>
 
                     <div class="flex gap-3 p-2 bg-white rounded-2xl shadow-xl border border-gray-100">
@@ -497,10 +513,10 @@
         </div>
     </div>
 
-    <!-- 🌟 單一無敵模組腳本：所有核心邏輯、UI 綁定與 Firebase 通通在這裡依序執行，保證不卡死不遺失 -->
+    <!-- 🌟 單一無敵模組腳本 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, updateDoc, collection, addDoc, deleteDoc, getDocs, writeBatch, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyBxcDDn80ScpW35TdJdeXOAkfJbHM0DyD0", authDomain: "honeymoon-2026.firebaseapp.com", projectId: "honeymoon-2026", storageBucket: "honeymoon-2026.firebasestorage.app", messagingSenderId: "639168649822", appId: "1:639168649822:web:20399eff7d34144277f2cf" };
@@ -520,9 +536,10 @@
         window.ratesToTHB = { 'THB': 1, 'TWD': 1.05, 'USD': 35.5 };
 
         const getColl = (n) => collection(db, 'artifacts', appId, 'public', 'data', n);
+        const getPrivColl = (n) => collection(db, 'artifacts', appId, 'users', currentUser.uid, n);
 
         // ==========================================
-        // 🌟 1. 全局 UI 與互動核心函式 (強制優先註冊)
+        // 🌟 1. 全局 UI 與互動核心函式
         // ==========================================
         window.switchTab = (id) => {
             if (window.navigator.vibrate) window.navigator.vibrate(10); 
@@ -560,7 +577,6 @@
         };
         window.handleImgError = (img) => { img.onerror = null; img.src = 'https://img.icons8.com/plasticine/200/heart.png'; if(img.parentElement) img.parentElement.classList.remove('skeleton'); img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); };
 
-        // 天氣與匯率
         window.getWeather = async () => { 
             try { 
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
@@ -583,7 +599,6 @@
             } catch (e) { console.error('Failed to fetch live rates', e); }
         };
 
-        // 倒數計時與天數管理
         window.updateCountdownUI = () => {
             const display = document.getElementById('countdown-display');
             if (!display) return;
@@ -623,7 +638,6 @@
         window.closeDeleteModal = () => { document.getElementById('delete-day-modal').classList.remove('open'); };
         window.confirmDeleteDay = async () => { const dayName = document.getElementById('delete-day-target').value; const updatedList = dayList.filter(d => d !== dayName); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : ''; window.closeDeleteModal(); };
 
-        // 渲染函數群 (核心)
         window.renderItinerary = () => {
             const list = document.getElementById('it-list'); if (!list) return;
             const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
@@ -731,19 +745,81 @@
         window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
         window.renderMissions = () => { const container = document.getElementById('missions-container'); if (!container) return; const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; container.innerHTML = Object.keys(cats).map(key => { const items = missionsData.filter(m => m.category === key); if (items.length === 0 && key !== 'pre') return ''; return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}</div><span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-2 text-lg">✕</button></div>`).join('')}</div></div>`; }).join(''); };
 
-        // 語音與 AI
         window.speakThai = (text) => { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'th-TH'; utterance.rate = 0.8; utterance.pitch = 1; window.speechSynthesis.speak(utterance); };
-        window.showThaiCard = (thai, meaning, phonetic) => { document.getElementById('thai-card-text').innerText = thai; document.getElementById('thai-card-meaning').innerText = meaning; document.getElementById('thai-card-phonetic').innerText = phonetic; const speakerBtn = document.getElementById('thai-speaker-btn'); if (speakerBtn) speakerBtn.onclick = (e) => { e.stopPropagation(); window.speakThai(thai); }; document.getElementById('thai-card-modal').classList.add('open'); };
-        window.quickTranslate = () => { const val = document.getElementById('quick-translate-input').value.trim(); if (!val) return; const query = `請幫我把這句中文翻譯成泰語：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充使用時機。`; document.getElementById('quick-translate-input').value = ''; window.askGemini(query, false, `🇹🇭 幫我翻譯：「${val}」`); };
-        window.clearGemini = () => { document.getElementById('gemini-chat').innerHTML = ''; chatHistory = []; };
-        window.getFoodRecommendation = (place) => { const foodQuery = `幫找「${place}」附近推薦的 3-5 家海鮮或泰式美食。`; const mapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}+restaurants`; window.askGemini(foodQuery, true, `🍴 尋找「${place}」附近美食`); setTimeout(() => { document.getElementById('gemini-chat').innerHTML += `<div class="mb-4 text-left"><a href="${mapsLink}" target="_blank" class="inline-flex items-center gap-2 bg-white border-2 border-[#F8AD9D] text-[#e57e6a] p-4 rounded-2xl text-sm font-black shadow-md">📍 打開 Google Maps</a></div>`; const chat = document.getElementById('gemini-chat'); chat.scrollTop = chat.scrollHeight; }, 1800); };
-        
+        window.showThaiCard = (thai, meaning, phonetic) => { 
+            document.getElementById('thai-card-text').innerText = thai; 
+            document.getElementById('thai-card-meaning').innerText = meaning; 
+            document.getElementById('thai-card-phonetic').innerText = phonetic; 
+            const speakerBtn = document.getElementById('thai-speaker-btn'); 
+            if (speakerBtn) { 
+                speakerBtn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    const isEnglish = /^[A-Za-z0-9\s.,!?'"]+$/.test(thai);
+                    if (!window.speechSynthesis) return;
+                    window.speechSynthesis.cancel();
+                    const ut = new SpeechSynthesisUtterance(thai);
+                    ut.lang = isEnglish ? 'en-US' : 'th-TH';
+                    ut.rate = 0.8;
+                    window.speechSynthesis.speak(ut);
+                }; 
+            } 
+            document.getElementById('thai-card-modal').classList.add('open'); 
+        };
+        window.quickTranslate = () => { 
+            const val = document.getElementById('quick-translate-input').value.trim(); 
+            const lang = document.getElementById('translate-lang-selector').value;
+            if (!val) return; 
+            const query = `請幫我把這句中文翻譯成${lang}：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充使用時機或文化小知識。`; 
+            document.getElementById('quick-translate-input').value = ''; 
+            window.askGemini(query, false, `🇹🇭 幫我翻譯(${lang})：「${val}」`); 
+        };
+
+        window.clearGemini = async () => { 
+            if (!currentUser) return;
+            const querySnapshot = await getDocs(getPrivColl('chatHistory'));
+            const batch = writeBatch(db);
+            querySnapshot.forEach((d) => batch.delete(d.ref));
+            await batch.commit();
+            document.getElementById('gemini-chat').innerHTML = ''; 
+            chatHistory = []; 
+        };
+
+        window.renderChatHistory = () => {
+            const chat = document.getElementById('gemini-chat');
+            if (!chat) return;
+            chat.innerHTML = chatHistory.map(msg => {
+                if (msg.role === 'user') {
+                    return `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${msg.content}</span></div>`;
+                } else {
+                    const text = msg.content;
+                    // 為了在 UI 顯示時隱藏代碼，先做處理
+                    let cardBtnHtml = '';
+                    const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g;
+                    let match;
+                    while ((match = cardRegex.exec(text)) !== null) {
+                        try {
+                            let jsonStr = match[1].trim();
+                            const lastBrace = jsonStr.lastIndexOf('}');
+                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                            const cd = JSON.parse(jsonStr);
+                            cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${cd.thai.replace(/'/g, "\\'")}', '${cd.meaning.replace(/'/g, "\\'")}', '${cd.phonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${cd.meaning.replace(/'/g, "\\'")}</button></div>`;
+                        } catch (e) {}
+                    }
+                    let cleanText = text.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
+                    return `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${cleanText.replace(/\n/g, '<br>')}${cardBtnHtml ? `<div class="mt-3 border-t border-[#F8D7D1] pt-3">${cardBtnHtml}</div>` : ''}</div></div>`;
+                }
+            }).join('');
+            chat.scrollTop = chat.scrollHeight;
+        };
+
         window.askGemini = async (q = null, isAutoFood = false, displayOverride = null) => {
             const input = document.getElementById('gemini-input'); const imageInput = document.getElementById('gemini-image'); const chat = document.getElementById('gemini-chat'); const query = q || (input ? input.value.trim() : '');
             if (!query && (!imageInput || !imageInput.files[0])) return; window.toggleGemini(true); if(!q && input) input.value = '';
+            
             const displayMessage = displayOverride || query || '📸 傳送了一張照片';
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             const thinkingId = 'think-' + Date.now(); chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">管家處理中...<span class="thinking-dots"></span></div></div>`; chat.scrollTop = chat.scrollHeight;
+            
             try {
                 const pendingMissions = missionsData.filter(m => !m.checked).map(m => m.task).join('、');
                 let userContent; let payloadModel = "llama-3.3-70b-versatile"; 
@@ -751,124 +827,66 @@
                     payloadModel = "llama-3.2-11b-vision-preview"; const base64 = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(imageInput.files[0]); });
                     userContent = [ { type: "text", text: query || "這張圖片是什麼？請詳細說明。" }, { type: "image_url", image_url: { url: `data:${imageInput.files[0].type};base64,${base64}` } } ];
                 } else { userContent = `[背景：出發${departureDate} 目前Day:${currentDayFilter} 未完任務:${pendingMissions}] ` + query; }
-                chatHistory.push({ role: "user", content: userContent }); if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+                
+                chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片" });
+                if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
                 const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
-【稱呼】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae或兩位新人。使用台灣繁體中文(跳錶、行動電源、飯店)。
-【記帳對應】(限有花費時) Darren付錢誇老公霸氣，Tina付錢誇老婆仙女。
-付錢方式對應: split(代墊/平分), treat(霸氣買單/請客), personal(專屬享受/私房錢)。
-必須嚴格附上代碼: SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"THB/TWD","category":"food/shop/massage/play/traffic/other","payer":"darren或tina","splitType":"split/treat/personal"}
-【字卡翻譯】多句教學時，絕對要獨立換行輸出 SHOW_CARD 代碼，禁止用1.2.3.編號！
-範例: SHOW_CARD: {"thai":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}`;
+【稱呼與語系】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文。
+【翻譯任務】支援「中翻泰」與「中翻英」。必須提供 SHOW_CARD 代碼。
+【記帳對應】Darren付錢誇老公霸氣，Tina付錢誇老婆仙女。附上 SAVE_EXPENSE 代碼。`;
 
-                const response = await fetch("https://thailand-ai.tina09210808.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: payloadModel, messages: [{ role: "system", content: systemPrompt }, ...chatHistory], temperature: 0.7 }) });
+                const response = await fetch("https://thailand-ai.tina09210808.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: payloadModel, messages: [{ role: "system", content: systemPrompt }, ...chatHistory.map(m => ({role: m.role, content: m.content}))], temperature: 0.7 }) });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json(); let text = data.choices?.[0]?.message?.content || "對不起管家眼花了...";
-                chatHistory[chatHistory.length - 1] = { role: "user", content: displayOverride || query || "這張圖片是什麼？" };
-                chatHistory.push({ role: "assistant", content: text }); document.getElementById(thinkingId)?.remove();
-
-                text = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
-                let cardBtnHtml = ''; const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g; let match;
-                while ((match = cardRegex.exec(text)) !== null) {
-                    try {
-                        let jsonStr = match[1].trim(); const lastBrace = jsonStr.lastIndexOf('}'); if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                        if (jsonStr.includes("SAVE_EXPENSE:")) jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
-                        const cd = JSON.parse(jsonStr);
-                        cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${cd.thai.replace(/'/g, "\\'")}', '${cd.meaning.replace(/'/g, "\\'")}', '${cd.phonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${cd.meaning.replace(/'/g, "\\'")}</button></div>`;
-                    } catch (e) {}
-                }
-                let responseText = text.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
-                let responseHtml = `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${responseText.replace(/\n/g, '<br>')}${cardBtnHtml ? `<div class="mt-3 border-t border-[#F8D7D1] pt-3">${cardBtnHtml}</div>` : ''}</div></div>`;
                 
-                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
-                    const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
-                    if(extractedPlace.length > 1) responseHtml += `<div class="mt-3 flex gap-2 flex-wrap"><button onclick="window.getFoodRecommendation('${extractedPlace}')" class="bg-orange-50 text-orange-600 border border-orange-100 px-4 py-2 rounded-full text-[11px] font-bold shadow-sm">🍴 查附近美食</button></div>`;
-                }
-                chat.innerHTML += responseHtml;
+                chatHistory.push({ role: "assistant", content: text });
+                document.getElementById(thinkingId)?.remove();
+
+                // 🌟 保存對話至私人雲端
+                await addDoc(getPrivColl('chatHistory'), {
+                    role: 'user', content: displayOverride || query || "傳送了照片", createdAt: Date.now()
+                });
+                await addDoc(getPrivColl('chatHistory'), {
+                    role: 'assistant', content: text, createdAt: Date.now()
+                });
+
+                window.renderChatHistory();
 
                 if (text.includes("SAVE_EXPENSE:")) {
-                    try {
-                        const exMatch = text.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
-                        if (exMatch) {
-                            let jsonStr = exMatch[1]; const lastBrace = jsonStr.lastIndexOf('}'); if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                            const expData = JSON.parse(jsonStr);
-                            await addDoc(getColl('expenses'), { item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB", category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina", splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now() });
-                        }
-                    } catch (e) { console.log("記帳失敗", e); }
+                    const exMatch = text.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
+                    if (exMatch) {
+                        let jsonStr = exMatch[1]; const lastBrace = jsonStr.lastIndexOf('}'); if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                        const expData = JSON.parse(jsonStr);
+                        await addDoc(getColl('expenses'), { item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB", category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina", splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now() });
+                    }
                 }
                 if (imageInput) { imageInput.value = ''; const ind = document.getElementById('image-indicator'); if(ind) ind.classList.add('hidden'); }
-            } catch (e) { document.getElementById(thinkingId)?.remove(); chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm border border-red-100 text-red-500">管家網路不穩！<br><span class="text-[10px] opacity-70">Error: ${e.message}</span></div></div>`; }
-            chat.scrollTop = chat.scrollHeight;
+            } catch (e) { document.getElementById(thinkingId)?.remove(); chat.innerHTML += `<div class="mb-4 text-left"><div class="inline-block bg-red-50 p-4 rounded-2xl text-sm border border-red-100 text-red-500">管家網路不穩！</div></div>`; }
         };
 
-        // ==========================================
-        // 🌟 2. 初始畫面與連線防卡死 (防護罩機制)
-        // ==========================================
-        window.hideSplash = () => {
-            const splash = document.getElementById('app-splash');
-            if (splash && splash.style.display !== 'none') {
-                splash.classList.add('opacity-0');
-                setTimeout(() => { splash.style.display = 'none'; }, 700);
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            window.switchTab('itinerary');
-            window.getWeather();
-            const expDate = document.getElementById('exp-date');
-            if(expDate) expDate.valueAsDate = new Date();
-            
-            setTimeout(window.hideSplash, 600); // 正常關閉
-            
-            if (!navigator.onLine) {
-                const offlineToast = document.getElementById('offline-toast');
-                if (offlineToast) offlineToast.classList.remove('hidden');
-            }
-        });
-
-        // 終極防呆
-        setTimeout(window.hideSplash, 1500);
-
-        window.addEventListener('online', () => {
-            const offlineToast = document.getElementById('offline-toast');
-            if (offlineToast) offlineToast.classList.add('hidden');
-            const onlineToast = document.getElementById('online-toast');
-            if (onlineToast) { onlineToast.classList.remove('hidden'); setTimeout(() => { onlineToast.classList.add('hidden'); }, 3000); }
-        });
-
-        window.addEventListener('offline', () => {
-            const offlineToast = document.getElementById('offline-toast');
-            if (offlineToast) offlineToast.classList.remove('hidden');
-        });
-
-        // ==========================================
-        // 🌟 3. Firebase 資料綁定與登入驗證 (修復資料消失的關鍵)
-        // ==========================================
-        
-        // 【核心修復】：正確監聽登入狀態並啟動同步
         onAuthStateChanged(auth, async (user) => { 
             if (user) { 
                 currentUser = user; 
-                window.fetchLiveRates(); // 先抓匯率
-                startSyncing();   // 再開始把雲端的行程、記帳都抓下來！
+                window.fetchLiveRates(); 
+                startSyncing();   
+                
+                // 🌟 加載私人對話紀錄
+                onSnapshot(getPrivColl('chatHistory'), (snapshot) => {
+                    chatHistory = snapshot.docs
+                        .map(d => d.data())
+                        .sort((a, b) => a.createdAt - b.createdAt);
+                    window.renderChatHistory();
+                });
             } else { 
                 await signInAnonymously(auth); 
             } 
         });
 
         function startSyncing() {
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => {
-                if (docSnap.exists()) { departureDate = docSnap.data().date; const dateInput = document.getElementById('departure-date-input'); if (dateInput) dateInput.value = departureDate; window.updateCountdownUI(); }
-            });
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => {
-                if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list;
-                if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0];
-                window.renderDayTabs(); window.renderDayDropdown();
-                if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) window.renderDayManagerList();
-            });
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => {
-                if (docSnap.exists()) { dayDates = docSnap.data(); window.renderDayTabs(); }
-            });
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => { if (docSnap.exists()) { departureDate = docSnap.data().date; const dateInput = document.getElementById('departure-date-input'); if (dateInput) dateInput.value = departureDate; window.updateCountdownUI(); } });
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => { if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list; if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0]; window.renderDayTabs(); window.renderDayDropdown(); if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) window.renderDayManagerList(); });
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => { if (docSnap.exists()) { dayDates = docSnap.data(); window.renderDayTabs(); } });
             onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); });
             onSnapshot(getColl('packing'), (s) => { packingData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderPacking(); });
             onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
@@ -878,7 +896,6 @@
             onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderVault(); });
             onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMissions(); });
         }
-
     </script>
 </body>
 </html>
