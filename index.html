@@ -838,12 +838,10 @@
             const query = `請幫我把這句中文翻譯成泰語：「${val}」。\n1. 必須嚴格提供 SHOW_CARD 代碼。\n2. 簡單補充這個詞在泰國的正確使用時機或文化小知識。`;
             document.getElementById('quick-translate-input').value = '';
             
-            // 第三個參數是「在畫面上顯示給妳看的乾淨文字」
             window.askGemini(query, false, `🇹🇭 幫我翻譯：「${val}」`);
         };
 
         // --- AI 助理：看圖與聊天雙棲版 ---
-        // 加入了第三個參數 displayOverride，讓快捷按鈕送出複雜指令時，畫面上只顯示乾淨的短句
         window.askGemini = async (q = null, isAutoFood = false, displayOverride = null) => {
             const input = document.getElementById('gemini-input');
             const imageInput = document.getElementById('gemini-image');
@@ -855,7 +853,6 @@
             window.toggleGemini(true);
             if(!q) input.value = '';
             
-            // 畫面顯示的文字（優先使用 override）
             const displayMessage = displayOverride || query || '📸 傳送了一張照片';
             
             chat.innerHTML += `<div class="mb-4 text-right"><span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
@@ -896,7 +893,7 @@
                 chatHistory.push({ role: "user", content: userContent });
                 if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
-                // 🌟 修正防呆指令：加入嚴格的「付款人對應邏輯」，絕對不准誇錯人！
+                // 🌟 終極防呆指令：強制 AI 吐出每一句代碼，不准列 1.2.3.
                 const systemPrompt = `
                     你是 Darren & Tina 的專屬泰國蜜月管家。妳俏皮、專業、愛湊熱鬧。
 
@@ -908,47 +905,33 @@
 
                     【視覺分析任務：你的眼睛】
                     當看到照片時，請根據照片類型主動切換功能：
-                    1. 菜單照片：自動翻譯菜色名，並根據你們的口味（例如：Darren怕辣或Tina愛海鮮）推薦 2-3 道必點菜。
-                    2. 路標/地標：辨識地點，並告訴你們這附近有沒有什麼隱藏版拍照角度。
-                    3. 戰利品/商品：幫忙換算台幣價格，並評估這在泰國買合不划算。
-                    4. 蜜月自拍：大聲讚美你們很美/很帥，並給予構圖或姿勢的毒舌建議。
+                    1. 菜單照片：自動翻譯菜色名，推薦 2-3 道必點菜。
+                    2. 路標/地標：辨識地點，給予拍照角度建議。
+                    3. 戰利品/商品：幫忙換算台幣價格，評估划不划算。
+                    4. 蜜月自拍：大聲讚美，給予構圖或姿勢的毒舌建議。
 
                     【任務監督與倒數】
-                    - 持續觀察這項「未完成任務」清單：[背景資訊中提供]。
-                    - 若快出發了卻還沒辦好，請在對話結束前用損友口氣催促一下。
+                    - 若快出發了卻還沒辦好任務，請在對話結束前用損友口氣催促一下。
 
-                    【💰 記帳發揮 - 戲精人格 (這時可以單獨稱呼)】
+                    【💰 記帳發揮 - 戲精人格】
                     當判斷出是一筆花費時，妳必須「嚴格對應」付錢的人是誰，絕對不可以誇錯人：
                     👉 若是 Darren 付錢：只能誇獎「Darren/老公」霸氣、帥氣、有品味，或是虧「Tina/老婆」賺到了。
                     👉 若是 Tina 付錢：只能誇獎「Tina/老婆」仙女、霸氣、眼光好，或是虧「Darren/老公」今晚要搥背表現了。
-                    (❌ 嚴禁出現「Tina付錢卻誇老公霸氣」或「Darren付錢卻誇仙女」這種邏輯錯亂的情況！)
-
-                    隨機切換以下人格回覆：
-                    - A (大方讚賞)：讚美付錢的人。
-                    - B (幽默損友)：虧一下沒付錢的人。
-                    - C (泰國即時感)：用泰奶、燕窩或按摩次數來比喻這筆錢的價值。
-
-                    ⚠️【非常重要：付款方式對應的語氣】
-                    - 如果是「平分 (split)」：請用「代墊」、「先幫忙付」、「記得收錢」等字眼。
-                    - 如果是「請客 (treat)」：請用「霸氣買單」、「送老婆/老公」、「真愛」等字眼。絕對不可以說「代墊」，因為請客不用還錢！
-                    - 如果是「個人 (personal)」：請用「專屬享受」、「私房錢」、「犒賞自己」等字眼。
-
-                    【⚠️ 記帳代碼與邏輯 (非常重要)】
-                    請從對話中精準判斷這筆花費的 3 個細節：
-                    1. 誰付錢 (payer)：darren 或 tina
-                    2. 分類 (category)：food(吃), shop(買), massage(按摩), play(玩), traffic(車), other(其他)
-                    3. 付款方式 (splitType)：
-                       - split (平分)：預設值，一起吃的、一起買的。
-                       - treat (請客)：明確說「請客」、「買單送對方」。
-                       - personal (個人)：明確說「自己買的」、「私人花費」。
-
+                    (❌ 嚴禁出現「Tina付錢卻誇老公霸氣」這種邏輯錯亂的情況！)
+                    ⚠️ 付款方式對應語氣：
+                    - 平分 (split)：代墊、先幫忙付、記得收錢。
+                    - 請客 (treat)：霸氣買單、送老婆/老公、真愛。(絕不說代墊)
+                    - 個人 (personal)：專屬享受、私房錢、犒賞自己。
                     最後一行必須嚴格附上代碼：
                     SAVE_EXPENSE: {"item":"名稱","cost":數字,"currency":"幣別(THB/TWD)","category":"分類代號","payer":"darren或tina","splitType":"split/treat/personal"}
 
-                    【🌟 翻譯任務與多字卡生成 (非常重要)】
-                    1. 當要求翻譯，或是妳主動提供泰文教學時（例如：教按摩用語、叫車用語），請「務必」使用代碼：
-                       SHOW_CARD: {"thai":"泰文","meaning":"中文","phonetic":"拼音"}
-                    2. ⚠️ 關鍵：如果你一次提供了「多個」詞彙教學（例如 4 句按摩用語），請為【每一個】詞彙都獨立輸出一次 SHOW_CARD 代碼！請換行連續輸出，不要把它們塞在同一個 JSON 裡。
+                    【🌟 翻譯任務與多字卡生成 (絕對指令！不能偷懶！)】
+                    當要求翻譯，或是妳提供泰文教學時（例如：教多句按摩用語、叫車用語），妳「必須」為每一句話單獨生成一行 SHOW_CARD 代碼。
+                    ❌ 絕對禁止：只給文字不給代碼，或把它們塞在同一個 JSON 裡。
+                    ❌ 絕對禁止：使用 "1. 2. 3." 編號條列式排版，請直接換行連續輸出代碼！
+                    ✅ 正確示範 (連續輸出獨立代碼)：
+                    SHOW_CARD: {"thai":"ขอผักชีเยอะๆ","meaning":"多一點香菜！","phonetic":"Kor Pak-Chee Yue-Yue"}
+                    SHOW_CARD: {"thai":"เท่าไหร่?","meaning":"這個多少錢？","phonetic":"Tao-Rai?"}
 
                     【固定格式】
                     1. 結尾固定碎碎念：防曬☀️、多喝水💧、檢查護照手機👜。
@@ -978,20 +961,30 @@
 
                 document.getElementById(thinkingId)?.remove();
 
-                // ✂️ 🌟 處理「多重」字卡代碼的新邏輯 (正則表達式)
+                // ✂️ 🌟 清理 AI 偷加的 Markdown 標籤，避免解析失敗
+                text = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+
                 let responseText = text;
                 let cardBtnHtml = '';
-                const cardRegex = /SHOW_CARD:\s*(\{.*?\})/g;
+                const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g;
                 let match;
 
                 // 抓出所有出現的大字卡代碼，生成多顆按鈕
                 while ((match = cardRegex.exec(text)) !== null) {
                     try {
                         let jsonStr = match[1].trim();
+                        
+                        // 防呆：如果 AI 把結尾搞髒了，強制截斷在最後一個 }
+                        const lastBrace = jsonStr.lastIndexOf('}');
+                        if (lastBrace !== -1) {
+                            jsonStr = jsonStr.substring(0, lastBrace + 1);
+                        }
+                        
                         // 雙重防呆：確保沒切到別的代碼
                         if (jsonStr.includes("SAVE_EXPENSE:")) {
                             jsonStr = jsonStr.split("SAVE_EXPENSE:")[0].trim();
                         }
+                        
                         const cardData = JSON.parse(jsonStr);
                         
                         cardBtnHtml += `
@@ -1006,8 +999,8 @@
                 }
 
                 // 將所有代碼從畫面上抹除
-                responseText = responseText.replace(/SHOW_CARD:\s*\{.*?\}/g, '').trim();
-                responseText = responseText.replace(/SAVE_EXPENSE:\s*\{.*?\}/g, '').trim();
+                responseText = responseText.replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '').trim();
+                responseText = responseText.replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '').trim();
                 
                 // 渲染對話泡泡
                 let responseHtml = `
@@ -1035,9 +1028,13 @@
                 // 背景記帳邏輯
                 if (text.includes("SAVE_EXPENSE:")) {
                     try {
-                        const expenseMatch = text.match(/SAVE_EXPENSE:\s*(\{.*?\})/);
+                        const expenseMatch = text.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
                         if (expenseMatch) {
-                            const expData = JSON.parse(expenseMatch[1]);
+                            let jsonStr = expenseMatch[1];
+                            const lastBrace = jsonStr.lastIndexOf('}');
+                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                            
+                            const expData = JSON.parse(jsonStr);
                             await addDoc(getColl('expenses'), {
                                 item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB",
                                 category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
@@ -1089,7 +1086,6 @@
             }
             
             document.getElementById('thai-card-modal').classList.add('open');
-            // 改為不發送訊息至聊天室，以免干擾版面
         };
 
         // --- 甜蜜回憶牆邏輯 ---
@@ -1171,7 +1167,6 @@
         };
 
         // --- 基底與優化功能 ---
-        // 🏥 破圖急救函式：如果泰國收訊不好，照片跑不出來就秀愛心
         window.handleImgError = (img) => {
             img.onerror = null; 
             img.src = 'https://img.icons8.com/plasticine/200/heart.png'; 
@@ -1179,7 +1174,6 @@
             img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); 
         };
 
-        // 升級版分頁切換：支援動畫與震動
         window.switchTab = (id) => {
             if (window.navigator.vibrate) window.navigator.vibrate(10); 
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
@@ -1192,7 +1186,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
-        // 📍 一鍵複製功能
         window.copyLocation = async (activity, address, event) => {
             const textToCopy = (address && address.trim() !== "") ? address : activity;
             try {
@@ -1244,7 +1237,6 @@
             if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } 
             else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); }
 
-            // --- 趣味記帳提示 ---
             const payer = document.getElementById('exp-payer').value;
             const splitType = document.getElementById('exp-split').value;
             const category = document.getElementById('exp-category').value;
@@ -1274,7 +1266,7 @@
                     `Tina 大方請客「${item}」！仙女霸氣買單不用還！${catText}`,
                     `老婆請客送老公！Darren 今晚宵夜該表現一下了 😏 ${catText}`,
                 ];
-            } else { // personal
+            } else { 
                 msgs = payer === 'darren' ? [
                     `Darren 的專屬花費！男生也是要對自己好的！${catText}`,
                     `個人支出入帳！Darren 的私房錢買酷東西啦 😂 ${catText}`
@@ -1439,22 +1431,19 @@
             if (offlineToast) offlineToast.classList.remove('hidden');
         }
 
-        // --- PWA 開場動畫 (Splash Screen) 邏輯：升級防卡死版本 ---
+        // --- PWA 開場動畫 (Splash Screen) 邏輯 ---
         const hideSplashScreen = () => {
             const splash = document.getElementById('app-splash');
-            // 確保 splash 存在且還沒被隱藏過
             if (splash && !splash.classList.contains('opacity-0')) {
                 splash.classList.add('opacity-0');
-                setTimeout(() => splash.remove(), 700); // 動畫結束後移除標籤
+                setTimeout(() => splash.remove(), 700); 
             }
         };
 
-        // 保險 1：DOM 結構載入完畢後 0.8 秒關閉 (不傻等所有外部資源)
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(hideSplashScreen, 800);
         });
 
-        // 保險 2 (終極防呆)：不管任何原因，只要過了 2 秒一定強制關閉！避免永遠卡在白屏！
         setTimeout(hideSplashScreen, 2000);
         
     </script>
@@ -1464,7 +1453,6 @@
     <!-- 🚀 質感開場動畫 Splash Screen -->
     <div id="app-splash" class="fixed inset-0 z-[9999] bg-[#F8F7F2] flex flex-col items-center justify-center transition-opacity duration-700 pointer-events-none">
         <div class="text-6xl mb-6 animate-bounce">✈️</div>
-        <!-- 🌟 加上 splash-text 類別，讓字體下載好才浮現 -->
         <h1 class="font-['Dancing_Script'] text-5xl font-bold text-[#2D3128] mb-2 splash-text">Sawasdee Thailand</h1>
         <p class="text-[10px] font-bold text-[#6B705C] tracking-[0.3em] animate-pulse mt-2 splash-text">🙏 管家連線準備中...</p>
     </div>
@@ -1695,7 +1683,7 @@
                         </select>
                     </div>
 
-                    <button onclick="window.addMemory()" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">發 布 瞬 當</button>
+                    <button onclick="window.addMemory()" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">發 布 瞬 間</button>
                 </div>
 
                 <div id="memories-list" class="relative"></div>
@@ -1780,7 +1768,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-3">
-                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.19</span></h3>
+                            <h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.21</span></h3>
                             <button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button>
                         </div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
