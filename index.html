@@ -166,6 +166,14 @@
 
         .splash-text { opacity: 0; animation: fadeInSplash 0.5s ease-out 0.15s forwards; }
         @keyframes fadeInSplash { to { opacity: 1; } }
+
+        /* Custom toggle icon */
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -331,7 +339,7 @@
             <!-- 任務分頁 -->
             <div id="content-missions" class="tab-content hidden">
                 <div class="mb-6 px-1">
-                    <h3 class="text-xl font-black text-[#4A4E40]">蜜月重要任務 📝</h3>
+                    <h3 class="text-xl font-black text-[#4A4E40]">重要任務提醒 🔔</h3>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Honeymoon Milestones</p>
                 </div>
                 <div class="app-card p-5 mb-6 border-2 border-dashed border-[#6B705C]/30">
@@ -417,7 +425,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.30</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.31</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -750,7 +758,63 @@
         window.cancelEditMission = () => { editingMissionId = null; document.getElementById('mission-task').value = ''; document.getElementById('mission-category').value = 'pre'; document.getElementById('btn-add-mission').innerText = '指 派 任 務'; document.getElementById('btn-cancel-mission').classList.add('hidden'); };
         window.addMission = async () => { const task = document.getElementById('mission-task').value; const cat = document.getElementById('mission-category').value; if(!task || !currentUser) return; if (editingMissionId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', editingMissionId), { task, category: cat }); window.cancelEditMission(); } else { await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); document.getElementById('mission-task').value = ''; } };
         window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
-        window.renderMissions = () => { const container = document.getElementById('missions-container'); if (!container) return; const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; container.innerHTML = Object.keys(cats).map(key => { const items = missionsData.filter(m => m.category === key); if (items.length === 0 && key !== 'pre') return ''; return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors ${m.checked ? 'bg-gray-50/50' : ''}"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${m.checked ? 'bg-[#6B705C] border-[#6B705C]' : 'border-gray-200'} cursor-pointer">${m.checked ? '<span class="text-white text-xs">✓</span>' : ''}</div><span class="flex-1 text-sm ${m.checked ? 'line-through text-gray-300 font-medium' : 'text-[#4A4E40] font-bold'}">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; }).join(''); };
+        window.toggleCompletedMissions = () => {
+            const container = document.getElementById('completed-missions-list');
+            const icon = document.getElementById('completed-missions-icon');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.add('open');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.remove('open');
+            }
+        };
+
+        window.renderMissions = () => { 
+            const container = document.getElementById('missions-container'); 
+            if (!container) return; 
+            const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; 
+            
+            // 分離未完成和已完成的任務
+            const pendingMissions = missionsData.filter(m => !m.checked);
+            const completedMissions = missionsData.filter(m => m.checked);
+
+            let html = '';
+
+            // 渲染未完成任務 (依分類)
+            html += Object.keys(cats).map(key => { 
+                const items = pendingMissions.filter(m => m.category === key); 
+                if (items.length === 0 && key !== 'pre') return ''; 
+                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 text-sm text-[#4A4E40] font-bold">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
+            }).join('');
+
+            // 渲染已完成任務 (收合區塊)
+            if (completedMissions.length > 0) {
+                html += `
+                    <div class="mt-8">
+                        <div class="flex items-center justify-between px-1 mb-3 cursor-pointer" onclick="window.toggleCompletedMissions()">
+                            <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-tighter flex items-center gap-2">
+                                ✅ 已完成任務 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[9px]">${completedMissions.length}</span>
+                            </h4>
+                            <span id="completed-missions-icon" class="text-gray-400 text-sm toggle-icon">▼</span>
+                        </div>
+                        <div id="completed-missions-list" class="hidden bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden opacity-70">
+                            ${completedMissions.map(m => `
+                                <div class="p-3 flex items-center gap-3 border-b border-gray-200 last:border-0">
+                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all bg-[#6B705C] border-[#6B705C] cursor-pointer">
+                                        <span class="text-white text-[10px]">✓</span>
+                                    </div>
+                                    <span class="flex-1 text-xs line-through text-gray-400 font-medium">${m.task}</span>
+                                    <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-300 hover:text-red-300 px-1 text-base">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        };
 
         window.speakThai = (text) => { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'th-TH'; utterance.rate = 0.8; utterance.pitch = 1; window.speechSynthesis.speak(utterance); };
         window.showThaiCard = (thai, meaning, phonetic) => { 
