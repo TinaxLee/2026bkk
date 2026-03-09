@@ -4,22 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- 🌟 解決白屏閃爍的關鍵：提早告訴手機 App 的底色 -->
     <meta name="theme-color" content="#F8F7F2">
     <meta name="background-color" content="#F8F7F2">
     
     <title>Thailand 2026 🇹🇭</title>
     
+    <!-- iOS 專用：強制主畫面名稱 -->
     <meta name="apple-mobile-web-app-title" content="Thailand 2026 🇹🇭">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+    <!-- Android 專用：透過 Query String 強制刷新 Manifest -->
     <link rel="manifest" href="manifest.json?v=20260309">
     <link rel="apple-touch-startup-image" href="icon.png">
 
+    <!-- 🌟 預先連線字體伺服器，加速字體下載 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 🌟 將 display=swap 改為 display=block，強制等字體下載好再顯示 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Montserrat:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Dancing+Script:wght@700&display=block" rel="stylesheet">
     
     <style>
@@ -416,7 +421,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.34</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.36</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -553,17 +558,39 @@
         };
         window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
         window.toggleSection = (id) => { const el = document.getElementById(id+'-grid'); if(el) el.classList.toggle('active'); };
+        
+        // 🌟 升級版提示框：5秒自動消失 + 支援點擊提早關閉
         window.showToast = (msg, icon = '✨') => {
             let toast = document.getElementById('app-toast');
             if (!toast) {
                 toast = document.createElement('div'); toast.id = 'app-toast';
-                toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[4000] pointer-events-none transition-all duration-300 opacity-0 translate-y-[-20px]';
+                // 移除 pointer-events-none，並加上 cursor-pointer 讓它可以被點擊
+                toast.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[4000] transition-all duration-300 opacity-0 translate-y-[-20px] cursor-pointer';
                 document.body.appendChild(toast);
             }
             toast.innerHTML = `<div class="bg-[#4A4E40] text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 font-black text-sm border-2 border-[#DDB892] w-[90vw] max-w-[340px] leading-relaxed"><span>${icon}</span> ${msg}</div>`;
+            
+            // 清除之前的計時器，防止快速連續記帳時發生閃爍
+            if (window.toastTimeout) clearTimeout(window.toastTimeout);
+            
             setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-[-20px]'); toast.classList.add('opacity-100', 'translate-y-0'); }, 10);
-            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); toast.classList.add('opacity-0', 'translate-y-[-20px]'); }, 3500);
+            
+            // 獨立出隱藏的函式
+            const hideToast = () => { 
+                toast.classList.remove('opacity-100', 'translate-y-0'); 
+                toast.classList.add('opacity-0', 'translate-y-[-20px]'); 
+            };
+            
+            // 預設 5 秒後自動隱藏
+            window.toastTimeout = setTimeout(hideToast, 5000); 
+            
+            // 加入點擊事件：如果提早看完，點一下提示框立刻收起！
+            toast.onclick = () => { 
+                clearTimeout(window.toastTimeout); 
+                hideToast(); 
+            };
         };
+
         window.formatDisplayDate = (d) => { if(!d) return ''; const p = d.split('-'); if(p.length!==3) return d; const dt = new Date(p[0], p[1]-1, p[2]); return `${p[1]}/${p[2]} (${['日','一','二','三','四','五','六'][dt.getDay()]})`; };
         window.deleteItem = async (c, id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', c, id)); };
         window.copyLocation = async (activity, address, event) => {
@@ -581,7 +608,6 @@
             try { 
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
                 const data = await res.json(); 
-                // 🌟 正確讀取陣列格式的溫度資料
                 document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; 
             } catch(e) { 
                 console.error("天氣抓取失敗:", e);
@@ -721,7 +747,59 @@
         };
         window.editExpense = (id) => { const item = allExpenses.find(e => e.id === id); if (!item) return; editingExpenseId = id; document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost; document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency; document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; document.getElementById('exp-category').value = item.category || 'food'; document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); };
-        window.addExpense = async () => { const item = document.getElementById('exp-item').value; const cost = document.getElementById('exp-cost').value; if(!item || !cost || !currentUser) return; const data = { item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, category: document.getElementById('exp-category').value, payer: document.getElementById('exp-payer').value, splitType: document.getElementById('exp-split').value, date: document.getElementById('exp-date').value, createdAt: Date.now() }; if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); } const randomMsg = `記帳成功：${item}！💰`; window.showToast(randomMsg, '💰'); };
+        
+        // 🌟 恢復記帳分頁的「戲精管家」回覆邏輯
+        window.addExpense = async () => { 
+            const item = document.getElementById('exp-item').value; 
+            const cost = document.getElementById('exp-cost').value; 
+            if(!item || !cost || !currentUser) return; 
+            
+            const payer = document.getElementById('exp-payer').value;
+            const splitType = document.getElementById('exp-split').value;
+            const category = document.getElementById('exp-category').value;
+            
+            const data = { item, cost: parseFloat(cost), currency: document.getElementById('exp-currency').value, category, payer, splitType, date: document.getElementById('exp-date').value, createdAt: Date.now() }; 
+            if(editingExpenseId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', editingExpenseId), data); window.cancelEditExpense(); } 
+            else { await addDoc(getColl('expenses'), data); window.cancelEditExpense(); } 
+
+            // --- 戲精記帳提示 ---
+            let catText = "";
+            if (category === 'food') catText = "🤤 泰國美食吃起來！";
+            else if (category === 'shop') catText = "🛍️ 戰利品+1！";
+            else if (category === 'massage') catText = "💆 泰式按摩按到爽！";
+            else if (category === 'play') catText = "🎢 盡情玩樂體驗！";
+            else if (category === 'traffic') catText = "🚕 交通平安抵達最重要！";
+            else catText = "✨ 錢錢變成喜歡的形狀了！";
+
+            let msgs = [];
+            if (splitType === 'split') {
+                msgs = payer === 'darren' ? [
+                    `Darren 先代墊「${item}」！${catText} (記得跟老婆結算🤣)`,
+                    `公費平分！Darren 帥氣刷卡先代墊，${catText}`
+                ] : [
+                    `Tina 先代墊「${item}」！${catText} (記帳小精靈上線)`,
+                    `公費平分！老婆先付錢代墊啦，${catText}`
+                ];
+            } else if (splitType === 'treat') {
+                msgs = payer === 'darren' ? [
+                    `Darren 霸氣請客「${item}」！(這不是代墊，是真愛！) ${catText}`,
+                    `老公霸氣買單送老婆！Tina 負責開心享受就好！${catText}`
+                ] : [
+                    `Tina 大方請客「${item}」！仙女霸氣買單不用還！${catText}`,
+                    `老婆請客送老公！Darren 今晚宵夜該表現一下了 😏 ${catText}`
+                ];
+            } else { 
+                msgs = payer === 'darren' ? [
+                    `Darren 的專屬花費！男生也是要對自己好的！${catText}`
+                ] : [
+                    `Tina 的專屬戰利品！仙女就是要配好東西！${catText}`
+                ];
+            }
+            
+            const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+            window.showToast(randomMsg, '💰');
+        };
+
         window.setPayerFilter = (p) => { currentPayerFilter = p; document.querySelectorAll('.filter-chip').forEach(el => el.classList.toggle('active', el.id === 'chip-'+p)); window.renderExpenses(); };
 
         window.renderPacking = () => {
@@ -747,7 +825,6 @@
 
         window.editMission = (id) => { const item = missionsData.find(m => m.id === id); if (!item) return; editingMissionId = id; document.getElementById('mission-category').value = item.category; document.getElementById('mission-task').value = item.task; document.getElementById('btn-add-mission').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-mission').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditMission = () => { editingMissionId = null; document.getElementById('mission-task').value = ''; document.getElementById('mission-category').value = 'pre'; document.getElementById('btn-add-mission').innerText = '指 派 任 務'; document.getElementById('btn-cancel-mission').classList.add('hidden'); };
-        window.addMission = async () => { const task = document.getElementById('mission-task').value; const cat = document.getElementById('mission-category').value; if(!task || !currentUser) return; if (editingMissionId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', editingMissionId), { task, category: cat }); window.cancelEditMission(); } else { await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); document.getElementById('mission-task').value = ''; } };
         window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
         window.toggleCompletedMissions = () => {
             const container = document.getElementById('completed-missions-list');
@@ -912,21 +989,64 @@
             chat.scrollTop = chat.scrollHeight;
         };
 
-        // 🌟 獨立的確認入帳功能
+        // 🌟 獨立的確認入帳功能 (包含戲精對話)
         window.confirmAIExpense = async (jsonStr, btn) => {
             if (!currentUser) return;
             try {
                 const decodedStr = jsonStr.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
                 const expData = JSON.parse(decodedStr);
+                
+                const payer = (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina";
+                const splitType = expData.splitType || 'split';
+                const category = expData.category || 'other';
+                const item = expData.item;
+
                 await addDoc(getColl('expenses'), {
-                    item: expData.item, cost: parseFloat(expData.cost), currency: expData.currency || "THB",
-                    category: expData.category || "other", payer: (expData.payer && expData.payer.toLowerCase().includes("darren")) ? "darren" : "tina",
-                    splitType: expData.splitType || 'split', date: new Date().toISOString().split('T')[0], createdAt: Date.now()
+                    item: item, cost: parseFloat(expData.cost), currency: expData.currency || "THB",
+                    category: category, payer: payer,
+                    splitType: splitType, date: new Date().toISOString().split('T')[0], createdAt: Date.now()
                 });
+                
                 btn.innerText = '✅ 已入帳';
                 btn.classList.replace('bg-[#6B705C]', 'bg-gray-300');
                 btn.disabled = true;
-                window.showToast(`記帳成功：${expData.item}！💰`, '💰');
+
+                // --- 戲精記帳提示 ---
+                let catText = "";
+                if (category === 'food') catText = "🤤 泰國美食吃起來！";
+                else if (category === 'shop') catText = "🛍️ 戰利品+1！";
+                else if (category === 'massage') catText = "💆 泰式按摩按到爽！";
+                else if (category === 'play') catText = "🎢 盡情玩樂體驗！";
+                else if (category === 'traffic') catText = "🚕 交通平安抵達最重要！";
+                else catText = "✨ 錢錢變成喜歡的形狀了！";
+
+                let msgs = [];
+                if (splitType === 'split') {
+                    msgs = payer === 'darren' ? [
+                        `Darren 先代墊「${item}」！${catText} (記得跟老婆結算🤣)`,
+                        `公費平分！Darren 帥氣刷卡先代墊，${catText}`
+                    ] : [
+                        `Tina 先代墊「${item}」！${catText} (記帳小精靈上線)`,
+                        `公費平分！老婆先付錢代墊啦，${catText}`
+                    ];
+                } else if (splitType === 'treat') {
+                    msgs = payer === 'darren' ? [
+                        `Darren 霸氣請客「${item}」！(這不是代墊，是真愛！) ${catText}`,
+                        `老公霸氣買單送老婆！Tina 負責享受就好！${catText}`
+                    ] : [
+                        `Tina 大方請客「${item}」！仙女霸氣買單不用還！${catText}`,
+                        `老婆請客送老公！Darren 今晚宵夜該表現一下了 😏 ${catText}`
+                    ];
+                } else { 
+                    msgs = payer === 'darren' ? [
+                        `Darren 的專屬花費！男生也是要對自己好的！${catText}`
+                    ] : [
+                        `Tina 的專屬戰利品！仙女就是要配好東西！${catText}`
+                    ];
+                }
+                
+                const randomMsg = msgs[Math.floor(Math.random() * msgs.length)];
+                window.showToast(randomMsg, '💰');
             } catch(e) {
                 console.error('入帳失敗', e);
                 window.showToast('入帳失敗', '❌');
@@ -962,7 +1082,7 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                // 🌟 終極強制指令：不准亂排版，格式嚴格化！
+                // 🌟 終極強制指令：嚴格定義對應關係與代碼格式
                 const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
 【稱呼與語系】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文。
 【翻譯任務】支援「中翻泰」與「中翻英」。
@@ -970,7 +1090,11 @@
 ✅ 正確示範：SHOW_CARD: {"thai":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}
 ❌ 錯誤示範：SHOW_CARD: 泰文：ไม่เผ็ด 英文：Not spicy
 
-【記帳對應】Darren付錢誇老公霸氣，Tina付錢誇老婆仙女。附上 SAVE_EXPENSE 代碼。
+【記帳對應】
+- 如果是 Darren 付錢：誇獎 Darren 霸氣、帥氣，或虧 Tina 賺到了。
+- 如果是 Tina 付錢：誇獎 Tina 仙女、大方，或虧 Darren 記得搥背表現。
+- 絕對不可以發生「Tina付錢卻誇老公」或「Darren付錢卻誇老婆」的錯亂！
+附上 SAVE_EXPENSE 代碼。
 ⚠️ 只有當照片明顯是『收據』、或用戶明確說『記帳』時，才觸發 SAVE_EXPENSE。如果照片看起來是『菜單』、或用戶沒有要求記帳，請優先進行翻譯與菜色介紹，絕對不要自動產生記帳代碼。`;
 
                 // 準備傳給 API 的 messages (過濾掉 UI 專用的 imgUrl 屬性)
