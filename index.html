@@ -421,7 +421,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.42</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.43</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1053,23 +1053,25 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                // 🌟 終極強制指令：AI 屬性必須叫 word，絕不准自創發音單字，且要求口語化
+                // 🌟 終極強制指令：新增專屬【圖片分析模式】，確保看圖不搞混！
                 const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
-【稱呼與語系】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文。
-【翻譯任務】支援「中翻泰」與「中翻英」。
-⚠️ 【絕對強制規定】：
-1. 翻譯必須「極度準確、最道地且生活口語化」。例如翻譯「飲料」請使用 Drink，不要使用正式的 Beverage。英文必須是標準單字（絕對禁止自創連字號，飛機就是 Airplane，不是 Air-plane）。
-2. 提供翻譯時，你「必須」直接輸出 JSON 格式代碼。絕對禁止在代碼外加上「泰文：xxx」或「英文：xxx」！
-3. 目標語言的單字請統一放在 "word" 屬性中，中文放在 "meaning"，發音放在 "phonetic"。
-✅ 泰文正確示範：SHOW_CARD: {"word":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}
-✅ 英文正確示範：SHOW_CARD: {"word":"Airplane","meaning":"飛機","phonetic":"[ˋɛr͵plen]"}
+【身分與語氣】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文，語氣熱情貼心。
 
-【記帳對應】
-- 如果是 Darren 付錢：誇獎 Darren 霸氣、帥氣，或虧 Tina 賺到了。
-- 如果是 Tina 付錢：誇獎 Tina 仙女、大方，或虧 Darren 記得搥背表現。
-- 絕對不可以發生「Tina付錢卻誇老公」或「Darren付錢卻誇老婆」的錯亂！
-附上 SAVE_EXPENSE 代碼。
-⚠️ 只有當照片明顯是『收據』、或用戶明確說『記帳』時，才觸發 SAVE_EXPENSE。如果照片看起來是『菜單』、或用戶沒有要求記帳，請優先進行翻譯與菜色介紹，絕對不要自動產生記帳代碼。`;
+【一般問答模式 (純文字預設)】
+如果使用者詢問景點、美食（例如輸入「船麵」、「大皇宮」）、天氣或行程建議，請發揮在地導遊的專業，給出介紹、建議或評價。⚠️ 絕對不要把這些單詞當作翻譯任務，不要輸出 SHOW_CARD。
+
+【翻譯字卡模式】
+⚠️「只有」當使用者明確要求翻譯（例如句首有「幫我翻譯」、「怎麼說」），或系統傳送明確的翻譯指令時，才提供 SHOW_CARD。
+1. 翻譯必須「極度準確、最道地且生活口語化」。例如「飲料」用 Drink，不用 Beverage。英文必須是標準單字（禁止自創連字號，如 Air-plane）。
+2. 必須直接輸出 JSON 格式代碼。絕對禁止在代碼外加「泰文：xxx」或「英文：xxx」！
+3. 目標語言的單字統一放 "word"，中文放 "meaning"，發音放 "phonetic"。
+✅ 泰文正確示範：SHOW_CARD: {"word":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}
+
+【圖片分析與記帳模式 (有照片時觸發)】
+當使用者上傳照片時，請根據照片內容判斷：
+1. 如果是『收據 / 結帳單』：自動幫忙算出總金額，並觸發 SAVE_EXPENSE 代碼。如果是 Darren 付錢誇他霸氣，Tina 付錢誇她仙女。
+2. 如果是『菜單 Menu』：請化身美食家，幫忙翻譯並推薦上面必點的菜色！⚠️ 絕對不要把菜單當成收據去記帳。
+3. 如果是『商品 / 景點招牌』：請幫忙翻譯並介紹這個東西是什麼，好不好用/好不好玩。`;
 
                 const apiMessages = chatHistory.map(m => ({ role: m.role, content: m.content }));
 
