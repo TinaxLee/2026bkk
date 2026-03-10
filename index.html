@@ -550,50 +550,97 @@
             box-shadow: none !important;
         }
 
-        /* --- 🛫 航班卡片防擠壓校正 --- */
-        #flights-list .tracking-widest {
-            letter-spacing: 0.1em !important; /* 🌟 核心：縮小字距，避免撐爆寬度 */
-        }
+        /* --- 🛫 航班卡片 完美修復版 --- */
 
-        /* 針對 Seat 標籤做微調，讓它更精緻 */
-        #flights-list span.text-\[10px\].font-black {
-            letter-spacing: 0.05em !important;
-        }
-
-        /* 報到提醒的文字呼吸感 */
-        .bg-orange-50\/50 {
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.5);
-        }
-
-        /* --- 🛫 航班卡片「強迫症級」精準對齊 --- */
-
-        /* 確保 Seat 與旁邊的 Tag 視覺水平一致 */
-        #flights-list .flex.items-center.gap-1 {
+        /* 1. 建立對稱網格：讓左右兩邊永遠等寬 */
+        .flight-grid-row {
             display: flex;
-            align-items: center !important;
-        }
-
-        /* 報到提醒邊框：固定高度並強制內部 Span 置中 */
-        .bg-orange-50\/50 {
-            display: flex !important;
-            align-items: center !important;
+            align-items: center; /* 🌟 核心：強制左右兩區塊垂直置中對齊飛機 */
             justify-content: space-between;
-            height: 40px !important; /* 固定高度比較好控制置中 */
+            width: 100%;
         }
 
-        /* 解決 Emoji 導致文字基準線偏移的問題 */
-        .bg-orange-50\/50 span {
+        .flight-col {
+            flex: 1; /* 左右各佔 1/3 多一點點 */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 🌟 核心：內容水平置中 */
+            justify-content: center;
+        }
+
+        /* 2. 城市名稱：限制寬度，允許換行但保持置中 */
+        .city-name {
+            font-size: 18px !important; /* 稍微縮小 2px 換取空間 */
+            font-weight: 900;
+            color: #2D3128;
+            line-height: 1.2;
+            text-align: center;
+            word-break: break-word;
+            margin-bottom: 4px;
+        }
+
+        /* 3. 時間文字：完美置中在名字下 */
+        .time-text {
+            font-family: 'Montserrat', sans-serif !important;
+            font-size: 16px !important;
+            font-weight: 700;
+            color: var(--morandi-olive);
+        }
+
+        /* 4. 中間飛機路徑 */
+        .flight-path {
+            flex: 0 0 70px; /* 固定飛機區域寬度 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 8px;
+        }
+
+        .plane-icon { font-size: 12px; opacity: 0.4; margin-bottom: 2px; }
+        .path-line { width: 100%; height: 1px; background: #DDB892; opacity: 0.6; position: relative; }
+        .dot { position: absolute; width: 4px; height: 4px; background: #DDB892; border-radius: 50%; top: -1.5px; }
+        .left-dot { left: 0; } .right-dot { right: 0; }
+
+        .duration-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #B7B7A4;
+            letter-spacing: 0.05em;
+            background: white; /* 蓋掉線條 */
+            padding: 0 4px;
+            margin-top: 2px;
+        }
+
+        /* 5. 報到提醒：徹底置中修復 */
+        .checkin-box {
+            background-color: rgba(255, 247, 237, 0.7); /* 橘色背景 */
+            border: 1px solid rgba(255, 237, 213, 0.7);
+            border-radius: 12px;
+            height: 42px; /* 固定高度 */
+            padding: 0 15px;
+            display: flex;
+            align-items: center; /* 🌟 垂直置中 */
+            justify-content: space-between;
+        }
+
+        .checkin-label, .checkin-time {
             display: flex;
             align-items: center;
-            height: 100%;
-            margin-bottom: 1px; /* 針對手機螢幕的微小校正 */
+            height: 100%; /* 撐滿高度後 align-items 就會生效 */
+            line-height: 1 !important;
         }
 
-        /* 修正按鈕點擊區域，確保圖標正對 */
-        #flights-list button {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+        .checkin-label {
+            font-size: 10px;
+            font-weight: 900;
+            color: #fb923c;
+            letter-spacing: 0.1em;
+        }
+
+        .checkin-time {
+            font-size: 14px;
+            font-weight: 900;
+            color: #ea580c;
         }
 
         /* --- 🏨 飯店卡片視覺細節再進化 --- */
@@ -621,6 +668,20 @@
         #hotels-list .text-xl.font-black {
             line-height: 1.35 !important;
             margin-bottom: 2px;
+        }
+
+        /* 航空卡片頂部標籤絕對平行校正 */
+        #flights-list .flex.items-center.gap-1.5 span,
+        #flights-list .flex.items-center.gap-1 span {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 24px !important; /* 🌟 統一設定所有標籤(含Seat)的視覺高度 */
+        }
+
+        /* 讓 SEAT 字體再精緻一點點 */
+        #flights-list span.text-\[10px\].font-black {
+            font-family: 'Montserrat', sans-serif !important;
         }
     </style>
 </head>
@@ -773,9 +834,9 @@
                     
                     <input type="text" id="h-address" placeholder="輸入飯店地址或座標" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200 bg-white">
                     
-                    <div class="flex gap-3 mb-4">
-                        <input type="text" id="h-room" placeholder="房號" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200">
-                        <input type="text" id="h-note" placeholder="備註" class="flex-[2] p-3 rounded-xl text-sm outline-none border border-gray-200">
+                    <div class="flex flex-col gap-3 mb-4">
+                        <input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm outline-none border border-gray-200">
+                        <input type="text" id="h-note" placeholder="備註 (如：早到、加床)" class="w-full p-3 rounded-xl text-sm outline-none border border-gray-200">
                     </div>
                     
                     <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold shadow-md">儲存飯店資訊</button>
@@ -896,7 +957,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.75</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.78</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1328,14 +1389,16 @@
             list.innerHTML = sortedFlights.map(f => { 
                 const dateDisplay = f.date ? window.formatDisplayDate(f.date) : ''; 
                 return `
-                    <div class="app-card p-5 mb-4 relative">
+                    <div class="app-card p-5 mb-4 relative border-t-[6px] border-[#4A4E40]/20">
                         <div class="flex justify-between items-center mb-6">
                             <div class="flex items-center gap-1.5">
-                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1.5 rounded-lg font-black uppercase leading-none">${f.code}</span>
-                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1.5 rounded-lg leading-none">${dateDisplay}</span>` : ''}
+                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1.5 rounded-lg font-black uppercase leading-none flex items-center">${f.code}</span>
+                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1.5 rounded-lg leading-none flex items-center">${dateDisplay}</span>` : ''}
                             </div>
                             <div class="flex items-center gap-1">
-                                <span class="text-[10px] font-black text-[#B7B7A4] mr-1 leading-none inline-block" style="margin-top: 1px;">SEAT: ${f.seat || '--'}</span>
+                                <span class="text-[10px] font-black text-[#B7B7A4] px-0 py-1.5 leading-none flex items-center uppercase tracking-tight">
+                                    SEAT: ${f.seat || '--'}
+                                </span>
                                 <div class="flex border-l border-gray-100 ml-1 pl-1 items-center">
                                     <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2 flex items-center">✎</button>
                                     <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2 flex items-center">✕</button>
@@ -1343,35 +1406,32 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-center flex-1">
-                                <div class="text-lg font-black text-[#2D3128]">${f.from}</div>
-                                <div class="text-sm font-bold text-[#6B705C] mt-2">${f.depTime || '--:--'}</div>
+                        <div class="flight-grid-row mb-4">
+                            <div class="flight-col">
+                                <div class="city-name">${f.from}</div>
+                                <div class="time-text">${f.depTime || '--:--'}</div>
                             </div>
-                            <div class="shrink-0 min-w-[80px] flex flex-col items-center px-2">
-                                <span class="text-xs opacity-40">✈️</span>
-                                <div class="w-full h-[1px] bg-[#DDB892] my-1 opacity-50 relative">
-                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -left-0.5 -top-[0.5px]"></div>
-                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -right-0.5 -top-[0.5px]"></div>
-                                </div>
-                                ${f.duration ? `<span class="text-[9px] font-bold text-[#B7B7A4] tracking-widest leading-none">${f.duration}</span>` : ''}
+                            <div class="flight-path">
+                                <span class="plane-icon">✈️</span>
+                                <div class="path-line"><div class="dot left-dot"></div><div class="dot right-dot"></div></div>
+                                ${f.duration ? `<span class="duration-text">${f.duration}</span>` : ''}
                             </div>
-                            <div class="text-center flex-1">
-                                <div class="text-lg font-black text-[#2D3128]">${f.to}</div>
-                                <div class="text-sm font-bold text-[#6B705C] mt-2">${f.arrTime || '--:--'}</div>
+                            <div class="flight-col">
+                                <div class="city-name">${f.to}</div>
+                                <div class="time-text">${f.arrTime || '--:--'}</div>
                             </div>
                         </div>
 
-                        <div class="flex flex-col gap-2 mt-4">
+                        <div class="flex flex-col gap-2.5 mt-4">
                             ${f.checkinTime ? `
-                                <div class="bg-orange-50/50 border border-orange-100/50 rounded-xl px-3 h-10 flex justify-between items-center">
-                                    <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest leading-none flex items-center">⌚ 報到提醒</span>
-                                    <span class="text-xs font-black text-orange-500 leading-none flex items-center">${f.checkinTime}</span>
+                                <div class="checkin-box">
+                                    <span class="checkin-label">⌚ 報到提醒</span>
+                                    <span class="checkin-time">${f.checkinTime}</span>
                                 </div>
                             ` : ''}
                             ${f.note ? `
-                                <div class="bg-gray-50 border-l-2 border-[#DDB892] rounded-r-xl p-3">
-                                    <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1 leading-none">NOTE</div>
+                                <div class="bg-[#FBFBFA] border-l-3 border-[#DDB892] rounded-r-xl p-3">
+                                    <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1 leading-none">Note</div>
                                     <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${f.note}</div>
                                 </div>
                             ` : ''}
@@ -1379,6 +1439,7 @@
                     </div>`; 
             }).join('');
         };
+
         window.editFlight = (id) => { const item = flightsData.find(f => f.id === id); if (!item) return; editingFlightId = id; document.getElementById('f-code').value = item.code; document.getElementById('f-from').value = item.from; document.getElementById('f-to').value = item.to; document.getElementById('f-date').value = item.date || ''; document.getElementById('f-duration').value = item.duration || ''; document.getElementById('f-depTime').value = item.depTime; document.getElementById('f-arrTime').value = item.arrTime; document.getElementById('f-checkinTime').value = item.checkinTime; document.getElementById('f-seat').value = item.seat; document.getElementById('f-note').value = item.note || ''; document.getElementById('btn-add-flight').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-flight').classList.remove('hidden'); if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditFlight = () => { editingFlightId = null; ['f-code','f-from','f-to','f-date','f-duration','f-depTime','f-arrTime','f-checkinTime','f-seat','f-note'].forEach(id => document.getElementById(id).value = ''); document.getElementById('btn-add-flight').innerText = '儲存航班'; document.getElementById('btn-cancel-flight').classList.add('hidden'); };
         window.addFlight = async () => { const code = document.getElementById('f-code').value; if (!code || !currentUser) return; const flightData = { code, from: document.getElementById('f-from').value, to: document.getElementById('f-to').value, date: document.getElementById('f-date').value, duration: document.getElementById('f-duration').value, depTime: document.getElementById('f-depTime').value, arrTime: document.getElementById('f-arrTime').value, checkinTime: document.getElementById('f-checkinTime').value, seat: document.getElementById('f-seat').value, note: document.getElementById('f-note').value }; if (editingFlightId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'flights', editingFlightId), flightData); window.cancelEditFlight(); } else { await addDoc(getColl('flights'), flightData); window.cancelEditFlight(); } window.toggleSection('flight'); };
@@ -1442,8 +1503,8 @@
             document.getElementById('h-checkin').value = item.checkin; 
             document.getElementById('h-checkout').value = item.checkout || ''; 
             document.getElementById('h-address').value = item.address || ''; 
-            document.getElementById('h-bookingName').value = item.bookingName || ''; // 🌟 填入新欄位
-            document.getElementById('h-bookingCode').value = item.bookingCode || ''; // 🌟 填入新欄位
+            document.getElementById('h-bookingName').value = item.bookingName || ''; 
+            document.getElementById('h-bookingCode').value = item.bookingCode || ''; 
             document.getElementById('h-note').value = item.note || ''; 
             
             document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; 
@@ -1470,8 +1531,8 @@
                 checkin: document.getElementById('h-checkin').value, 
                 checkout: document.getElementById('h-checkout').value, 
                 address: document.getElementById('h-address').value, 
-                bookingName: document.getElementById('h-bookingName').value, // 🌟 儲存新欄位
-                bookingCode: document.getElementById('h-bookingCode').value, // 🌟 儲存新欄位
+                bookingName: document.getElementById('h-bookingName').value, 
+                bookingCode: document.getElementById('h-bookingCode').value, 
                 note: document.getElementById('h-note').value 
             }; 
             if (editingHotelId) { 
