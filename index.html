@@ -549,6 +549,21 @@
             color: #8E9185 !important;
             box-shadow: none !important;
         }
+
+        /* --- 🛫 航班卡片防擠壓校正 --- */
+        #flights-list .tracking-widest {
+            letter-spacing: 0.1em !important; /* 🌟 核心：縮小字距，避免撐爆寬度 */
+        }
+
+        /* 針對 Seat 標籤做微調，讓它更精緻 */
+        #flights-list span.text-\[10px\].font-black {
+            letter-spacing: 0.05em !important;
+        }
+
+        /* 報到提醒的文字呼吸感 */
+        .bg-orange-50\/50 {
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.5);
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -807,7 +822,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.68</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.69</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1211,7 +1226,59 @@
         window.renderFlights = () => {
             const list = document.getElementById('flights-list'); if (!list) return;
             const sortedFlights = [...flightsData].sort((a, b) => (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99') || (a.depTime || '99:99').localeCompare(b.depTime || '99:99'));
-            list.innerHTML = sortedFlights.map(f => { const dateDisplay = f.date ? window.formatDisplayDate(f.date) : ''; return `<div class="app-card p-5 mb-4"><div class="flex justify-between items-center mb-4"><div class="flex items-center gap-2"><span class="bg-[#6B705C] text-white text-sm px-2 py-1 rounded font-black">${f.code}</span>${dateDisplay ? `<span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateDisplay}</span>` : ''}</div><div class="flex gap-4"><span class="text-sm font-bold text-gray-400 mt-1">Seat: ${f.seat || '--'}</span><button onclick="window.editFlight('${f.id}')" class="text-gray-400 text-sm hover:text-[#6B705C]">✎</button><button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-300 text-sm">✕</button></div></div><div class="flex items-center justify-between mb-2"><div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.from}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.depTime || '--:--'}</div></div><div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] px-2"><span class="text-sm text-gray-400 leading-none">✈️</span><div class="w-full h-[1.5px] bg-gray-200 my-1.5 relative"><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -left-0.5 top-1/2 transform -translate-y-1/2"></div><div class="absolute w-1.5 h-1.5 rounded-full bg-gray-200 -right-0.5 top-1/2 transform -translate-y-1/2"></div></div>${f.duration ? `<span class="text-[9px] text-gray-400 font-bold tracking-tighter mt-0.5">${f.duration}</span>` : '<span class="text-[9px] opacity-0">-</span>'}</div><div class="text-center flex-1 min-w-0 px-1"><div class="text-lg font-black text-[#2D3128] break-words leading-tight">${f.to}</div><div class="text-sm font-bold text-[#6B705C] mt-1">${f.arrTime || '--:--'}</div></div></div>${f.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-3"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${f.note}</div></div>` : ''}</div>`; }).join('');
+            list.innerHTML = sortedFlights.map(f => { 
+                const dateDisplay = f.date ? window.formatDisplayDate(f.date) : ''; 
+                return `
+                    <div class="app-card p-5 mb-4 relative">
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1 rounded-lg font-black uppercase tracking-tight">${f.code}</span>
+                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">${dateDisplay}</span>` : ''}
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[10px] font-black text-[#B7B7A4] mr-1">SEAT: ${f.seat || '--'}</span>
+                                <div class="flex border-l border-gray-100 ml-1 pl-1">
+                                    <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2">✎</button>
+                                    <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="text-center flex-1">
+                                <div class="text-lg font-black text-[#2D3128]">${f.from}</div>
+                                <div class="text-sm font-bold text-[#6B705C] mt-2">${f.depTime || '--:--'}</div>
+                            </div>
+                            <div class="shrink-0 min-w-[70px] flex flex-col items-center px-2">
+                                <span class="text-xs opacity-40">✈️</span>
+                                <div class="w-full h-[1px] bg-[#DDB892] my-1 opacity-50 relative">
+                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -left-0.5 -top-[1.5px]"></div>
+                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -right-0.5 -top-[1.5px]"></div>
+                                </div>
+                                ${f.duration ? `<span class="text-[9px] font-bold text-[#B7B7A4] tracking-widest">${f.duration}</span>` : ''}
+                            </div>
+                            <div class="text-center flex-1">
+                                <div class="text-lg font-black text-[#2D3128]">${f.to}</div>
+                                <div class="text-sm font-bold text-[#6B705C] mt-2">${f.arrTime || '--:--'}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-2 mt-4">
+                            ${f.checkinTime ? `
+                                <div class="bg-orange-50/50 border border-orange-100/50 rounded-xl p-3 flex justify-between items-center">
+                                    <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest">⌚ 報到提醒</span>
+                                    <span class="text-xs font-black text-orange-500">${f.checkinTime}</span>
+                                </div>
+                            ` : ''}
+                            ${f.note ? `
+                                <div class="bg-gray-50 border-l-2 border-[#DDB892] rounded-r-xl p-3">
+                                    <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1">NOTE</div>
+                                    <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${f.note}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>`; 
+            }).join('');
         };
         window.editFlight = (id) => { const item = flightsData.find(f => f.id === id); if (!item) return; editingFlightId = id; document.getElementById('f-code').value = item.code; document.getElementById('f-from').value = item.from; document.getElementById('f-to').value = item.to; document.getElementById('f-date').value = item.date || ''; document.getElementById('f-duration').value = item.duration || ''; document.getElementById('f-depTime').value = item.depTime; document.getElementById('f-arrTime').value = item.arrTime; document.getElementById('f-checkinTime').value = item.checkinTime; document.getElementById('f-seat').value = item.seat; document.getElementById('f-note').value = item.note || ''; document.getElementById('btn-add-flight').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-flight').classList.remove('hidden'); if(!document.getElementById('flight-grid').classList.contains('active')) window.toggleSection('flight'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditFlight = () => { editingFlightId = null; ['f-code','f-from','f-to','f-date','f-duration','f-depTime','f-arrTime','f-checkinTime','f-seat','f-note'].forEach(id => document.getElementById(id).value = ''); document.getElementById('btn-add-flight').innerText = '儲存航班'; document.getElementById('btn-cancel-flight').classList.add('hidden'); };
