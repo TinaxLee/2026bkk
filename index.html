@@ -564,6 +564,64 @@
         .bg-orange-50\/50 {
             box-shadow: inset 0 0 15px rgba(255,255,255,0.5);
         }
+
+        /* --- 🛫 航班卡片「強迫症級」精準對齊 --- */
+
+        /* 確保 Seat 與旁邊的 Tag 視覺水平一致 */
+        #flights-list .flex.items-center.gap-1 {
+            display: flex;
+            align-items: center !important;
+        }
+
+        /* 報到提醒邊框：固定高度並強制內部 Span 置中 */
+        .bg-orange-50\/50 {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between;
+            height: 40px !important; /* 固定高度比較好控制置中 */
+        }
+
+        /* 解決 Emoji 導致文字基準線偏移的問題 */
+        .bg-orange-50\/50 span {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            margin-bottom: 1px; /* 針對手機螢幕的微小校正 */
+        }
+
+        /* 修正按鈕點擊區域，確保圖標正對 */
+        #flights-list button {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        /* --- 🏨 飯店卡片視覺細節再進化 --- */
+
+        /* 1. 讓飯店卡片多一個淡金色頂邊，增加儀式感 */
+        #hotels-list .app-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* 2. 讓訂房資訊的小標籤 (NAME, CODE) 數字更俐落 */
+        #hotels-list .font-black {
+            font-family: 'Montserrat', 'Noto Sans TC', sans-serif !important;
+            letter-spacing: 0.02em;
+        }
+
+        /* 3. 讓飯店導航按鈕寬度撐滿，在飯店頁面更好按 */
+        #hotels-list .action-link {
+            display: flex !important;
+            width: 100% !important;
+            justify-content: center;
+            border-radius: 12px !important;
+        }
+
+        /* 4. 修正飯店名稱的行間距 */
+        #hotels-list .text-xl.font-black {
+            line-height: 1.35 !important;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -626,11 +684,12 @@
         <main class="p-4">
             <!-- 行程分頁 -->
             <div id="content-itinerary" class="tab-content">
-                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer" onclick="window.askGemini('幫我看看曼谷今天天氣如何，有什麼蜜月行程建議或該注意的嗎？', false, '💡 查詢今日天氣')">
+                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer active:scale-[0.98] transition-transform" 
+                     onclick="window.getWeather(); window.showToast('正在重新同步天氣...', '🌤️')">
                     <div id="weather-display">
-                        <div class="text-xl font-black">正在抓取天氣...</div>
+                        <div class="text-xl font-black text-white">正在抓取天氣...</div>
                     </div>
-                    <div class="text-4xl">☀️</div>
+                    <div class="text-4xl filter drop-shadow-md">🌤️</div>
                 </div>
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
@@ -701,11 +760,26 @@
                 </div>
                 <div id="hotel-grid" class="expand-panel app-card p-5 mb-5 bg-gray-50">
                     <input type="text" id="h-name" placeholder="飯店名稱" class="w-full p-3 rounded-xl mb-3 font-black outline-none border border-gray-200">
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <input type="text" id="h-bookingName" placeholder="訂房人姓名" class="p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
+                        <input type="text" id="h-bookingCode" placeholder="訂房編號" class="p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white">
+                    </div>
+
                     <div class="mb-3">
                         <div class="flex gap-3 mb-1 px-1"><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 入住日期</span><span class="flex-1 text-[10px] font-black text-gray-400 uppercase tracking-wider">📅 退房日期</span></div>
                         <div class="flex gap-3"><input type="date" id="h-checkin" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white"><input type="date" id="h-checkout" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200 bg-white"></div>
                     </div>
-                    <input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200"><input type="text" id="h-note" placeholder="備註" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200"><button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold">儲存飯店</button><button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
+                    
+                    <input type="text" id="h-address" placeholder="輸入飯店地址或座標" class="w-full p-3 rounded-xl text-sm mb-3 outline-none border border-gray-200 bg-white">
+                    
+                    <div class="flex gap-3 mb-4">
+                        <input type="text" id="h-room" placeholder="房號" class="flex-1 p-3 rounded-xl text-sm outline-none border border-gray-200">
+                        <input type="text" id="h-note" placeholder="備註" class="flex-[2] p-3 rounded-xl text-sm outline-none border border-gray-200">
+                    </div>
+                    
+                    <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold shadow-md">儲存飯店資訊</button>
+                    <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
                 </div>
                 <div id="hotels-list"></div>
 
@@ -822,7 +896,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.69</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.75</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1083,13 +1157,38 @@
         window.handleImgError = (img) => { img.onerror = null; img.src = 'https://img.icons8.com/plasticine/200/heart.png'; if(img.parentElement) img.parentElement.classList.remove('skeleton'); img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); };
 
         window.getWeather = async () => { 
+            const weatherEl = document.getElementById('weather-display');
+            const now = new Date();
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
             try { 
+                // 抓取曼谷與普吉島即時天氣
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
+                if (!res.ok) throw new Error();
+                
                 const data = await res.json(); 
-                document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 ${Math.round(data[0].current.temperature_2m)}°C / 普吉 ${Math.round(data[1].current.temperature_2m)}°C</div><div class="text-[11px] mt-1 font-bold opacity-70">貼心管家已就位 • 今日提醒準備中 ✨</div>`; 
+                const bkkTemp = Math.round(data[0].current.temperature_2m);
+                const hktTemp = Math.round(data[1].current.temperature_2m);
+
+                weatherEl.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="text-xl font-black text-white">曼谷 ${bkkTemp}°C / 普吉 ${hktTemp}°C</div>
+                        <div class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                            <span class="text-[9px] font-bold text-white uppercase tracking-tighter">LIVE</span>
+                        </div>
+                    </div>
+                    <div class="text-[11px] mt-1 font-bold opacity-70 text-white">管家已為您同步最新氣候 • ${timeStr}</div>
+                `; 
             } catch(e) { 
-                console.error("天氣抓取失敗:", e);
-                document.getElementById('weather-display').innerHTML = `<div class="text-xl font-black">曼谷 33°C / 普吉 31°C</div><div class="text-[11px] mt-1 font-bold opacity-70">連線稍慢，管家待命備援中 ✨</div>`; 
+                // 抓不到時的誠實告白
+                weatherEl.innerHTML = `
+                    <div class="text-xl font-black text-white/90">曼谷 33°C / 普吉 31°C</div>
+                    <div class="text-[11px] mt-1 font-bold opacity-70 text-white italic">
+                        📡 連線稍慢，顯示預設溫度中 (${timeStr})
+                    </div>
+                `; 
+                console.log("天氣連線受限，已啟用離線預設值");
             } 
         };
         window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); if (c === 'THB') r.innerText = `台幣 NT$ ${Math.round(v * window.ratesToTHB['TWD']).toLocaleString()}`; else if (c === 'USD') r.innerText = `泰銖 ฿ ${Math.round(v * window.ratesToTHB['USD']).toLocaleString()}`; else r.innerText = `泰銖 ฿ ${Math.round(v / window.ratesToTHB['TWD']).toLocaleString()}`; };
@@ -1231,15 +1330,15 @@
                 return `
                     <div class="app-card p-5 mb-4 relative">
                         <div class="flex justify-between items-center mb-6">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1 rounded-lg font-black uppercase tracking-tight">${f.code}</span>
-                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">${dateDisplay}</span>` : ''}
+                            <div class="flex items-center gap-1.5">
+                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1.5 rounded-lg font-black uppercase leading-none">${f.code}</span>
+                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1.5 rounded-lg leading-none">${dateDisplay}</span>` : ''}
                             </div>
                             <div class="flex items-center gap-1">
-                                <span class="text-[10px] font-black text-[#B7B7A4] mr-1">SEAT: ${f.seat || '--'}</span>
-                                <div class="flex border-l border-gray-100 ml-1 pl-1">
-                                    <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2">✎</button>
-                                    <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2">✕</button>
+                                <span class="text-[10px] font-black text-[#B7B7A4] mr-1 leading-none inline-block" style="margin-top: 1px;">SEAT: ${f.seat || '--'}</span>
+                                <div class="flex border-l border-gray-100 ml-1 pl-1 items-center">
+                                    <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2 flex items-center">✎</button>
+                                    <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2 flex items-center">✕</button>
                                 </div>
                             </div>
                         </div>
@@ -1249,13 +1348,13 @@
                                 <div class="text-lg font-black text-[#2D3128]">${f.from}</div>
                                 <div class="text-sm font-bold text-[#6B705C] mt-2">${f.depTime || '--:--'}</div>
                             </div>
-                            <div class="shrink-0 min-w-[70px] flex flex-col items-center px-2">
+                            <div class="shrink-0 min-w-[80px] flex flex-col items-center px-2">
                                 <span class="text-xs opacity-40">✈️</span>
                                 <div class="w-full h-[1px] bg-[#DDB892] my-1 opacity-50 relative">
-                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -left-0.5 -top-[1.5px]"></div>
-                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -right-0.5 -top-[1.5px]"></div>
+                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -left-0.5 -top-[0.5px]"></div>
+                                    <div class="absolute w-1 h-1 rounded-full bg-[#DDB892] -right-0.5 -top-[0.5px]"></div>
                                 </div>
-                                ${f.duration ? `<span class="text-[9px] font-bold text-[#B7B7A4] tracking-widest">${f.duration}</span>` : ''}
+                                ${f.duration ? `<span class="text-[9px] font-bold text-[#B7B7A4] tracking-widest leading-none">${f.duration}</span>` : ''}
                             </div>
                             <div class="text-center flex-1">
                                 <div class="text-lg font-black text-[#2D3128]">${f.to}</div>
@@ -1265,14 +1364,14 @@
 
                         <div class="flex flex-col gap-2 mt-4">
                             ${f.checkinTime ? `
-                                <div class="bg-orange-50/50 border border-orange-100/50 rounded-xl p-3 flex justify-between items-center">
-                                    <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest">⌚ 報到提醒</span>
-                                    <span class="text-xs font-black text-orange-500">${f.checkinTime}</span>
+                                <div class="bg-orange-50/50 border border-orange-100/50 rounded-xl px-3 h-10 flex justify-between items-center">
+                                    <span class="text-[10px] font-black text-orange-400 uppercase tracking-widest leading-none flex items-center">⌚ 報到提醒</span>
+                                    <span class="text-xs font-black text-orange-500 leading-none flex items-center">${f.checkinTime}</span>
                                 </div>
                             ` : ''}
                             ${f.note ? `
                                 <div class="bg-gray-50 border-l-2 border-[#DDB892] rounded-r-xl p-3">
-                                    <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1">NOTE</div>
+                                    <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1 leading-none">NOTE</div>
                                     <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${f.note}</div>
                                 </div>
                             ` : ''}
@@ -1287,11 +1386,103 @@
         window.renderHotels = () => {
             const list = document.getElementById('hotels-list'); if (!list) return;
             const sortedHotels = [...hotelsData].sort((a, b) => (a.checkin || '9999-99-99').localeCompare(b.checkin || '9999-99-99'));
-            list.innerHTML = sortedHotels.map(h => { let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--'; if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`; return `<div class="app-card p-5 mb-4"><div class="flex justify-between items-center mb-3"><div class="flex-1 pr-4"><div class="text-lg font-black text-[#4A4E40] leading-tight">${h.name}</div><div class="text-sm text-gray-500 font-bold mt-1.5">房號: <span class="text-[#6B705C]">${h.room || '--'}</span> | 入住: ${dateStr}</div></div><div class="flex flex-col gap-3"><button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-300 text-lg self-end">✕</button><button onclick="window.editHotel('${h.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div></div>${h.note ? `<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mt-2"><div class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Note</div><div class="text-sm font-bold text-[#4A4E40]">${h.note}</div></div>` : ''}</div>`; }).join('');
+            list.innerHTML = sortedHotels.map(h => { 
+                let dateStr = h.checkin ? window.formatDisplayDate(h.checkin) : '--'; 
+                if (h.checkout) dateStr += ` ~ ${window.formatDisplayDate(h.checkout)}`;
+                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(h.name + ' ' + (h.address || ''))}`;
+                
+                return `
+                    <div class="app-card p-6 mb-4 relative border-t-[6px] border-[#DDB892]/30">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1 pr-4">
+                                <div class="text-xl font-black text-[#2D3128] leading-tight tracking-tight">${h.name}</div>
+                                <div class="text-[13px] text-[#6B705C] font-bold mt-2 tracking-wide flex items-center gap-1.5">
+                                    <span class="opacity-60">📅</span> ${dateStr}
+                                </div>
+                            </div>
+                            <div class="flex gap-1 -mt-1 -mr-1">
+                                <button onclick="window.editHotel('${h.id}')" class="text-gray-400 p-2.5">✎</button>
+                                <button onclick="window.deleteItem('hotels', '${h.id}')" class="text-gray-200 p-2.5">✕</button>
+                            </div>
+                        </div>
+                        
+                        ${h.bookingName || h.bookingCode || h.room ? `
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 mb-5 px-3 py-3 bg-[#FBFBFA] rounded-xl border border-[#F1F3EF]">
+                                ${h.room ? `<div class="text-[11px] font-black text-[#4A4E40]"><span class="text-[#B7B7A4] font-bold">ROOM:</span> ${h.room}</div>` : ''}
+                                ${h.bookingName ? `<div class="text-[11px] font-black text-[#4A4E40] uppercase"><span class="text-[#B7B7A4] font-bold">NAME:</span> ${h.bookingName}</div>` : ''}
+                                ${h.bookingCode ? `<div class="text-[11px] font-black text-[#4A4E40] uppercase"><span class="text-[#B7B7A4] font-bold">CODE:</span> ${h.bookingCode}</div>` : ''}
+                            </div>
+                        ` : ''}
+
+                        ${h.address ? `
+                            <div class="px-1 mb-4">
+                                <div class="text-[12px] text-gray-500 font-medium mb-3 leading-relaxed">📍 ${h.address}</div>
+                                <a href="${mapUrl}" target="_blank" class="action-link w-full justify-center py-3 bg-[#F8F7F2] border-[#EAE9E0] text-[12px] font-bold">
+                                    🧭 開啟地圖導航
+                                </a>
+                            </div>
+                        ` : ''}
+
+                        ${h.note ? `
+                            <div class="bg-gray-50 border-l-2 border-[#DDB892] rounded-r-xl p-4 mt-2">
+                                <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-[0.2em] mb-1.5">SPECIAL NOTES</div>
+                                <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${h.note}</div>
+                            </div>
+                        ` : ''}
+                    </div>`; 
+            }).join('');
         };
-        window.editHotel = (id) => { const item = hotelsData.find(h => h.id === id); if (!item) return; editingHotelId = id; document.getElementById('h-name').value = item.name; document.getElementById('h-room').value = item.room; document.getElementById('h-checkin').value = item.checkin; document.getElementById('h-checkout').value = item.checkout || ''; document.getElementById('h-note').value = item.note || ''; document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-hotel').classList.remove('hidden'); if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-        window.cancelEditHotel = () => { editingHotelId = null; ['h-name','h-room','h-checkin','h-checkout','h-note'].forEach(id => document.getElementById(id).value = ''); document.getElementById('btn-add-hotel').innerText = '儲存飯店'; document.getElementById('btn-cancel-hotel').classList.add('hidden'); };
-        window.addHotel = async () => { const name = document.getElementById('h-name').value; if (!name || !currentUser) return; const hotelData = { name, room: document.getElementById('h-room').value, checkin: document.getElementById('h-checkin').value, checkout: document.getElementById('h-checkout').value, note: document.getElementById('h-note').value }; if (editingHotelId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'hotels', editingHotelId), hotelData); window.cancelEditHotel(); } else { await addDoc(getColl('hotels'), hotelData); window.cancelEditHotel(); } window.toggleSection('hotel'); };
+
+        window.editHotel = (id) => { 
+            const item = hotelsData.find(h => h.id === id); 
+            if (!item) return; 
+            editingHotelId = id; 
+            document.getElementById('h-name').value = item.name; 
+            document.getElementById('h-room').value = item.room || ''; 
+            document.getElementById('h-checkin').value = item.checkin; 
+            document.getElementById('h-checkout').value = item.checkout || ''; 
+            document.getElementById('h-address').value = item.address || ''; 
+            document.getElementById('h-bookingName').value = item.bookingName || ''; // 🌟 填入新欄位
+            document.getElementById('h-bookingCode').value = item.bookingCode || ''; // 🌟 填入新欄位
+            document.getElementById('h-note').value = item.note || ''; 
+            
+            document.getElementById('btn-add-hotel').innerText = '確認修改 ✅'; 
+            document.getElementById('btn-cancel-hotel').classList.remove('hidden'); 
+            if(!document.getElementById('hotel-grid').classList.contains('active')) window.toggleSection('hotel'); 
+            
+            // 平滑捲動到編輯區域
+            document.getElementById('hotel-grid').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
+
+        window.cancelEditHotel = () => { 
+            editingHotelId = null; 
+            ['h-name','h-room','h-checkin','h-checkout','h-address','h-bookingName','h-bookingCode','h-note'].forEach(id => document.getElementById(id).value = ''); 
+            document.getElementById('btn-add-hotel').innerText = '儲存飯店資訊'; 
+            document.getElementById('btn-cancel-hotel').classList.add('hidden'); 
+        };
+
+        window.addHotel = async () => { 
+            const name = document.getElementById('h-name').value; 
+            if (!name || !currentUser) return; 
+            const hotelData = { 
+                name, 
+                room: document.getElementById('h-room').value, 
+                checkin: document.getElementById('h-checkin').value, 
+                checkout: document.getElementById('h-checkout').value, 
+                address: document.getElementById('h-address').value, 
+                bookingName: document.getElementById('h-bookingName').value, // 🌟 儲存新欄位
+                bookingCode: document.getElementById('h-bookingCode').value, // 🌟 儲存新欄位
+                note: document.getElementById('h-note').value 
+            }; 
+            if (editingHotelId) { 
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'hotels', editingHotelId), hotelData); 
+                window.cancelEditHotel(); 
+            } else { 
+                await addDoc(getColl('hotels'), hotelData); 
+                window.cancelEditHotel(); 
+            } 
+            window.toggleSection('hotel'); 
+        };
 
         window.renderExpenses = () => {
             const list = document.getElementById('exp-list'); if(!list) return;
