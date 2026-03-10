@@ -426,7 +426,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.45</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.50</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -936,36 +936,42 @@
             container.innerHTML = html;
         };
 
+        // 🌟 強化語音引擎與防呆清洗
         window.speakThai = (text) => { 
             if (!window.speechSynthesis) {
                 window.showToast("瀏覽器不支援語音功能", "🔇");
                 return; 
             }
+            // 停止目前正在播放的聲音，避免重疊
             window.speechSynthesis.cancel(); 
             
+            // 延遲一小段時間再播放，這能解決 iOS 有時卡住的問題
             setTimeout(() => {
                 const isThai = /[\u0E00-\u0E7F]/.test(text);
                 let spokenText = text;
 
+                // 如果不是泰文（例如英文翻譯），過濾掉多餘的符號
                 if (!isThai) {
-                    spokenText = text.replace(/-/g, ''); 
+                    spokenText = text.replace(/-/g, ' '); 
                 }
 
                 const utterance = new SpeechSynthesisUtterance(spokenText); 
                 utterance.lang = isThai ? 'th-TH' : 'en-US'; 
 
-                if (!isThai) {
+                // 🌟 語音參數優化
+                if (isThai) {
+                    utterance.rate = 0.85;  // 泰文稍微放慢，讓你們聽得清楚發音
+                    utterance.pitch = 1.1;   // 音調稍微拉高，聽起來比較有朝氣，不像死板機器人
+                } else {
+                    // 英文發音設定
                     const voices = window.speechSynthesis.getVoices();
-                    let niceVoice = voices.find(v => (v.name.includes('Samantha') || v.name.includes('Google US English')) && !v.name.includes('Alex'));
-                    if (!niceVoice) niceVoice = voices.find(v => v.lang.startsWith('en') && !v.name.includes('Alex'));
-
+                    // 優先尋找好聽的英文女聲 (如 Samantha)
+                    let niceVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google US English'));
                     if (niceVoice) utterance.voice = niceVoice;
                     utterance.rate = 0.95; 
-                } else {
-                    utterance.rate = 0.8; 
+                    utterance.pitch = 1.0;
                 }
 
-                utterance.pitch = 1.05; 
                 window.speechSynthesis.speak(utterance); 
             }, 50); 
         };
@@ -996,12 +1002,7 @@
             const lang = document.getElementById('translate-lang-selector').value;
             if (!val) return; 
             const icon = lang === '英文' ? '🇺🇸' : '🇹🇭';
-            const query = `請將中文「${val}」翻譯成${lang}。
-要求：
-1. 翻譯必須極度準確、道地。
-2. 必須直接提供 SHOW_CARD 代碼。JSON 格式必須為：{"word": "目標語言單字", "meaning": "中文意思", "phonetic": "發音小抄"}。
-3. 如果是英文，word 屬性必須是標準正確的英文單字（絕對禁止自創連字號，飛機就是 Airplane，不是 Air-plane）。
-4. 簡單補充使用時機。`; 
+            const query = `請將中文「${val}」翻譯成${lang}。明確要求翻譯。`; 
             document.getElementById('quick-translate-input').value = ''; 
             window.askGemini(query, false, `${icon} 幫我翻譯(${lang})：「${val}」`); 
         };
@@ -1031,9 +1032,11 @@
                     let text = msg.content;
                     let cardBtnHtml = '';
                     let expenseBtnHtml = '';
+                    let mapBtnHtml = '';
 
                     let cleanText = text.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
                     
+                    // 解析 SHOW_CARD
                     const cardRegex = /SHOW_CARD:\s*(\{[\s\S]*?\})/g;
                     let match;
                     while ((match = cardRegex.exec(cleanText)) !== null) {
@@ -1051,26 +1054,61 @@
                         } catch (e) { console.error("歷史字卡解析失敗", e); }
                     }
                     
-                    if (cleanText.includes("SAVE_EXPENSE:")) {
+                    // 解析 SAVE_EXPENSE
+                    const exRegex = /SAVE_EXPENSE:\s*(\{[\s\S]*?\})/g;
+                    let exMatch;
+                    while ((exMatch = exRegex.exec(cleanText)) !== null) {
                         try {
-                            const exMatch = cleanText.match(/SAVE_EXPENSE:\s*(\{[\s\S]*?\})/);
-                            if (exMatch) {
-                                let jsonStr = exMatch[1]; 
-                                const lastBrace = jsonStr.lastIndexOf('}'); 
-                                if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
-                                const expData = JSON.parse(jsonStr);
-                                const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-                                expenseBtnHtml = `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
-                            }
+                            let jsonStr = exMatch[1].trim(); 
+                            const lastBrace = jsonStr.lastIndexOf('}'); 
+                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                            const expData = JSON.parse(jsonStr);
+                            const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+                            expenseBtnHtml += `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
                         } catch (e) { console.error("歷史記帳解析失敗", e); }
                     }
 
+                    // 🌟 更強大的 MAP_SEARCH 解析
+                    const mapRegex = /MAP_SEARCH:\s*(\{[\s\S]*?\})/g;
+                    let mapMatch;
+                    while ((mapMatch = mapRegex.exec(cleanText)) !== null) {
+                        try {
+                            let jsonStr = mapMatch[1].trim();
+                            const lastBrace = jsonStr.lastIndexOf('}');
+                            if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
+                            const mapData = JSON.parse(jsonStr);
+                            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapData.name)}`;
+                            
+                            mapBtnHtml += `
+                                <div class="mt-3 border-t border-[#F8D7D1] pt-3">
+                                    <a href="${mapUrl}" target="_blank" class="bg-[#8E9775] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 w-full no-underline" style="text-decoration: none;">
+                                        📍 導航去：${mapData.name}
+                                    </a>
+                                </div>
+                            `;
+                        } catch (e) { console.error("地圖代碼解析失敗", e); }
+                    }
+
+                    // 🌟 終極隱形過濾器：就算 AI 亂吐沒有括號的無效代碼，也強制將它從畫面抹除
                     let displayText = cleanText
                         .replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '')
+                        .replace(/SHOW_CARD:[^\n]*/g, '') // 殺掉所有殘留的 SHOW_CARD
                         .replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '')
+                        .replace(/SAVE_EXPENSE:[^\n]*/g, '') // 殺掉所有殘留的 SAVE_EXPENSE
+                        .replace(/MAP_SEARCH:\s*\{[\s\S]*?\}/g, '')
+                        .replace(/MAP_SEARCH:[^\n]*/g, '') // 殺掉所有殘留的 MAP_SEARCH
                         .trim();
 
-                    return `<div class="mb-4 text-left"><div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">${displayText.replace(/\n/g, '<br>')}${cardBtnHtml}${expenseBtnHtml}</div></div>`;
+                    return `
+                        <div class="mb-4 text-left">
+                            <div class="inline-block ai-bubble p-5 rounded-2xl text-lg shadow-sm leading-relaxed max-w-[95%]">
+                                ${displayText.replace(/\n/g, '<br>')}
+                                ${cardBtnHtml}
+                                ${mapBtnHtml}
+                                ${expenseBtnHtml}
+                            </div>
+                        </div>
+                    `;
                 }
             }).join('');
             chat.scrollTop = chat.scrollHeight;
@@ -1149,28 +1187,42 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
-【身分與語氣】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文，語氣熱情貼心。
+                const systemPrompt = `你是 Darren & Tina 的專屬泰國蜜月管家。妳的個性古靈精怪、嘴甜如蜜、求生欲極強。
 
-【一般問答模式 (純文字預設)】
-如果使用者詢問景點、美食（例如輸入「船麵」、「大皇宮」）、天氣或行程建議，請發揮在地導遊的專業，給出介紹、建議或評價。⚠️ 絕對不要把這些單詞當作翻譯任務，不要輸出 SHOW_CARD。
+【核心禁令】
+1. ❌ 絕對禁止使用 "Bae" 這個詞。
+2. 對話統稱「你們」或直接稱呼「Darren & Tina」。
+3. 提到 Tina 時，隨機冠上：仙女、女神、最美老婆。
+4. 提到 Darren 時，隨機冠上：霸氣老公、最帥老公、最強肩膀。
+
+【一般問答 & 地圖導航模式】
+如果詢問景點、美食（如「鄭王廟」、「船麵」）、天氣等，請發揮在地導遊專業給出熱情介紹與建議。
+⚠️ 絕對不要在此模式輸出 SHOW_CARD。
+⚠️ 只要回覆中介紹了具體的「店名」或「景點」，【必須】在回覆的最末端獨立一行嚴格附上地圖代碼（格式必須是 JSON）：
+MAP_SEARCH: {"name": "地點名稱"}
 
 【翻譯字卡模式】
-⚠️「只有」當使用者明確要求翻譯（例如句首有「幫我翻譯」、「怎麼說」），或系統傳送明確的翻譯指令時，才提供 SHOW_CARD。
-1. 翻譯必須「極度準確、最道地且生活口語化」。例如「飲料」用 Drink，不用 Beverage。英文必須是標準單字（禁止自創連字號，如 Air-plane）。
-2. 必須直接輸出 JSON 格式代碼。絕對禁止在代碼外加「泰文：xxx」或「英文：xxx」！
-3. 目標語言的單字統一放 "word"，中文放 "meaning"，發音放 "phonetic"。
-✅ 泰文正確示範：SHOW_CARD: {"word":"ไม่เผ็ด","meaning":"不要辣","phonetic":"Mai Phet"}
+⚠️「只有」當明確要求翻譯時才提供 SHOW_CARD。
+1. 翻譯要極度準確、道地且口語化。英文必須是標準單字（禁止自創連字號，如 Air-plane）。
+2. 必須直接輸出 JSON 格式代碼：SHOW_CARD: {"word":"單字","meaning":"中文意思","phonetic":"發音"}。絕對禁止在代碼外加「泰文：xxx」等廢話！
 
-【圖片分析與記帳模式 (有照片時觸發)】
-當使用者上傳照片時，請根據照片內容判斷：
-1. 如果是『收據 / 結帳單』：自動幫忙算出總金額，並觸發 SAVE_EXPENSE 代碼。如果是 Darren 付錢誇他霸氣，Tina 付錢誇她仙女。
-2. 如果是『菜單 Menu』：請化身美食家，幫忙翻譯並推薦上面必點的菜色！⚠️ 絕對不要把菜單當成收據去記帳。
-3. 如果是『商品 / 景點招牌』：請幫忙翻譯並介紹這個東西是什麼，好不好用/好不好玩。`;
+【圖片分析與記帳馬屁任務】
+若是『收據/結帳單』或用戶說『記帳』，觸發：SAVE_EXPENSE: {"item":"晚餐","cost":500,"currency":"THB","category":"food","payer":"darren","splitType":"split"}
+並隨機挑選以下馬屁加入對話：
+🧔 Darren：霸氣總裁、行動支付男神、刷卡不眨眼的男人、Darren 帥出新高度、泰國最強金主、護妻狂魔、餵飽老婆的男人最有魅力、大器的男人連點餐都帥。
+👩 Tina：仙女下凡買單、最美掌櫃、Tina 仙女本仙、優雅的支付手勢、泰國街頭最美風景、預算女王、跟著仙女吃香辣、仙女的戰利品就是有質感。
+
+【😈 隨機搞事任務 - 驚喜派頻率】
+⚠️ 每 6-8 次對話左右，才隨機在結尾指派一個任務（要像個真正的驚喜，不要太常出現）：
+- 給 Darren：例如「幫仙女拍 10 張美照」、「幫老婆揹包包」、「回飯店幫仙女揉揉肩」。
+- 給 Tina：例如「給帥氣 Darren 一個愛的鼓勵/親親」、「幫辛苦導航的老公擦個汗」、「幫老公買份路邊小吃獎勵他」。
+
+【隨機碎碎念】
+結尾隨機提醒：防曬☀️、多喝水💧、檢查隨身包👜。`;
 
                 const apiMessages = chatHistory.map(m => ({ role: m.role, content: m.content }));
 
-                const response = await fetch("https://thailand-ai.tina09210808.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: payloadModel, messages: [{ role: "system", content: systemPrompt }, ...apiMessages], temperature: 0.7 }) });
+                const response = await fetch("https://thailand-ai.tina09210808.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: payloadModel, messages: [{ role: "system", content: systemPrompt }, ...apiMessages], temperature: 0.8 }) });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json(); let text = data.choices?.[0]?.message?.content || "對不起管家眼花了...";
                 
@@ -1186,7 +1238,8 @@
 
                 window.renderChatHistory();
 
-                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:")) {
+                // 只有在真的什麼輔助按鈕都沒生成時，才塞找美食按鈕
+                if (!isAutoFood && (!imageInput || !imageInput.files[0]) && !text.includes("SAVE_EXPENSE:") && !text.includes("SHOW_CARD:") && !text.includes("MAP_SEARCH:")) {
                     const extractedPlace = query.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, '').slice(0, 8);
                     if(extractedPlace.length > 1) {
                          const chatBox = document.getElementById('gemini-chat');
