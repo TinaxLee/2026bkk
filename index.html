@@ -170,6 +170,52 @@
         /* Custom toggle icon */
         .toggle-icon { transition: transform 0.3s ease; }
         .toggle-icon.open { transform: rotate(180deg); }
+
+        /* --- 💰 方案 B：神級佈局優化版 --- */
+        .fab {
+            /* 1. 關鍵改動：使用 fixed 讓它固定在螢幕，不隨捲軸跑動 */
+            position: fixed; 
+            /* 2. 距離螢幕底部的距離：要避開底部導覽列 (85px + 安全距離) */
+            bottom: calc(100px + env(safe-area-inset-bottom)); 
+            /* 3. 距離螢幕右側的距離 */
+            right: 20px; 
+            /* 4. 確保它在最前面，不會被卡片遮住 */
+            z-index: 999; 
+            /* 其他樣式保持不變 */
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6B705C 0%, #4A4E40 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .fab:active { transform: scale(0.9); }
+        .fab.hidden { display: none; }
+
+        /* --- ✨ 針對記帳彈窗 (.expense-modal) 的神級佈局優化 --- */
+        #expense-modal .modal-panel {
+            /* 1️⃣ 關鍵：不要固定 90%，讓它自動變矮贴在底部，看起来更紧凑 */
+            height: auto;
+            max-height: calc(100% - env(safe-area-inset-top) - 10px); /* 留一點天花板防止內容過多 */
+        }
+
+        /* 2️⃣ Flex 子項目定義 (與 HTML 結構配合使用) */
+        #expense-modal .modal-panel > * { flex: 0 0 auto; } /* 標題和按鈕不拉伸 */
+
+        /* 核心：表單內容滾動區域 ✨ 讓它拉伸吃掉剩下的空間並滾動 */
+        #expense-modal .modal-content-scroll {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding-right: 1px; /* 保留滾動條空間 */
+            margin-top: -12px; /* 平衡 mb-6 */
+            margin-bottom: 24px; /* 預留與按鈕的距離，解決重疊感 */
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -397,16 +443,6 @@
                 <div id="chart-container" class="app-card p-4 mb-5 bg-white hidden"><canvas id="expenseChart" style="max-height: 250px;"></canvas></div>
                 <div class="flex gap-3 mb-5 overflow-x-auto pb-2 no-scrollbar"><button onclick="window.setPayerFilter('all')" id="chip-all" class="filter-chip active flex-shrink-0 shadow-sm">全部</button><button onclick="window.setPayerFilter('tina')" id="chip-tina" class="filter-chip flex-shrink-0 shadow-sm"><div class="font-black text-sm">Tina</div><div id="chip-tina-amt" class="text-[10px] font-bold mt-1 opacity-80"></div></button><button onclick="window.setPayerFilter('darren')" id="chip-darren" class="filter-chip flex-shrink-0 shadow-sm"><div class="font-black text-sm">Darren</div><div id="chip-darren-amt" class="text-[10px] font-bold mt-1 opacity-80"></div></button></div>
                 
-                <div class="app-card p-5 space-y-3 mb-5">
-                    <input type="date" id="exp-date" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold border border-gray-100">
-                    <input type="text" id="exp-item" placeholder="支出項目" class="w-full bg-gray-50 p-3 rounded-xl text-sm border border-gray-100">
-                    <select id="exp-category" class="w-full bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100"><option value="food">🍴 美食料理</option><option value="shop">🛍️ 購物採買</option><option value="massage">💆 舒壓按摩</option><option value="play">🎢 玩樂門票</option><option value="traffic">🚗 交通車資</option><option value="other">🎒 其他雜項</option></select>
-                    <div class="flex gap-2 pt-1"><select id="exp-currency" onchange="window.updateExchangePreview()" class="w-1/3 bg-gray-50 p-3 rounded-xl text-xs font-bold border border-gray-100"><option value="THB">THB</option><option value="TWD">TWD</option></select><input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm font-bold border border-gray-100"></div>
-                    <div id="exchange-hint" class="text-[10px] text-gray-400 italic px-1 h-2"></div>
-                    <div class="flex gap-2"><select id="exp-payer" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none"><option value="tina">Tina 支付 💰</option><option value="darren">Darren 支付 💳</option></select><select id="exp-split" class="w-1/2 bg-gray-100 p-3 rounded-xl text-xs font-black border-none outline-none text-[#6B705C]"><option value="split">👫 甜蜜平分</option><option value="treat">🎁 大方請客</option><option value="personal">👤 個人支出</option></select></div>
-                    <button onclick="window.addExpense()" id="btn-add-expense" class="w-full bg-[#2D3128] text-white py-3.5 rounded-xl font-bold shadow-md mt-2">新 增 記 帳</button>
-                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl font-bold hidden">取消修改</button>
-                </div>
                 <div id="exp-list"></div>
             </div>
 
@@ -426,7 +462,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.50</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.52</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -521,7 +557,61 @@
                 <div class="mt-8 text-gray-400 text-[10px] font-bold tracking-widest animate-pulse">點擊任何地方關閉</div>
             </div>
         </div>
+
+        <!-- 💰 記帳專屬抽屜 Modal -->
+        <div id="expense-modal" class="custom-modal" onclick="if(event.target === this) window.closeExpenseModal()">
+            <div class="modal-panel p-6 flex flex-col" onclick="event.stopPropagation()">
+                
+                <div class="modal-header flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="font-black text-xl text-[#4A4E40]">記下一筆甜蜜 🍯</h3>
+                        <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Add New Expense</p>
+                    </div>
+                    <button onclick="window.closeExpenseModal()" class="text-3xl text-gray-300">✕</button>
+                </div>
+
+                <div class="modal-content-scroll no-scrollbar"> 
+                    <div class="space-y-4"> 
+                        <input type="date" id="exp-date" class="w-full bg-gray-50 p-4 rounded-2xl text-base font-bold border border-gray-100 outline-none">
+                        <input type="text" id="exp-item" placeholder="買了什麼好東西？" class="w-full bg-gray-50 p-4 rounded-2xl text-base border border-gray-100 outline-none font-bold">
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <select id="exp-category" class="bg-gray-50 p-4 rounded-2xl text-sm font-bold border border-gray-100 outline-none">
+                                <option value="food">🍴 美食料理</option><option value="shop">🛍️ 購物採買</option>
+                                <option value="massage">💆 舒壓按摩</option><option value="play">🎢 玩樂門票</option>
+                                <option value="traffic">🚗 交通車資</option><option value="other">🎒 其他雜項</option>
+                            </select>
+                            <div class="flex items-center bg-gray-50 rounded-2xl border border-gray-100 px-3">
+                                <select id="exp-currency" onchange="window.updateExchangePreview()" class="bg-transparent text-sm font-black outline-none border-none">
+                                    <option value="THB">THB</option><option value="TWD">TWD</option>
+                                </select>
+                                <input type="number" id="exp-cost" oninput="window.updateExchangePreview()" placeholder="金額" class="w-full bg-transparent p-3 text-base font-black outline-none">
+                            </div>
+                        </div>
+                        
+                        <div id="exchange-hint" class="text-xs text-[#DDB892] font-black italic text-right px-2 h-4"></div>
+
+                        <div class="flex gap-3 mt-2">
+                            <select id="exp-payer" class="flex-1 bg-gray-100 p-4 rounded-2xl text-xs font-black border-none outline-none">
+                                <option value="tina">Tina 支付 💰</option><option value="darren">Darren 支付 💳</option>
+                            </select>
+                            <select id="exp-split" class="flex-1 bg-gray-100 p-4 rounded-2xl text-xs font-black border-none outline-none text-[#6B705C]">
+                                <option value="split">👫 甜蜜平分</option><option value="treat">🎁 大方請客</option><option value="personal">👤 個人支出</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer mt-auto pt-4 space-y-3">
+                    <button onclick="window.addExpense()" id="btn-add-expense" class="w-full bg-[#2D3128] text-white py-5 rounded-2xl font-black shadow-xl active:scale-95 transition-transform">儲 存 記 帳</button>
+                    <button onclick="window.cancelEditExpense()" id="btn-cancel-expense" class="w-full bg-gray-100 text-gray-500 py-4 rounded-2xl font-bold hidden">取消修改</button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- 🌟 真正懸浮的記帳按鈕 (移出 content-budget，擺脫容器限制) -->
+    <div id="expense-fab" class="fab hidden" onclick="window.openExpenseModal()">＋</div>
 
     <!-- 🌟 單一無敵模組腳本 -->
     <script type="module">
@@ -560,10 +650,20 @@
             const btn = document.getElementById('btn-' + id);
             if (btn) btn.classList.remove('opacity-30');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            const fab = document.getElementById('expense-fab');
+            if (fab) fab.classList.toggle('hidden', id !== 'budget');
         };
         window.toggleGemini = (f = false) => { const m = document.getElementById('gemini-modal'); if(f) m.classList.add('open'); else m.classList.toggle('open'); };
         window.toggleSection = (id) => { const el = document.getElementById(id+'-grid'); if(el) el.classList.toggle('active'); };
         
+        window.openExpenseModal = () => {
+            document.getElementById('expense-modal').classList.add('open');
+        };
+        window.closeExpenseModal = () => {
+            document.getElementById('expense-modal').classList.remove('open');
+        };
+
         window.showToast = (msg, icon = '✨') => {
             let toast = document.getElementById('app-toast');
             if (!toast) {
@@ -796,8 +896,8 @@
                 window.myChart = new Chart(document.getElementById('expenseChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' } });
             }
         };
-        window.editExpense = (id) => { const item = allExpenses.find(e => e.id === id); if (!item) return; editingExpenseId = id; document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost; document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency; document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; document.getElementById('exp-category').value = item.category || 'food'; document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-        window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); };
+        window.editExpense = (id) => { const item = allExpenses.find(e => e.id === id); if (!item) return; editingExpenseId = id; document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost; document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency; document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; document.getElementById('exp-category').value = item.category || 'food'; document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden'); window.openExpenseModal(); };
+        window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '儲 存 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); window.closeExpenseModal(); };
         
         window.addExpense = async () => { 
             const item = document.getElementById('exp-item').value; 
@@ -912,13 +1012,14 @@
 
             if (completedMissions.length > 0) {
                 html += `
-                    <div class="mt-8">
-                        <div class="flex items-center justify-between px-1 mb-3 cursor-pointer" onclick="window.toggleCompletedMissions()">
-                            <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-tighter flex items-center gap-2">
-                                ✅ 已完成任務 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[9px]">${completedMissions.length}</span>
-                            </h4>
-                            <span id="completed-missions-icon" class="text-gray-400 text-sm toggle-icon">▼</span>
-                        </div>
+        <!-- AI 助理 Modal -->
+        <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
+            <div id="gemini-panel" onclick="event.stopPropagation()">
+                <div class="p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.51</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
+                    </div>
                         <div id="completed-missions-list" class="hidden bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden opacity-70">
                             ${completedMissions.map(m => `
                                 <div class="p-3 flex items-center gap-3 border-b border-gray-200 last:border-0">
