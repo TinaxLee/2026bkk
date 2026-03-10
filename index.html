@@ -957,7 +957,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.78</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.79</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1391,18 +1391,19 @@
                 return `
                     <div class="app-card p-5 mb-4 relative border-t-[6px] border-[#4A4E40]/20">
                         <div class="flex justify-between items-center mb-6">
-                            <div class="flex items-center gap-1.5">
-                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1.5 rounded-lg font-black uppercase leading-none flex items-center">${f.code}</span>
-                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1.5 rounded-lg leading-none flex items-center">${dateDisplay}</span>` : ''}
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <span class="text-[10px] font-black text-[#B7B7A4] px-0 py-1.5 leading-none flex items-center uppercase tracking-tight">
-                                    SEAT: ${f.seat || '--'}
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="bg-[#4A4E40] text-white text-[11px] px-2.5 py-1.5 rounded-lg font-black uppercase leading-none flex items-center h-6">${f.code}</span>
+                                
+                                ${dateDisplay ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1.5 rounded-lg leading-none flex items-center h-6">${dateDisplay}</span>` : ''}
+                                
+                                <span class="bg-[#F1F3EF] text-[#6B705C] text-[10px] font-black px-2 py-1.5 rounded-lg leading-none flex items-center h-6 uppercase tracking-tighter">
+                                    ${f.seat ? 'SEAT: ' + f.seat : 'SEAT: --'}
                                 </span>
-                                <div class="flex border-l border-gray-100 ml-1 pl-1 items-center">
-                                    <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2 flex items-center">✎</button>
-                                    <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2 flex items-center">✕</button>
-                                </div>
+                            </div>
+                            
+                            <div class="flex border-l border-gray-100 ml-1 pl-1 items-center h-6">
+                                <button onclick="window.editFlight('${f.id}')" class="text-gray-400 p-2 flex items-center">✎</button>
+                                <button onclick="window.deleteItem('flights', '${f.id}')" class="text-gray-200 p-2 flex items-center">✕</button>
                             </div>
                         </div>
 
