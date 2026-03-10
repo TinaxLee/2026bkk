@@ -421,7 +421,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.41</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.42</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -810,7 +810,7 @@
             html += Object.keys(cats).map(key => { 
                 const items = pendingMissions.filter(m => m.category === key); 
                 if (items.length === 0 && key !== 'pre') return ''; 
-                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 text-sm text-[#4A4E40] font-bold">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-300 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
+                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 text-sm text-[#4A4E40] font-bold">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
             }).join('');
 
             if (completedMissions.length > 0) {
@@ -839,7 +839,7 @@
             container.innerHTML = html;
         };
 
-        // 🌟 強化語音引擎與防呆清洗 (解決沙啞老人音)
+        // 🌟 強化語音引擎與防呆清洗
         window.speakThai = (text) => { 
             if (!window.speechSynthesis) {
                 window.showToast("瀏覽器不支援語音功能", "🔇");
@@ -860,17 +860,16 @@
 
                 if (!isThai) {
                     const voices = window.speechSynthesis.getVoices();
-                    // 🌟 避開 iOS 預設的「Alex 沙啞老人音」，優先尋找好聽的女聲 (Samantha, Google US 等)
                     let niceVoice = voices.find(v => (v.name.includes('Samantha') || v.name.includes('Google US English')) && !v.name.includes('Alex'));
                     if (!niceVoice) niceVoice = voices.find(v => v.lang.startsWith('en') && !v.name.includes('Alex'));
 
                     if (niceVoice) utterance.voice = niceVoice;
-                    utterance.rate = 0.95; // 英文不能太慢，不然會像喝醉
+                    utterance.rate = 0.95; 
                 } else {
-                    utterance.rate = 0.8; // 泰文稍微放慢方便學習
+                    utterance.rate = 0.8; 
                 }
 
-                utterance.pitch = 1.05; // 稍微調高音調，讓聲音有精神一點
+                utterance.pitch = 1.05; 
                 window.speechSynthesis.speak(utterance); 
             }, 50); 
         };
@@ -879,7 +878,6 @@
             const isThai = /[\u0E00-\u0E7F]/.test(word);
             let displayText = word;
             
-            // 視覺上直接把 AI 亂加的連字號拔除
             if (!isThai) {
                 displayText = word.replace(/-/g, ''); 
             }
@@ -922,7 +920,6 @@
             chatHistory = []; 
         };
 
-        // 🌟 終極修復：對話渲染與格式清洗
         window.renderChatHistory = () => {
             const chat = document.getElementById('gemini-chat');
             if (!chat) return;
@@ -950,7 +947,6 @@
                             if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
                             const cd = JSON.parse(jsonStr);
                             
-                            // 防呆：如果歷史資料裡還是有 thai 屬性，當作備用
                             const transWord = cd.word || cd.thai || '';
                             const transMeaning = cd.meaning || '';
                             const transPhonetic = cd.phonetic || '';
