@@ -241,10 +241,15 @@
                     </button>
                 </div>
 
+                <!-- 🌟 行程時間新增了結束時間輸入框 -->
                 <div class="app-card p-5 bg-white/80 mb-5 border-dashed border-2 border-gray-200">
-                    <div class="flex gap-3 mb-3">
+                    <div class="flex gap-2 mb-3">
                         <select id="it-day" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none"></select>
-                        <input type="time" id="it-time-start" class="flex-1 bg-gray-50 input-base rounded-xl text-sm font-bold text-center">
+                        <div class="flex-1 flex items-center bg-gray-50 rounded-xl px-2 border border-gray-100">
+                            <input type="time" id="it-time-start" class="w-full bg-transparent text-sm font-bold text-center outline-none">
+                            <span class="text-gray-300 font-bold mx-1">-</span>
+                            <input type="time" id="it-time-end" class="w-full bg-transparent text-sm font-bold text-center outline-none">
+                        </div>
                     </div>
                     <div class="flex gap-3 mb-3">
                         <select id="it-type" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none">
@@ -421,7 +426,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.44</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.45</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -664,9 +669,71 @@
                 return `<div class="app-card p-4 mb-4 ${typeClass} timeline-item relative"><div class="flex justify-between items-start"><div class="flex-1"><div class="flex items-center gap-2 mb-1.5"><span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span><span class="tag tag-type">${typeLabel}</span></div><div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}</div><div class="flex flex-col gap-3 ml-2"><button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button><button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div></div><div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50"><a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a><button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button><button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link">💡 攻略</button></div></div>`;
             }).join('');
         };
-        window.editItinerary = (id) => { const item = itineraryData.find(i => i.id === id); if (!item) return; editingItineraryId = id; document.getElementById('it-day').value = item.day; document.getElementById('it-type').value = item.type; document.getElementById('it-activity').value = item.activity; if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || ''; if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || ''; if (item.time.includes('-')) { const times = item.time.split('-').map(t => t.trim()); document.getElementById('it-time-start').value = times[0]; document.getElementById('it-time-end').value = times[1]; } else { document.getElementById('it-time-start').value = item.time; if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; } document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-itinerary').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-        window.cancelEditItinerary = () => { editingItineraryId = null; document.getElementById('it-activity').value = ''; if (document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; if (document.getElementById('it-note')) document.getElementById('it-note').value = ''; if (document.getElementById('it-address')) document.getElementById('it-address').value = ''; document.getElementById('it-day').value = currentDayFilter; document.getElementById('btn-add-itinerary').innerText = '加入行程地圖'; document.getElementById('btn-cancel-itinerary').classList.add('hidden'); };
-        window.addItinerary = async () => { const act = document.getElementById('it-activity').value; if(!act || !currentUser) return; const addrEl = document.getElementById('it-address'); const addr = addrEl ? addrEl.value : ''; const dayVal = document.getElementById('it-day').value; const noteEl = document.getElementById('it-note'); const noteVal = noteEl ? noteEl.value : ''; const startTime = document.getElementById('it-time-start').value || '12:00'; const endTimeEl = document.getElementById('it-time-end'); const endTime = endTimeEl ? endTimeEl.value : ''; const timeVal = endTime ? `${startTime} - ${endTime}` : startTime; const typeVal = document.getElementById('it-type').value; const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal }; if (editingItineraryId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data); window.cancelEditItinerary(); } else { await addDoc(getColl('itinerary'), data); window.cancelEditItinerary(); } window.setDayFilter(dayVal); };
+        window.editItinerary = (id) => { 
+            const item = itineraryData.find(i => i.id === id); 
+            if (!item) return; 
+            editingItineraryId = id; 
+            document.getElementById('it-day').value = item.day; 
+            document.getElementById('it-type').value = item.type; 
+            document.getElementById('it-activity').value = item.activity; 
+            if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || ''; 
+            if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || ''; 
+            if (item.time.includes('-')) { 
+                const times = item.time.split('-').map(t => t.trim()); 
+                document.getElementById('it-time-start').value = times[0]; 
+                if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = times[1] || ''; 
+            } else { 
+                document.getElementById('it-time-start').value = item.time; 
+                if(document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; 
+            } 
+            document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅'; 
+            document.getElementById('btn-cancel-itinerary').classList.remove('hidden'); 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        };
+        window.cancelEditItinerary = () => { 
+            editingItineraryId = null; 
+            document.getElementById('it-activity').value = ''; 
+            if (document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; 
+            if (document.getElementById('it-note')) document.getElementById('it-note').value = ''; 
+            if (document.getElementById('it-address')) document.getElementById('it-address').value = ''; 
+            document.getElementById('it-day').value = currentDayFilter; 
+            document.getElementById('btn-add-itinerary').innerText = '加入行程地圖'; 
+            document.getElementById('btn-cancel-itinerary').classList.add('hidden'); 
+        };
+        
+        // 🌟 行程加入防呆與反饋提示
+        window.addItinerary = async () => { 
+            const act = document.getElementById('it-activity').value.trim(); 
+            if(!act) { window.showToast('請輸入景點或店名喔！', '⚠️'); return; }
+            if(!currentUser) { window.showToast('管家連線中，請稍後一秒再試', '⏳'); return; }
+            
+            const addrEl = document.getElementById('it-address'); const addr = addrEl ? addrEl.value : ''; 
+            const dayVal = document.getElementById('it-day').value; 
+            const noteEl = document.getElementById('it-note'); const noteVal = noteEl ? noteEl.value : ''; 
+            const startTime = document.getElementById('it-time-start').value || '12:00'; 
+            const endTimeEl = document.getElementById('it-time-end'); 
+            const endTime = endTimeEl ? endTimeEl.value : ''; 
+            const timeVal = endTime ? `${startTime} - ${endTime}` : startTime; 
+            const typeVal = document.getElementById('it-type').value; 
+            
+            const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal }; 
+            
+            try {
+                if (editingItineraryId) { 
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', editingItineraryId), data); 
+                    window.cancelEditItinerary(); 
+                    window.showToast('行程修改成功！', '✅');
+                } else { 
+                    await addDoc(getColl('itinerary'), data); 
+                    window.cancelEditItinerary(); 
+                    window.showToast('行程加入成功！', '🗺️');
+                } 
+                window.setDayFilter(dayVal);
+            } catch(e) {
+                console.error('行程儲存失敗:', e);
+                window.showToast('儲存失敗，請重試', '❌');
+            }
+        };
 
         window.renderFlights = () => {
             const list = document.getElementById('flights-list'); if (!list) return;
@@ -790,6 +857,36 @@
 
         window.editMission = (id) => { const item = missionsData.find(m => m.id === id); if (!item) return; editingMissionId = id; document.getElementById('mission-category').value = item.category; document.getElementById('mission-task').value = item.task; document.getElementById('btn-add-mission').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-mission').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditMission = () => { editingMissionId = null; document.getElementById('mission-task').value = ''; document.getElementById('mission-category').value = 'pre'; document.getElementById('btn-add-mission').innerText = '指 派 任 務'; document.getElementById('btn-cancel-mission').classList.add('hidden'); };
+        
+        // 🌟 任務加入防呆與反饋提示
+        window.addMission = async () => { 
+            const taskInput = document.getElementById('mission-task');
+            const task = taskInput.value.trim(); 
+            const cat = document.getElementById('mission-category').value; 
+            if(!task) {
+                window.showToast('請輸入任務內容喔！', '⚠️');
+                return;
+            }
+            if(!currentUser) {
+                window.showToast('管家連線中，請稍後一秒再試', '⏳');
+                return;
+            }
+            try {
+                if (editingMissionId) { 
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', editingMissionId), { task, category: cat }); 
+                    window.cancelEditMission(); 
+                    window.showToast('修改成功！', '✅');
+                } else { 
+                    await addDoc(getColl('missions'), { task, category: cat, checked: false, createdAt: Date.now() }); 
+                    taskInput.value = ''; 
+                    window.showToast('指派任務成功！', '✅');
+                } 
+            } catch(e) {
+                console.error('任務儲存失敗:', e);
+                window.showToast('儲存失敗，請重試', '❌');
+            }
+        };
+
         window.toggleMission = async (id, s) => { if(currentUser) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'missions', id), { checked: !s }); };
         window.toggleCompletedMissions = () => {
             const container = document.getElementById('completed-missions-list');
@@ -839,7 +936,6 @@
             container.innerHTML = html;
         };
 
-        // 🌟 強化語音引擎與防呆清洗
         window.speakThai = (text) => { 
             if (!window.speechSynthesis) {
                 window.showToast("瀏覽器不支援語音功能", "🔇");
@@ -1053,7 +1149,6 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                // 🌟 終極強制指令：新增專屬【圖片分析模式】，確保看圖不搞混！
                 const systemPrompt = `你是 Darren & Tina 的泰國蜜月管家。
 【身分與語氣】一般對話統稱「你們」或「Darren & Tina」。嚴禁叫Bae。使用台灣繁體中文，語氣熱情貼心。
 
