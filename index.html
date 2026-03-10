@@ -462,7 +462,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.52</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.55</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -544,6 +544,20 @@
                 <div class="text-5xl mb-4">🗑️</div><h3 class="font-black text-xl text-[#4A4E40] mb-3">確定刪除 <span id="delete-day-name-display" class="text-red-500"></span>？</h3>
                 <p class="text-sm text-gray-500 font-bold mb-8 leading-relaxed">不會刪除已綁定的行程資料。</p><input type="hidden" id="delete-day-target">
                 <div class="flex gap-4"><button onclick="window.closeDeleteModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold">取消</button><button onclick="window.confirmDeleteDay()" class="flex-1 bg-red-500 text-white py-3.5 rounded-xl text-sm font-bold shadow-sm">確認刪除</button></div>
+            </div>
+        </div>
+
+        <!-- 平帳確認 Modal (避免瀏覽器阻擋 confirm) -->
+        <div id="settle-confirm-modal" class="custom-modal">
+            <div class="centered-modal-content text-center p-6">
+                <div class="text-5xl mb-4">🤝</div>
+                <h3 class="font-black text-xl text-[#4A4E40] mb-3">甜蜜平帳</h3>
+                <p id="settle-confirm-text" class="text-sm text-gray-500 font-bold mb-8 leading-relaxed"></p>
+                <input type="hidden" id="settle-target-id">
+                <div class="flex gap-4">
+                    <button onclick="window.closeSettleModal()" class="flex-1 bg-gray-100 text-gray-600 py-3.5 rounded-xl text-sm font-bold active:scale-95 transition-transform">還沒還沒！</button>
+                    <button onclick="window.executeSettle()" class="flex-1 bg-[#6B705C] text-white py-3.5 rounded-xl text-sm font-bold shadow-sm active:scale-95 transition-transform">錢錢收到了 ❤️</button>
+                </div>
             </div>
         </div>
 
@@ -801,7 +815,6 @@
             document.getElementById('btn-cancel-itinerary').classList.add('hidden'); 
         };
         
-        // 🌟 行程加入防呆與反饋提示
         window.addItinerary = async () => { 
             const act = document.getElementById('it-activity').value.trim(); 
             if(!act) { window.showToast('請輸入景點或店名喔！', '⚠️'); return; }
@@ -857,18 +870,37 @@
             const list = document.getElementById('exp-list'); if(!list) return;
             let totalsByPayer = { tina: {}, darren: {} }, sharedTotalTHB = 0, tinaPaidSharedTHB = 0, darrenPaidSharedTHB = 0;
             const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
+            
+            // 🌟 更新統計大腦，支援單筆平帳標記
             const total = filtered.reduce((s, e) => {
-                const sType = e.splitType || 'split'; let thbEq = e.cost;
+                const sType = e.splitType || 'split';
+                const isSettled = e.isSettled === true; 
+                
+                let thbEq = e.cost;
                 if (e.currency === 'USD') thbEq = e.cost * window.ratesToTHB['USD'];
                 if (e.currency === 'TWD') thbEq = e.cost / window.ratesToTHB['TWD'];
-                if(!totalsByPayer[e.payer]) totalsByPayer[e.payer] = {}; 
-                if(!totalsByPayer[e.payer][e.currency]) totalsByPayer[e.payer][e.currency] = 0; 
-                totalsByPayer[e.payer][e.currency] += e.cost;
-                if (sType === 'split') { sharedTotalTHB += thbEq; if (e.payer === 'tina') tinaPaidSharedTHB += thbEq; if (e.payer === 'darren') darrenPaidSharedTHB += thbEq; }
-                return s + thbEq; 
+
+                if (!totalsByPayer['tina']) totalsByPayer['tina'] = {};
+                if (!totalsByPayer['darren']) totalsByPayer['darren'] = {};
+
+                if (sType === 'split') {
+                    if (isSettled) {
+                        totalsByPayer['tina'][e.currency] = (totalsByPayer['tina'][e.currency] || 0) + (e.cost / 2);
+                        totalsByPayer['darren'][e.currency] = (totalsByPayer['darren'][e.currency] || 0) + (e.cost / 2);
+                    } else {
+                        totalsByPayer[e.payer][e.currency] = (totalsByPayer[e.payer][e.currency] || 0) + e.cost;
+                        
+                        sharedTotalTHB += thbEq;
+                        if (e.payer === 'tina') tinaPaidSharedTHB += thbEq;
+                        if (e.payer === 'darren') darrenPaidSharedTHB += thbEq;
+                    }
+                } else {
+                    totalsByPayer[e.payer][e.currency] = (totalsByPayer[e.payer][e.currency] || 0) + e.cost;
+                }
+                return s + thbEq;
             }, 0);
 
-            const formatPayerSummary = (p) => { let lines = []; for(let curr in totalsByPayer[p]) lines.push(`${curr} ${Math.round(totalsByPayer[p][curr]).toLocaleString()}`); return lines.length > 0 ? lines.join(' / ') : '尚未支出'; };
+            const formatPayerSummary = (p) => { let lines = []; for(let curr in totalsByPayer[p]) if(totalsByPayer[p][curr]>0) lines.push(`${curr} ${Math.round(totalsByPayer[p][curr]).toLocaleString()}`); return lines.length > 0 ? lines.join(' / ') : '尚未支出'; };
             document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
             document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
             
@@ -881,10 +913,17 @@
             list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
                 let thbEq = exp.cost; if (exp.currency === 'USD') thbEq = exp.cost * window.ratesToTHB['USD']; if (exp.currency === 'TWD') thbEq = exp.cost / window.ratesToTHB['TWD'];
                 const sType = exp.splitType || 'split'; let typeBadge = '';
-                if (sType === 'split') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-gray-200 text-gray-600 rounded font-bold">平分</span>`;
+                
+                if (sType === 'split') {
+                    if (exp.isSettled) typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-green-100 text-green-600 rounded font-bold border border-green-200">已結清</span>`;
+                    else typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-gray-200 text-gray-600 rounded font-bold">平分</span>`;
+                }
                 else if (sType === 'treat') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-pink-100 text-pink-600 rounded font-bold border border-pink-200">請客</span>`;
                 else if (sType === 'personal') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-blue-100 text-blue-600 rounded font-bold border border-blue-200">個人</span>`;
-                return `<div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}"><div class="flex-1 pr-4"><div class="flex items-center gap-1 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40] ml-1">${exp.item}</div></div><div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter flex items-center">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div></div><div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div><div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3"><button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button><button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button></div></div>`;
+
+                let btnHtml = (sType === 'split' && !exp.isSettled) ? `<button onclick="window.settleSingleItem('${exp.id}')" class="text-lg hover:scale-110 transition-transform active:scale-95" title="甜蜜平帳">🤝</button>` : '';
+
+                return `<div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}"><div class="flex-1 pr-4"><div class="flex items-center gap-1 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40] ml-1">${exp.item}</div></div><div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter flex items-center">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div></div><div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div><div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3">${btnHtml}<button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button><button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button></div></div>`;
             }).join('');
 
             const chartContainer = document.getElementById('chart-container');
@@ -896,8 +935,54 @@
                 window.myChart = new Chart(document.getElementById('expenseChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' } });
             }
         };
+
+        // 🌟 自訂彈窗平帳邏輯 (聰明管家對白版)
+        window.settleSingleItem = (id) => {
+            const originalExp = allExpenses.find(e => e.id === id);
+            if (!originalExp) return;
+
+            // 💰 自動計算金額：這筆帳的總額除以 2
+            const halfAmount = Math.round(originalExp.cost / 2).toLocaleString(); 
+            const currency = originalExp.currency === 'THB' ? '฿' : originalExp.currency;
+            const isTinaPayer = originalExp.payer === 'tina'; 
+
+            let msg = "";
+            if (isTinaPayer) {
+                // 情況 A：Tina 先付錢，老公要還錢
+                msg = `報告老婆，霸氣老公已經用愛（還有 ${currency} ${halfAmount}）清償這筆債務了嗎？`;
+            } else {
+                // 情況 B：Darren 先付錢，Tina 要還錢
+                msg = `仙女 Tina 下凡撥款！這筆 ${currency} ${halfAmount} 已經交到最帥的 Darren 手中了吧？`;
+            }
+
+            // 將資料填入彈窗並開啟
+            document.getElementById('settle-target-id').value = id;
+            document.getElementById('settle-confirm-text').innerText = msg;
+            document.getElementById('settle-confirm-modal').classList.add('open');
+        };
+
+        window.closeSettleModal = () => {
+            document.getElementById('settle-confirm-modal').classList.remove('open');
+        };
+
+        window.executeSettle = async () => {
+            const id = document.getElementById('settle-target-id').value;
+            if (!id || !currentUser) return;
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id), {
+                    isSettled: true
+                });
+                window.closeSettleModal();
+                window.showToast(`這筆錢兩不相欠啦！💖`, "✨");
+            } catch (e) {
+                console.error("平帳失敗", e);
+                window.showToast("平帳失敗", "❌");
+            }
+        };
+
         window.editExpense = (id) => { const item = allExpenses.find(e => e.id === id); if (!item) return; editingExpenseId = id; document.getElementById('exp-item').value = item.item; document.getElementById('exp-cost').value = item.cost; document.getElementById('exp-payer').value = item.payer; document.getElementById('exp-currency').value = item.currency; document.getElementById('exp-date').value = item.date; document.getElementById('exp-split').value = item.splitType || 'split'; document.getElementById('exp-category').value = item.category || 'food'; document.getElementById('btn-add-expense').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-expense').classList.remove('hidden'); window.openExpenseModal(); };
-        window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '儲 存 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); window.closeExpenseModal(); };
+        window.cancelEditExpense = () => { editingExpenseId = null; document.getElementById('exp-item').value = ''; document.getElementById('exp-cost').value = ''; document.getElementById('exp-date').valueAsDate = new Date(); document.getElementById('exchange-hint').innerText = ''; document.getElementById('exp-split').value = 'split'; document.getElementById('exp-category').value = 'food'; document.getElementById('btn-add-expense').innerText = '新 增 記 帳'; document.getElementById('btn-cancel-expense').classList.add('hidden'); window.closeExpenseModal(); };
         
         window.addExpense = async () => { 
             const item = document.getElementById('exp-item').value; 
@@ -1012,14 +1097,13 @@
 
             if (completedMissions.length > 0) {
                 html += `
-        <!-- AI 助理 Modal -->
-        <div id="gemini-modal" onclick="if(event.target === this) window.toggleGemini()">
-            <div id="gemini-panel" onclick="event.stopPropagation()">
-                <div class="p-6 h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.51</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
-                        <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
-                    </div>
+                    <div class="mt-8">
+                        <div class="flex items-center justify-between px-1 mb-3 cursor-pointer" onclick="window.toggleCompletedMissions()">
+                            <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-tighter flex items-center gap-2">
+                                ✅ 已完成任務 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[9px]">${completedMissions.length}</span>
+                            </h4>
+                            <span id="completed-missions-icon" class="text-gray-400 text-sm toggle-icon">▼</span>
+                        </div>
                         <div id="completed-missions-list" class="hidden bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden opacity-70">
                             ${completedMissions.map(m => `
                                 <div class="p-3 flex items-center gap-3 border-b border-gray-200 last:border-0">
@@ -1043,36 +1127,31 @@
                 window.showToast("瀏覽器不支援語音功能", "🔇");
                 return; 
             }
-            // 停止目前正在播放的聲音，避免重疊
             window.speechSynthesis.cancel(); 
             
-            // 延遲一小段時間再播放，這能解決 iOS 有時卡住的問題
             setTimeout(() => {
                 const isThai = /[\u0E00-\u0E7F]/.test(text);
                 let spokenText = text;
 
-                // 如果不是泰文（例如英文翻譯），過濾掉多餘的符號
                 if (!isThai) {
-                    spokenText = text.replace(/-/g, ' '); 
+                    spokenText = text.replace(/-/g, ''); 
                 }
 
                 const utterance = new SpeechSynthesisUtterance(spokenText); 
                 utterance.lang = isThai ? 'th-TH' : 'en-US'; 
 
-                // 🌟 語音參數優化
-                if (isThai) {
-                    utterance.rate = 0.85;  // 泰文稍微放慢，讓你們聽得清楚發音
-                    utterance.pitch = 1.1;   // 音調稍微拉高，聽起來比較有朝氣，不像死板機器人
-                } else {
-                    // 英文發音設定
+                if (!isThai) {
                     const voices = window.speechSynthesis.getVoices();
-                    // 優先尋找好聽的英文女聲 (如 Samantha)
-                    let niceVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google US English'));
+                    let niceVoice = voices.find(v => (v.name.includes('Samantha') || v.name.includes('Google US English')) && !v.name.includes('Alex'));
+                    if (!niceVoice) niceVoice = voices.find(v => v.lang.startsWith('en') && !v.name.includes('Alex'));
+
                     if (niceVoice) utterance.voice = niceVoice;
                     utterance.rate = 0.95; 
-                    utterance.pitch = 1.0;
+                } else {
+                    utterance.rate = 0.8; 
                 }
 
+                utterance.pitch = 1.05; 
                 window.speechSynthesis.speak(utterance); 
             }, 50); 
         };
