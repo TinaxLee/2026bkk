@@ -697,6 +697,26 @@
             right: 8px !important;
             transform: scale(0.85);
         }
+
+        /* 🌟 強制修正行動端日期輸入框的寬度與樣式 */
+        #departure-date-input {
+            min-width: 0 !important; /* 防止被瀏覽器預設寬度撐開 */
+            -webkit-appearance: none; /* 去除 iOS 預設陰影 */
+        }
+
+        /* 隱藏某些瀏覽器內建的月曆圖示，讓畫面更乾淨 */
+        #departure-date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -981,7 +1001,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v8.5</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v8.6</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1053,7 +1073,7 @@
                 <div class="flex justify-between items-center mb-5"><h3 class="font-black text-xl text-[#4A4E40]">⚙️ 設定中心</h3><button onclick="window.toggleDayManager()" class="text-3xl text-gray-300 active:text-gray-500 transition-colors">✕</button></div>
                 <div class="bg-[#F1F3EF] p-4 rounded-2xl mb-6 border border-[#B7B7A4]">
                     <div class="text-[10px] font-black text-[#6B705C] mb-2 uppercase tracking-wider">✈️ 設定蜜月出發日</div>
-                    <input type="date" id="departure-date-input" onchange="window.saveDepartureDate(this.value)" class="w-full p-3 bg-white rounded-xl text-sm font-bold border border-gray-100 outline-none">
+                    <input type="date" id="departure-date-input" onchange="window.saveDepartureDate(this.value)" class="block w-full box-border p-3 bg-white rounded-xl text-sm font-bold border border-gray-100 outline-none appearance-none">
                     <div class="text-[9px] text-gray-400 mt-2 font-bold italic">設定後，首頁會自動顯示倒數天數喔！</div>
                 </div>
                 <div class="text-[10px] font-black text-gray-400 mb-2 uppercase tracking-wider px-1">📅 天數名稱管理</div>
