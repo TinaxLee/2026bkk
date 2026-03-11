@@ -690,6 +690,17 @@
             min-height: 70px !important;
             margin-bottom: 1rem !important;
         }
+        
+        /* 🌟 天氣城市名放大：更有高級感 */
+        .weather-card span.text-\[10px\] {
+            font-size: 16px !important; /* 原本只有 10px */
+            font-weight: 900 !important;
+            letter-spacing: 0.1em; /* 增加字距 */
+            text-transform: uppercase;
+            opacity: 1 !important; /* 讓顏色更紮實 */
+            margin-bottom: 4px;
+            display: block;
+        }
 
         /* 讓右上角的 LIVE 燈稍微縮小一點，配合精悍版 */
         #weather-status-tag {
@@ -830,6 +841,88 @@
             padding: 2px 8px;
             border-radius: 6px;
         }
+
+        /* 🌟 行程卡片：黃金比例微調 */
+
+        /* 1. 時間範圍 (17:00 - 18:30) - 調降至 17px */
+        .schedule-item-time {
+            font-size: 17px !important; 
+            font-weight: 800 !important;
+            color: #333 !important;
+            letter-spacing: -0.01em;
+        }
+
+        /* 2. 分類標籤 (景點/備註) - 調降至 12px，維持精緻感 */
+        .schedule-item-badge {
+            font-size: 15px !important;    /* 這裡調大字體 */
+            padding: 4px 12px !important;  /* 增加左右空間，讓長度跟著字變 */
+            font-weight: 900 !important;   /* 讓字體更黑、更清楚 */
+            background: #FFFFFF !important;
+            border-radius: 8px !important;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
+            white-space: nowrap;           /* 確保文字不會因為變大而自動換行 */
+        }
+
+        /* 3. 行程大標題 (Tichuca 水母酒吧) - 調降至 20px */
+        .schedule-item-title {
+            font-size: 20px !important;
+            font-weight: 900 !important;
+            line-height: 1.4 !important; /* 增加行高，讓兩行字不相撞 */
+            margin-top: 6px !important;
+            color: #2D3128 !important;
+            letter-spacing: -0.02em;
+        }
+
+        /* 4. 下方備註小字 (必須檢查護照...) - 調降至 14.5px */
+        .schedule-item-note {
+            font-size: 14.5px !important;
+            font-weight: 500 !important;
+            line-height: 1.6 !important;
+            color: #555 !important;
+            margin-top: 6px !important;
+        }
+
+        /* 5. 底部按鈕 (導航/複製) - 稍微縮小一點點 */
+        .action-button-text {
+            font-size: 13px !important;
+            font-weight: 700 !important;
+        }
+
+        /* 增加卡片左右的呼吸空間 */
+        .schedule-card {
+            padding: 20px !important;
+            margin-bottom: 15px !important;
+        }
+
+        /* 🌟 修正後的並排按鈕樣式 */
+        .notes-display-btn-v2 {
+            /* 取消之前的固定寬度與大邊距 */
+            width: 100% !important; 
+            margin: 0 !important; 
+            padding: 10px 0 !important;
+            letter-spacing: 1px !important; /* 並排時字距縮小一點點，才不會換行 */
+            font-size: 13px !important;
+            text-indent: 0 !important;
+            
+            /* 維持質感顏色 */
+            color: #F8AD9D !important;
+            background: rgba(248, 173, 157, 0.08) !important;
+            border: 1.5px solid rgba(248, 173, 157, 0.3) !important;
+            border-radius: 16px !important;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 讓相機 Emoji 稍微帶點透明度，不要太突兀 */
+        .notes-display-btn-v2 span {
+            font-size: 16px;
+            margin-left: 2px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -907,15 +1000,13 @@
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
                 
-                <div id="day-map-action" class="mb-5 px-1">
-                    <button onclick="window.viewDayMap()" class="w-full bg-white border-2 border-[#6B705C] text-[#6B705C] py-3 rounded-2xl font-black text-sm shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-95">
-                        🗺️ 查看 <span id="current-day-label">Day 1</span> 全日路線預覽
+                <div class="flex gap-3 px-1 mb-6 mt-2">
+                    <button onclick="window.viewDayMap()" class="flex-[1.8] bg-white border-2 border-[#6B705C] text-[#6B705C] py-3 rounded-2xl font-black text-[13px] shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                        🗺️ <span id="current-day-label">Day 1</span> 路線預覽
                     </button>
-                </div>
-
-                <div class="mb-5 px-1">
-                    <button onclick="window.switchTab('memories')" class="w-full bg-white border-2 border-dashed border-[#DDB892] text-[#b08d55] py-3 rounded-2xl font-black text-xs shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-95">
-                        📖 蜜月隨手筆記 (在這裡紀錄瞬間喔！)
+                    
+                    <button onclick="window.switchTab('memories')" class="notes-display-btn-v2 flex-1 shadow-sm active:scale-95 transition-transform">
+                        紀錄<span>📸</span>
                     </button>
                 </div>
 
@@ -1114,11 +1205,11 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v9.93</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v10.2</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
-                    <!-- 🌟 隨身翻譯機 -->
+                    <!-- 🌟 隨身翻譯機 (完美修復顯示) -->
                     <div class="px-1 mb-4">
                         <div class="bg-white p-2 rounded-2xl flex gap-2 border-2 border-[#DDB892]/50 shadow-sm items-center">
                             <select id="translate-lang-selector" class="bg-gray-100 px-2 py-1 rounded-lg text-lg outline-none font-bold">
@@ -1487,14 +1578,45 @@
             const list = document.getElementById('it-list'); if (!list) return;
             const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
             if (sorted.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`; return; }
+            
+            // 1. 定義分類與樣式對照表 (確保與 select 的 value 對應)
+            const categoryMap = { 'view': '📸 景點', 'food': '🍴 美食', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'note': '📝 備註', 'itinerary': '📍 行程' };
+            const classMap = { 'view': 'timeline-view', 'food': 'timeline-food', 'shop': 'timeline-shop', 'massage': 'timeline-massage', 'play': 'timeline-play', 'note': 'timeline-note' };
+
             list.innerHTML = sorted.map(item => {
                 const safeAddr = (item.address || "").replace(/'/g, "\\'"); const safeAct = item.activity.replace(/'/g, "\\'");
                 const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
-                let typeClass = '', typeLabel = '';
-                switch(item.type) { case 'food': typeClass = 'timeline-food'; typeLabel = '🍴 美食'; break; case 'shop': typeClass = 'timeline-shop'; typeLabel = '🛍️ 購物'; break; case 'view': typeClass = 'timeline-view'; typeLabel = '📸 景點'; break; case 'massage': typeClass = 'timeline-massage'; typeLabel = '💆 按摩'; break; case 'play': typeClass = 'timeline-play'; typeLabel = '🎢 玩樂'; break; case 'note': typeClass = 'timeline-note'; typeLabel = '📝 備註'; break; default: typeClass = 'timeline-view'; typeLabel = '📍 行程'; }
-                return `<div class="app-card p-4 mb-4 ${typeClass} timeline-item relative"><div class="flex justify-between items-start"><div class="flex-1"><div class="flex items-center gap-2 mb-1.5"><span class="text-[15px] font-bold text-gray-500 tracking-widest">${item.time}</span><span class="tag tag-type">${typeLabel}</span></div><div class="font-black text-[#4A4E40] text-xl leading-tight">${item.activity}</div>${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}${item.note ? `<div class="text-sm text-gray-500 font-bold mt-1.5 italic">📝 ${item.note}</div>` : ''}</div><div class="flex flex-col gap-3 ml-2"><button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button><button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button></div></div><div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50"><a href="${mapUrl}" target="_blank" class="action-link">📍 導航</a><button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link">📋 複製地址</button><button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link">💡 攻略</button></div></div>`;
+                
+                // 2. 根據資料抓取對應的文字與顏色類別
+                const currentCategory = categoryMap[item.type] || '📍 行程';
+                const typeClass = classMap[item.type] || 'timeline-view';
+
+                return `
+                    <div class="app-card schedule-card ${typeClass} timeline-item relative">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <div class="schedule-item-time">${item.time}</div>
+                                    <span class="schedule-item-badge">${currentCategory}</span>
+                                </div>
+                                <div class="schedule-item-title">${item.activity}</div>
+                                ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
+                                ${item.note ? `<div class="schedule-item-note">📝 ${item.note}</div>` : ''}
+                            </div>
+                            <div class="flex flex-col gap-3 ml-2">
+                                <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
+                                <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
+                            <a href="${mapUrl}" target="_blank" class="action-link action-button-text">📍 導航</a>
+                            <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link action-button-text">📋 複製地址</button>
+                            <button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link action-button-text">💡 攻略</button>
+                        </div>
+                    </div>`;
             }).join('');
         };
+        
         window.editItinerary = (id) => { 
             const item = itineraryData.find(i => i.id === id); 
             if (!item) return; 
