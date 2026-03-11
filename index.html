@@ -1205,7 +1205,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v10.2</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v10.3</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2560,6 +2560,13 @@
                 }
             }).join('');
             chat.scrollTop = chat.scrollHeight;
+        };
+
+        // 🌟 補齊遺失的「查詢附近美食」功能函式
+        window.getFoodRecommendation = (place) => {
+            if (!place) return;
+            const prompt = `我們現在在「${place}」附近，請推薦 3 家走路能到的高評價必吃美食或餐廳。請註明：大約價位、必點菜色，最後請給 MAP_SEARCH 代碼方便我們導航！`;
+            window.askGemini(prompt, true, `🍴 查詢「${place}」附近美食`);
         };
 
         window.confirmAIExpense = async (jsonStr, btn) => {
