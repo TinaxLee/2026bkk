@@ -683,6 +683,20 @@
         #flights-list span.text-\[10px\].font-black {
             font-family: 'Montserrat', sans-serif !important;
         }
+
+        /* 讓天氣卡片變窄，不再佔據大面積 */
+        .weather-card {
+            padding: 12px 16px !important;
+            min-height: 70px !important;
+            margin-bottom: 1rem !important;
+        }
+
+        /* 讓右上角的 LIVE 燈稍微縮小一點，配合精悍版 */
+        #weather-status-tag {
+            top: 6px !important;
+            right: 8px !important;
+            transform: scale(0.85);
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -745,12 +759,17 @@
         <main class="p-4">
             <!-- 行程分頁 -->
             <div id="content-itinerary" class="tab-content">
-                <div class="weather-card flex justify-between items-center shadow-lg cursor-pointer active:scale-[0.98] transition-transform" 
-                     onclick="window.getWeather(); window.showToast('正在重新同步天氣...', '🌤️')">
-                    <div id="weather-display">
-                        <div class="text-xl font-black text-white">正在抓取天氣...</div>
+                <div class="weather-card relative shadow-lg cursor-pointer active:scale-[0.98] transition-transform overflow-hidden" 
+                     onclick="window.getWeather(); window.askGemini('我們現在在泰國，請根據曼谷與普吉目前的即時氣象，給予最帥氣的 Darren 和最美的 Tina 最貼心的蜜月穿搭建議與防護提醒！', false, '🌤️ 獲取蜜月穿搭建議')">
+                    
+                    <div id="weather-status-tag" class="absolute top-3 right-3 flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full border border-white/10 z-10">
+                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                        <span class="text-[9px] font-bold text-white uppercase tracking-tighter">LIVE</span>
                     </div>
-                    <div class="text-4xl filter drop-shadow-md">🌤️</div>
+
+                    <div id="weather-display" class="w-full">
+                        <div class="text-center text-white/50 py-4 italic text-sm">正在讀取雙城氣象...</div>
+                    </div>
                 </div>
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
@@ -767,8 +786,13 @@
                     </button>
                 </div>
 
-                <!-- 🌟 行程時間新增了結束時間輸入框 -->
-                <div class="app-card p-5 bg-white/80 mb-5 border-dashed border-2 border-gray-200">
+                <div class="flex justify-between items-center mb-4 px-1 mt-6">
+                    <h3 class="text-base font-black text-[#4A4E40]">今日行程 🗺️</h3>
+                    <button onclick="window.toggleSection('itinerary')" class="text-xs bg-[#6B705C] text-white px-4 py-1.5 rounded-full font-bold shadow-sm">＋新增行程</button>
+                </div>
+
+                <!-- 🌟 行程時間新增了結束時間輸入框並改為隱藏面板 -->
+                <div id="itinerary-grid" class="expand-panel app-card p-5 bg-white/80 mb-5 border-dashed border-2 border-gray-200">
                     <div class="flex gap-2 mb-3">
                         <select id="it-day" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none"></select>
                         <div class="flex-1 flex items-center bg-gray-50 rounded-xl px-2 border border-gray-100">
@@ -957,7 +981,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.79</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.88</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1222,36 +1246,49 @@
             const now = new Date();
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-            try { 
-                // 抓取曼谷與普吉島即時天氣
-                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m&timezone=Asia%2FBangkok"); 
-                if (!res.ok) throw new Error();
-                
-                const data = await res.json(); 
-                const bkkTemp = Math.round(data[0].current.temperature_2m);
-                const hktTemp = Math.round(data[1].current.temperature_2m);
+            const getEmoji = (code) => {
+                if (code === 0) return '☀️';
+                if (code <= 3) return '🌤️';
+                if (code >= 51 && code <= 67) return '🌧️';
+                if (code >= 95) return '⛈️';
+                return '🌤️';
+            };
 
+            try { 
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FBangkok"); 
+                if (!res.ok) throw new Error();
+                const data = await res.json(); 
+
+                // 🌟 打造極簡但資訊充足的雙城介面
                 weatherEl.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <div class="text-xl font-black text-white">曼谷 ${bkkTemp}°C / 普吉 ${hktTemp}°C</div>
-                        <div class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full">
-                            <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                            <span class="text-[9px] font-bold text-white uppercase tracking-tighter">LIVE</span>
+                    <div class="flex w-full items-center py-1">
+                        <div class="flex-1 flex items-center justify-center gap-3 border-r border-white/10">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[10px] font-black text-white/50 tracking-widest mb-0.5">曼谷</span>
+                                <span class="text-2xl font-black text-white leading-none">${Math.round(data[0].current.temperature_2m)}°</span>
+                                <span class="text-[9px] font-bold text-white/40 mt-1">${Math.round(data[0].daily.temperature_2m_min[0])}° ~ ${Math.round(data[0].daily.temperature_2m_max[0])}°</span>
+                            </div>
+                            <div class="text-3xl filter drop-shadow-sm">${getEmoji(data[0].current.weather_code)}</div>
+                        </div>
+
+                        <div class="flex-1 flex items-center justify-center gap-3">
+                            <div class="flex flex-col items-center">
+                                <span class="text-[10px] font-black text-white/50 tracking-widest mb-0.5">普吉</span>
+                                <span class="text-2xl font-black text-white leading-none">${Math.round(data[1].current.temperature_2m)}°</span>
+                                <span class="text-[9px] font-bold text-white/40 mt-1">${Math.round(data[1].daily.temperature_2m_min[0])}° ~ ${Math.round(data[1].daily.temperature_2m_max[0])}°</span>
+                            </div>
+                            <div class="text-3xl filter drop-shadow-sm">${getEmoji(data[1].current.weather_code)}</div>
                         </div>
                     </div>
-                    <div class="text-[11px] mt-1 font-bold opacity-70 text-white">管家已為您同步最新氣候 • ${timeStr}</div>
-                `; 
-            } catch(e) { 
-                // 抓不到時的誠實告白
-                weatherEl.innerHTML = `
-                    <div class="text-xl font-black text-white/90">曼谷 33°C / 普吉 31°C</div>
-                    <div class="text-[11px] mt-1 font-bold opacity-70 text-white italic">
-                        📡 連線稍慢，顯示預設溫度中 (${timeStr})
+                    <div class="absolute bottom-1 right-3 text-[7px] font-bold text-white/20 tracking-widest uppercase">
+                        Sync • ${timeStr}
                     </div>
                 `; 
-                console.log("天氣連線受限，已啟用離線預設值");
+            } catch(e) { 
+                weatherEl.innerHTML = `<div class="text-center text-white/30 py-6 text-[10px] tracking-widest uppercase italic">Weather Offline</div>`; 
             } 
         };
+        
         window.calcIndependentRate = () => { const v = parseFloat(document.getElementById('conv-input').value) || 0; const c = document.getElementById('conv-curr').value; const r = document.getElementById('conv-res'); if (c === 'THB') r.innerText = `台幣 NT$ ${Math.round(v * window.ratesToTHB['TWD']).toLocaleString()}`; else if (c === 'USD') r.innerText = `泰銖 ฿ ${Math.round(v * window.ratesToTHB['USD']).toLocaleString()}`; else r.innerText = `泰銖 ฿ ${Math.round(v / window.ratesToTHB['TWD']).toLocaleString()}`; };
         window.updateExchangePreview = () => { const v = parseFloat(document.getElementById('exp-cost').value) || 0; const c = document.getElementById('exp-currency').value; const hint = document.getElementById('exchange-hint'); if (c === 'THB') hint.innerText = ''; else hint.innerText = `≈ ฿ ${Math.round(c === 'USD' ? v * window.ratesToTHB['USD'] : v / window.ratesToTHB['TWD']).toLocaleString()}`; };
         window.fetchLiveRates = async () => {
@@ -1337,7 +1374,9 @@
             } 
             document.getElementById('btn-add-itinerary').innerText = '確認修改 ✅'; 
             document.getElementById('btn-cancel-itinerary').classList.remove('hidden'); 
-            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            
+            if(!document.getElementById('itinerary-grid').classList.contains('active')) window.toggleSection('itinerary');
+            document.getElementById('itinerary-grid').scrollIntoView({ behavior: 'smooth', block: 'center' }); 
         };
         window.cancelEditItinerary = () => { 
             editingItineraryId = null; 
@@ -1377,6 +1416,7 @@
                     window.showToast('行程加入成功！', '🗺️');
                 } 
                 window.setDayFilter(dayVal);
+                document.getElementById('itinerary-grid').classList.remove('active');
             } catch(e) {
                 console.error('行程儲存失敗:', e);
                 window.showToast('儲存失敗，請重試', '❌');
@@ -1925,7 +1965,7 @@
                             const expData = JSON.parse(jsonStr);
                             const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             expenseBtnHtml += `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
-                        } catch (e) { console.error("歷史記帳解析失敗", e); }
+                        } catch (e) { console.error("歷史記 পঞ্চাশ解析失敗", e); }
                     }
 
                     // 🌟 更強大的 MAP_SEARCH 解析
@@ -2047,38 +2087,34 @@
                 chatHistory.push({ role: "user", content: displayOverride || query || "傳送了照片", imgUrl: imgUrlForDisplay });
                 if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-                const systemPrompt = `你是 Darren & Tina 的專屬泰國蜜月管家。妳的個性古靈精怪、嘴甜如蜜、求生欲極強。
+                const systemPrompt = `你是 Darren & Tina 的專屬泰國蜜月管家。妳的個性古靈精怪、嘴甜如蜜、具備極高時尚品味，且把「守護 Tina 的色階」視為最高使命。
 
-【核心禁令】
-1. ❌ 絕對禁止使用 "Bae" 這個詞。
-2. 對話統稱「你們」或直接稱呼「Darren & Tina」。
-3. 提到 Tina 時，隨機冠上：仙女、女神、最美老婆。
-4. 提到 Darren 時，隨機冠上：霸氣老公、最帥老公、最強肩膀。
+【核心稱呼 - 隨機選用】
+1. 稱呼 Tina：老婆、Darren 的掌上明珠、最美 Tina、Tina 女神、封面女主角、全能女主人、家裡的最高領導、寵夫魔人。
+2. 稱呼 Darren：霸總、老公、型男 Darren、配件之王、霸氣老公、超能老公、寵妻魔人、行走的賀爾蒙。
+3. 統稱：你們、最甜夫妻。
 
-【一般問答 & 地圖導航模式】
-如果詢問景點、美食（如「鄭王廟」、「船麵」）、天氣等，請發揮在地導遊專業給出熱情介紹與建議。
-⚠️ 絕對不要在此模式輸出 SHOW_CARD。
-⚠️ 只要回覆中介紹了具體的「店名」或「景點」，【必須】在回覆的最末端獨立一行嚴格附上地圖代碼（格式必須是 JSON）：
-MAP_SEARCH: {"name": "地點名稱"}
+【穿搭建議 - 靈魂細節】
+妳的建議必須包含以下深度細節：
+1. 🧔 Darren 霸總標配：
+   - 務必提醒檢查「型男四件套」：耳環、項鍊、手錶、墨鏡。
+   - 根據行程建議配件材質（如：大皇宮選金屬質感，海灘選運動機能）。
+2. 👩 Tina 精緻細節：
+   - 提醒配戴項鍊、耳環等點綴飾品。
+   - ⚠️【防曬生死門】：語氣要帶點威脅的體貼！例如：「女神請注意，今天的太陽是毀滅級的，防曬沒塗滿不准出門！妳曬黑真的很難白回來，要是女神變黑了，我會讓霸總 Darren 被罰揹妳一整天！」
+3. 📸 情侶出片（雜誌風）穿搭：
+   - 建議兩人的色系互補或同色系。
+   - 提醒他們怎麼站位、怎麼穿才能在景點拍出「人生大片」。
 
-【翻譯字卡模式】
-⚠️「只有」當明確要求翻譯時才提供 SHOW_CARD。
-1. 翻譯要極度準確、道地且口語化。英文必須是標準單字（禁止自創連字號，如 Air-plane）。
-2. 必須直接輸出 JSON 格式代碼：SHOW_CARD: {"word":"單字","meaning":"中文意思","phonetic":"發音"}。絕對禁止在代碼外加「泰文：xxx」等廢話！
+【一般問答 & 地圖模式】
+1. 只要介紹具體的「店名」或「景點」，最末端必須獨立一行附上：MAP_SEARCH: {"name": "地點名稱"}。
+2. 翻譯必須使用 JSON 字卡：SHOW_CARD: {"word":"單字","meaning":"意思","phonetic":"發音"}。
 
-【圖片分析與記帳馬屁任務】
-若是『收據/結帳單』或用戶說『記帳』，觸發：SAVE_EXPENSE: {"item":"晚餐","cost":500,"currency":"THB","category":"food","payer":"darren","splitType":"split"}
-並隨機挑選以下馬屁加入對話：
-🧔 Darren：霸氣總裁、行動支付男神、刷卡不眨眼的男人、Darren 帥出新高度、泰國最強金主、護妻狂魔、餵飽老婆的男人最有魅力、大器的男人連點餐都帥。
-👩 Tina：仙女下凡買單、最美掌櫃、Tina 仙女本仙、優雅的支付手勢、泰國街頭最美風景、預算女王、跟著仙女吃香辣、仙女的戰利品就是有質感。
-
-【😈 隨機搞事任務 - 驚喜派頻率】
-⚠️ 每 6-8 次對話左右，才隨機在結尾指派一個任務（要像個真正的驚喜，不要太常出現）：
-- 給 Darren：例如「幫仙女拍 10 張美照」、「幫老婆揹包包」、「回飯店幫仙女揉揉肩」。
-- 給 Tina：例如「給帥氣 Darren 一個愛的鼓勵/親親」、「幫辛苦導航的老公擦個汗」、「幫老公買份路邊小吃獎勵他」。
+【記帳馬屁】
+觸發 SAVE_EXPENSE 時，猛誇「霸總 Darren 刷卡姿勢真帥」或「老婆Tina 理財有方」。
 
 【隨機碎碎念】
-結尾隨機提醒：防曬☀️、多喝水💧、檢查隨身包👜。`;
+結尾隨機：多喝水💧、這區扒手多要注意安全👜、Darren、Tina記得隨時補防曬⛱️。`;
 
                 const apiMessages = chatHistory.map(m => ({ role: m.role, content: m.content }));
 
