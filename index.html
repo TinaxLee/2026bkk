@@ -873,6 +873,7 @@
             margin-top: 6px !important;
             color: #2D3128 !important;
             letter-spacing: -0.02em;
+            word-break: break-word; /* 🌟 解決長標題撐破排版 */
         }
 
         /* 4. 下方備註小字 (必須檢查護照...) - 調降至 14.5px */
@@ -882,6 +883,8 @@
             line-height: 1.6 !important;
             color: #555 !important;
             margin-top: 6px !important;
+            word-break: break-word; /* 🌟 解決長網址撐破排版，強制換行 */
+            overflow-wrap: anywhere;
         }
 
         /* 5. 底部按鈕 (導航/複製) - 稍微縮小一點點 */
@@ -1205,7 +1208,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v10.3</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v10.4</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1594,16 +1597,16 @@
                 return `
                     <div class="app-card schedule-card ${typeClass} timeline-item relative">
                         <div class="flex justify-between items-start">
-                            <div class="flex-1">
+                            <div class="flex-1 min-w-0 pr-2"> <!-- 🌟 關鍵：min-w-0 防止被長網址撐開 -->
                                 <div class="flex items-center gap-2 mb-1.5">
                                     <div class="schedule-item-time">${item.time}</div>
                                     <span class="schedule-item-badge">${currentCategory}</span>
                                 </div>
                                 <div class="schedule-item-title">${item.activity}</div>
-                                ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5">📍 ${item.address}</div>` : ''}
+                                ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5 whitespace-normal break-all">📍 ${item.address}</div>` : ''}
                                 ${item.note ? `<div class="schedule-item-note">📝 ${item.note}</div>` : ''}
                             </div>
-                            <div class="flex flex-col gap-3 ml-2">
+                            <div class="flex flex-col gap-3 ml-2 shrink-0"> <!-- 🌟 關鍵：shrink-0 保證按鈕絕對不被擠壓 -->
                                 <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
                                 <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
                             </div>
