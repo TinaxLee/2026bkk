@@ -981,7 +981,7 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v7.88</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v8.5</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1586,22 +1586,33 @@
             window.toggleSection('hotel'); 
         };
 
+        // 🌟 控制日期群組收合的開關
+        window.toggleDateGroup = (date) => {
+            const content = document.getElementById(`group-content-${date}`);
+            const icon = document.getElementById(`group-icon-${date}`);
+            if (!content || !icon) return;
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(0deg)'; // 展開：箭頭向下
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(-90deg)'; // 收合：箭頭向左
+            }
+        };
+
         window.renderExpenses = () => {
             const list = document.getElementById('exp-list'); if(!list) return;
             let totalsByPayer = { tina: {}, darren: {} }, sharedTotalTHB = 0, tinaPaidSharedTHB = 0, darrenPaidSharedTHB = 0;
             const filtered = currentPayerFilter === 'all' ? allExpenses : allExpenses.filter(e => e.payer === currentPayerFilter);
             
-            // 🌟 更新統計大腦，支援單筆平帳標記
-            const total = filtered.reduce((s, e) => {
+            // 1. 計算統計
+            filtered.forEach(e => {
                 const sType = e.splitType || 'split';
-                const isSettled = e.isSettled === true; 
-                
+                const isSettled = e.isSettled === true;
                 let thbEq = e.cost;
                 if (e.currency === 'USD') thbEq = e.cost * window.ratesToTHB['USD'];
                 if (e.currency === 'TWD') thbEq = e.cost / window.ratesToTHB['TWD'];
-
-                if (!totalsByPayer['tina']) totalsByPayer['tina'] = {};
-                if (!totalsByPayer['darren']) totalsByPayer['darren'] = {};
 
                 if (sType === 'split') {
                     if (isSettled) {
@@ -1609,7 +1620,6 @@
                         totalsByPayer['darren'][e.currency] = (totalsByPayer['darren'][e.currency] || 0) + (e.cost / 2);
                     } else {
                         totalsByPayer[e.payer][e.currency] = (totalsByPayer[e.payer][e.currency] || 0) + e.cost;
-                        
                         sharedTotalTHB += thbEq;
                         if (e.payer === 'tina') tinaPaidSharedTHB += thbEq;
                         if (e.payer === 'darren') darrenPaidSharedTHB += thbEq;
@@ -1617,42 +1627,130 @@
                 } else {
                     totalsByPayer[e.payer][e.currency] = (totalsByPayer[e.payer][e.currency] || 0) + e.cost;
                 }
-                return s + thbEq;
-            }, 0);
+            });
 
+            // 2. 更新上方 UI
             const formatPayerSummary = (p) => { let lines = []; for(let curr in totalsByPayer[p]) if(totalsByPayer[p][curr]>0) lines.push(`${curr} ${Math.round(totalsByPayer[p][curr]).toLocaleString()}`); return lines.length > 0 ? lines.join(' / ') : '尚未支出'; };
-            document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
-            document.getElementById('total-amount').innerText = '฿ ' + Math.round(total).toLocaleString();
+            document.getElementById('chip-tina-amt').innerText = formatPayerSummary('tina'); 
+            document.getElementById('chip-darren-amt').innerText = formatPayerSummary('darren');
             
-            const halfShared = sharedTotalTHB / 2; const tinaBalance = tinaPaidSharedTHB - halfShared; const darrenBalance = darrenPaidSharedTHB - halfShared; 
+            const grandTotal = filtered.reduce((s, e) => {
+                let thb = e.cost; if (e.currency === 'USD') thb *= window.ratesToTHB['USD']; if (e.currency === 'TWD') thb /= window.ratesToTHB['TWD']; return s + thb;
+            }, 0);
+            document.getElementById('total-amount').innerText = '฿ ' + Math.round(grandTotal).toLocaleString();
+            
             const settlementEl = document.getElementById('settlement-amount');
+            const halfShared = sharedTotalTHB / 2;
+            const tinaBalance = tinaPaidSharedTHB - halfShared;
+            const darrenBalance = darrenPaidSharedTHB - halfShared;
             if (tinaBalance > 1) settlementEl.innerHTML = `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1">฿ ${Math.round(tinaBalance).toLocaleString()}</span>`;
             else if (darrenBalance > 1) settlementEl.innerHTML = `Tina 需給 Darren <span class="text-[#DDB892] ml-1">฿ ${Math.round(darrenBalance).toLocaleString()}</span>`;
             else settlementEl.innerHTML = `目前帳目完美打平 ✨`;
-            
-            list.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(exp => {
-                let thbEq = exp.cost; if (exp.currency === 'USD') thbEq = exp.cost * window.ratesToTHB['USD']; if (exp.currency === 'TWD') thbEq = exp.cost / window.ratesToTHB['TWD'];
-                const sType = exp.splitType || 'split'; let typeBadge = '';
-                
-                if (sType === 'split') {
-                    if (exp.isSettled) typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-green-100 text-green-600 rounded font-bold border border-green-200">已結清</span>`;
-                    else typeBadge = `<span class="ml.1.5 text-[9px] px-1.5 py-[2px] bg-gray-200 text-gray-600 rounded font-bold">平分</span>`;
-                }
-                else if (sType === 'treat') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-pink-100 text-pink-600 rounded font-bold border border-pink-200">請客</span>`;
-                else if (sType === 'personal') typeBadge = `<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-blue-100 text-blue-600 rounded font-bold border border-blue-200">個人</span>`;
 
-                let btnHtml = (sType === 'split' && !exp.isSettled) ? `<button onclick="window.settleSingleItem('${exp.id}')" class="text-lg hover:scale-110 transition-transform active:scale-95" title="甜蜜平帳">🤝</button>` : '';
+            // 3. 日期分組與摺疊渲染
+            const grouped = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).reduce((groups, exp) => {
+                const date = exp.date || '未分類日期';
+                if (!groups[date]) groups[date] = { items: [], dayTotal: 0 };
+                let thb = exp.cost; if (exp.currency === 'USD') thb *= window.ratesToTHB['USD']; if (exp.currency === 'TWD') thb /= window.ratesToTHB['TWD'];
+                groups[date].items.push(exp);
+                groups[date].dayTotal += thb;
+                return groups;
+            }, {});
 
-                return `<div class="app-card p-4 flex justify-between items-center mb-3 border-l-[5px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'}"><div class="flex-1 pr-4"><div class="flex items-center gap-1 mb-1">${exp.date ? `<span class="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">${window.formatDisplayDate(exp.date)}</span>` : ''}<div class="text-sm font-bold text-[#4A4E40] ml-1">${exp.item}</div></div><div class="text-[10px] text-gray-400 mt-1 font-bold uppercase tracking-tighter flex items-center">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div></div><div class="text-right font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div><div class="flex flex-col gap-2 ml-3 border-l border-gray-100 pl-3">${btnHtml}<button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-300 text-xs hover:text-red-400">✕</button><button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs hover:text-[#6B705C]">✎</button></div></div>`;
+            list.innerHTML = Object.keys(grouped).map(date => {
+                return `
+                    <div class="mb-4">
+                        <div onclick="window.toggleDateGroup('${date}')" class="flex justify-between items-center py-3 px-4 bg-white/50 rounded-2xl cursor-pointer active:bg-gray-100 transition-colors border border-gray-100/50 mb-2">
+                            <div class="flex items-center gap-2">
+                                <span id="group-icon-${date}" class="text-[10px] text-gray-400 transition-transform duration-300" style="transform: rotate(0deg);">▼</span>
+                                <div class="text-sm font-black text-[#4A4E40]">${window.formatDisplayDate(date)}</div>
+                            </div>
+                            <div class="text-[11px] font-bold text-gray-400">
+                                小計 <span class="text-[#6B705C] ml-1 text-sm font-black">฿ ${Math.round(grouped[date].dayTotal).toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div id="group-content-${date}" class="space-y-3 transition-all">
+                            ${grouped[date].items.map(exp => {
+                                let thbEq = exp.cost; if (exp.currency === 'USD') thbEq = exp.cost * window.ratesToTHB['USD']; if (exp.currency === 'TWD') thbEq = exp.cost / window.ratesToTHB['TWD'];
+                                const sType = exp.splitType || 'split';
+                                let typeBadge = '';
+                                
+                                // 🌟 修復 Invalid token: 拿掉不合法的脫出字元 \，改為單引號與正常反引號
+                                if (sType === 'split') typeBadge = exp.isSettled ? '<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-green-100 text-green-600 rounded font-bold">已結清</span>' : '<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-gray-100 text-gray-500 rounded font-bold">平分</span>';
+                                else if (sType === 'treat') typeBadge = '<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-pink-100 text-pink-600 rounded font-bold">請客</span>';
+                                else if (sType === 'personal') typeBadge = '<span class="ml-1.5 text-[9px] px-1.5 py-[2px] bg-blue-100 text-blue-600 rounded font-bold">個人</span>';
+
+                                return `
+                                    <div class="app-card p-4 flex justify-between items-center bg-white shadow-sm border-l-[6px] ${exp.payer==='tina'?'border-[#F8AD9D]':'border-[#6B705C]'} mx-1">
+                                        <div class="flex-1 pr-3">
+                                            <div class="text-sm font-black text-[#4A4E40]">${exp.item}</div>
+                                            <div class="text-[10px] text-gray-400 mt-1 font-bold uppercase">${exp.payer==='tina'?'Tina 💰':'Darren 💳'} • ${exp.currency} ${exp.cost.toLocaleString()} ${typeBadge}</div>
+                                        </div>
+                                        <div class="text-right shrink-0">
+                                            <div class="text-base font-black text-[#2D3128]">฿ ${Math.round(thbEq).toLocaleString()}</div>
+                                            <div class="flex gap-4 mt-2 justify-end">
+                                                ${(sType === 'split' && !exp.isSettled) ? `<button onclick="window.settleSingleItem('${exp.id}')" class="text-lg">🤝</button>` : ''}
+                                                <button onclick="window.editExpense('${exp.id}')" class="text-gray-400 text-xs">✎</button>
+                                                <button onclick="window.deleteItem('expenses', '${exp.id}')" class="text-gray-200 text-xs">✕</button>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            }).join('')}
+                        </div>
+                    </div>`;
             }).join('');
 
+            // 🌟 圓餅圖修正：強制繁體與類別對應
             const chartContainer = document.getElementById('chart-container');
             if (window.myChart) window.myChart.destroy(); 
-            if (filtered.length === 0) { chartContainer.classList.add('hidden'); } else {
+
+            if (filtered.length === 0) { 
+                chartContainer.classList.add('hidden'); 
+            } else {
                 chartContainer.classList.remove('hidden');
-                const categories = { 'food': '🍴 食物', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'traffic': '🚗 交通', 'other': '🎒 其他' };
-                let dataMap = {}; filtered.forEach(e => { let thb = e.cost; if (e.currency === 'USD') thb *= window.ratesToTHB['USD']; if (e.currency === 'TWD') thb /= window.ratesToTHB['TWD']; const cat = e.category || 'other'; dataMap[cat] = (dataMap[cat] || 0) + thb; });
-                window.myChart = new Chart(document.getElementById('expenseChart').getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(dataMap).map(k => categories[k] || k), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] }] }, options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, weight: 'bold' } } } }, cutout: '65%' } });
+                const categoriesMap = { 
+                    'food': '🍴 美食料理', 
+                    'shop': '🛍️ 購物採買', 
+                    'massage': '💆 舒壓按摩', 
+                    'play': '🎢 玩樂門票', 
+                    'traffic': '🚗 交通車資', 
+                    'other': '🎒 其他雜項',
+                    '休闲': '🎢 玩樂門票' // 🌟 防呆：萬一有舊資料是簡體，強制轉正
+                };
+
+                let dataMap = {}; 
+                filtered.forEach(e => { 
+                    let thb = e.cost; 
+                    if (e.currency === 'USD') thb *= window.ratesToTHB['USD']; 
+                    if (e.currency === 'TWD') thb /= window.ratesToTHB['TWD']; 
+                    const cat = e.category || 'other'; 
+                    dataMap[cat] = (dataMap[cat] || 0) + thb; 
+                });
+
+                window.myChart = new Chart(document.getElementById('expenseChart').getContext('2d'), { 
+                    type: 'doughnut', 
+                    data: { 
+                        labels: Object.keys(dataMap).map(k => categoriesMap[k] || k), 
+                        datasets: [{ 
+                            data: Object.values(dataMap), 
+                            backgroundColor: ['#6B705C', '#B7B7A4', '#DDB892', '#F8AD9D', '#CB997E', '#A5A58D'] 
+                        }] 
+                    }, 
+                    options: { 
+                        plugins: { 
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    boxWidth: 10, 
+                                    font: { size: 11, weight: '700', family: 'Noto Sans TC' },
+                                    padding: 15
+                                } 
+                            } 
+                        }, 
+                        cutout: '70%' 
+                    } 
+                });
             }
         };
 
@@ -1965,7 +2063,7 @@
                             const expData = JSON.parse(jsonStr);
                             const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             expenseBtnHtml += `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
-                        } catch (e) { console.error("歷史記 পঞ্চাশ解析失敗", e); }
+                        } catch (e) { console.error("歷史記五十解析失敗", e); }
                     }
 
                     // 🌟 更強大的 MAP_SEARCH 解析
