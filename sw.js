@@ -1,4 +1,4 @@
-const CACHE_NAME = 'honeymoon-cache-v7.88';
+const CACHE_NAME = 'honeymoon-cache-v8.3';
 const urlsToCache = [
   './',
   './index.html',
