@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
+    <!-- 🌟 OS 專屬優化 3：防禦系統「深色模式」強制反轉，鎖定唯美淺色莫蘭迪底色 -->
+    <meta name="color-scheme" content="light">
+    
     <!-- 🌟 解決白屏閃爍的關鍵：提早告訴手機 App 的底色 -->
     <meta name="theme-color" content="#F8F7F2">
     <meta name="background-color" content="#F8F7F2">
@@ -13,7 +16,8 @@
     <!-- iOS 專用：強制主畫面名稱 -->
     <meta name="apple-mobile-web-app-title" content="Thailand 2026 🇹🇭">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- 🌟 OS 專屬優化 4：iOS 沉浸式全螢幕狀態列，讓背景延伸到最頂端 -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Android 專用：透過 Query String 強制刷新 Manifest -->
     <link rel="manifest" href="manifest.json?v=20260309">
@@ -37,6 +41,11 @@
             --heart-pink: #F8AD9D;
         }
 
+        /* 🌟 OS 專屬優化 1：封印 iOS 的「邊緣回彈」(Rubber-banding) */
+        html {
+            overscroll-behavior-y: none;
+        }
+
         body { 
             font-family: 'Montserrat', 'Noto Sans TC', sans-serif; 
             background-color: var(--bg-light); 
@@ -44,6 +53,7 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             padding-bottom: calc(110px + env(safe-area-inset-bottom)); 
+            overscroll-behavior-y: none; /* 徹底封印回彈 */
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -74,8 +84,11 @@
         
         #gemini-panel, .modal-panel {
             position: absolute; bottom: 0; left: 0; right: 0;
-            height: 90%; background: #F8F7F2; border-radius: 2rem 2rem 0 0;
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
+            height: 90%; /* fallback */
+            height: 90dvh; /* 🌟 OS 專屬優化 2：導入 dvh 單位，征服 Safari 的動態網址列 */
+            background: #F8F7F2; border-radius: 2rem 2rem 0 0;
+            transform: translateY(100%); 
+            transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1), padding-bottom 0.3s ease;
             padding-bottom: env(safe-area-inset-bottom); display: flex !important; flex-direction: column;
         }
         #gemini-modal.open #gemini-panel, .custom-modal.open .modal-panel { transform: translateY(0); }
@@ -148,19 +161,7 @@
         .tab-content { opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .tab-content:not(.hidden) { opacity: 1; transform: translateY(0); }
 
-        img { transition: opacity 0.3s ease-in-out; }
-        img[loading="lazy"] { opacity: 0.5; }
-        img.loaded { opacity: 1; }
-
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 50%, #f0f0f0 75%);
-            background-size: 200% 100%; animation: skeleton-loading 1.5s infinite linear;
-        }
-        @keyframes skeleton-loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        .img-fade-in { opacity: 0; transition: opacity 0.7s ease-in-out; }
-        .img-loaded { opacity: 1; }
-
+        /* 🌟 瘦身：移除了所有與照片牆 (Memories) 相關的複雜載入動畫與樣式 */
         .ai-bubble { background-color: #FCEBE8; color: #9D6B60; border: 1px solid #F8D7D1; border-bottom-left-radius: 4px; }
         .user-bubble { background-color: #6B705C; color: white; border-bottom-right-radius: 4px; }
 
@@ -173,15 +174,10 @@
 
         /* --- 💰 方案 B：神級佈局優化版 --- */
         .fab {
-            /* 1. 關鍵改動：使用 fixed 讓它固定在螢幕，不隨捲軸跑動 */
             position: fixed; 
-            /* 2. 距離螢幕底部的距離：要避開底部導覽列 (85px + 安全距離) */
             bottom: calc(100px + env(safe-area-inset-bottom)); 
-            /* 3. 距離螢幕右側的距離 */
             right: 20px; 
-            /* 4. 確保它在最前面，不會被卡片遮住 */
             z-index: 999; 
-            /* 其他樣式保持不變 */
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -200,37 +196,32 @@
 
         /* --- ✨ 針對記帳彈窗 (.expense-modal) 的神級佈局優化 --- */
         #expense-modal .modal-panel {
-            /* 1️⃣ 關鍵：不要固定 90%，讓它自動變矮贴在底部，看起来更紧凑 */
             height: auto;
-            max-height: calc(100% - env(safe-area-inset-top) - 10px); /* 留一點天花板防止內容過多 */
+            max-height: calc(100% - env(safe-area-inset-top) - 10px); /* fallback */
+            max-height: calc(100dvh - env(safe-area-inset-top) - 10px); /* 🌟 OS 專屬優化 2：導入 dvh */
         }
 
-        /* 2️⃣ Flex 子項目定義 (與 HTML 結構配合使用) */
-        #expense-modal .modal-panel > * { flex: 0 0 auto; } /* 標題和按鈕不拉伸 */
+        #expense-modal .modal-panel > * { flex: 0 0 auto; }
 
-        /* 核心：表單內容滾動區域 ✨ 讓它拉伸吃掉剩下的空間並滾動 */
         #expense-modal .modal-content-scroll {
             flex: 1 1 auto;
             overflow-y: auto;
-            padding-right: 1px; /* 保留滾動條空間 */
-            margin-top: -12px; /* 平衡 mb-6 */
-            margin-bottom: 24px; /* 預留與按鈕的距離，解決重疊感 */
+            padding-right: 1px; 
+            margin-top: -12px; 
+            margin-bottom: 24px; 
         }
 
-        /* 1. 讓「數字」更有質感：縮小字距，看起來更像專業金融 App */
         #total-amount, #settlement-amount, .text-4xl, .text-right.font-black {
             font-family: 'Montserrat', sans-serif !important;
             letter-spacing: -1px;
             font-weight: 800;
         }
 
-        /* 2. 讓 AI 管家的回話更好讀：增加一點點行高（呼吸感） */
         .ai-bubble {
             line-height: 1.6;
             letter-spacing: 0.02em;
         }
 
-        /* 3. 讓按鈕點起來更有「彈性」：增加絲滑的縮放感 */
         button, .nav-btn, .fab {
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
         }
@@ -238,78 +229,64 @@
             transform: scale(0.92) !important;
         }
 
-        /* 4. 讓卡片更圓潤：符合現代 UI 潮流 */
         .app-card {
             border-radius: 24px !important;
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04) !important;
         }
 
-        /* --- 💎 全域文字精煉優化 --- */
-
-        /* 1. 讓頂部的小標題更有雜誌感 */
         .heart-text, .main-header p {
-            letter-spacing: 0.6em !important; /* 超寬字距是高級感的關鍵 */
+            letter-spacing: 0.6em !important; 
             font-weight: 700 !important;
             opacity: 0.9;
         }
 
-        /* 2. 讓 Darren & Tina 的名字更有張力 */
         .couple-name {
             letter-spacing: 0.12em !important;
             font-weight: 700 !important;
         }
 
-        /* 3. 讓所有卡片內的「小標籤」變精緻 */
         .tag, .text-[10px], .text-[9px] {
             letter-spacing: 0.15em !important;
-            text-transform: uppercase; /* 強制大寫增加專業感 */
+            text-transform: uppercase; 
             font-weight: 600 !important;
         }
 
-        /* 4. 讓 AI 的回話更溫潤好讀 */
         .ai-bubble {
-            font-weight: 500 !important; /* 降低一點點粗細 */
-            line-height: 1.7 !important; /* 增加行間距，不擠壓 */
+            font-weight: 500 !important; 
+            line-height: 1.7 !important; 
         }
 
-        /* 5. 讓行程的時間與店名有明顯對比 */
         #it-list .text-[15px].font-bold {
             letter-spacing: 0.1em;
-            color: var(--morandi-olive); /* 時間用橄欖綠點綴 */
+            color: var(--morandi-olive); 
         }
 
-        /* 6. 讓底部導覽列的 Emoji 有呼吸空間 */
         .nav-btn {
             letter-spacing: 0; 
             filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
         }
 
-        /* --- 🖐️ 按鈕體感與點擊熱區優化 --- */
-
-        /* 1. 讓主儲存按鈕更有「氣場」 */
         #btn-add-expense, #btn-add-itinerary, #btn-add-mission, #btn-add-flight, #btn-add-hotel {
             padding-top: 1.4rem !important;
             padding-bottom: 1.4rem !important;
-            border-radius: 20px !important; /* 跟卡片更契合 */
+            border-radius: 20px !important; 
             font-size: 15px !important;
-            letter-spacing: 0.2em !important; /* 讓文字排開更有質感 */
+            letter-spacing: 0.2em !important; 
             box-shadow: 0 8px 20px rgba(74, 78, 64, 0.2) !important;
         }
 
-        /* 2. 讓行程小按鈕更好點擊 (📍導航、📋複製) */
         .action-link {
-            padding: 10px 18px !important; /* 增加點擊範圍 */
+            padding: 10px 18px !important; 
             font-size: 12px !important;
             font-weight: 700 !important;
             border-radius: 14px !important;
-            background-color: #F8F7F2 !important; /* 給個淡淡的底色 */
+            background-color: #F8F7F2 !important; 
             border: 1px solid #EAE9E0 !important;
             color: var(--morandi-text) !important;
         }
 
-        /* 3. 讓列表中的修改與刪除按鈕更容易被按到 */
         #it-list button, #exp-list button, #flights-list button, #hotels-list button {
-            padding: 8px !important; /* 增加點擊熱區，外觀看不出來但更好按 */
+            padding: 8px !important; 
             min-width: 32px;
             min-height: 32px;
             display: flex;
@@ -317,61 +294,50 @@
             justify-content: center;
         }
 
-        /* 4. 針對右下角那顆最重要的「＋」 */
         .fab {
-            width: 68px !important; /* 稍微放大 8px，單手操作靈魂 */
+            width: 68px !important; 
             height: 68px !important;
             font-size: 32px !important;
             box-shadow: 0 12px 30px rgba(0,0,0,0.2) !important;
-            border: 4px solid rgba(255,255,255,0.3) !important; /* 增加白邊質感 */
+            border: 4px solid rgba(255,255,255,0.3) !important; 
         }
 
-        /* --- 🗺️ 行程列表資訊層級優化 --- */
-
-        /* 1. 店名：更有張力與呼吸感 */
         #it-list .font-black.text-xl {
             letter-spacing: 0.02em !important;
             line-height: 1.3 !important;
             margin-bottom: 4px;
-            color: #2D3128; /* 深色讓店名最顯眼 */
+            color: #2D3128; 
         }
 
-        /* 2. 地址：優雅且易讀 */
         #it-list .text-[#6B705C].font-bold {
             font-size: 12px !important;
-            font-weight: 500 !important; /* 降低粗細，增加精緻感 */
+            font-weight: 500 !important; 
             letter-spacing: 0.05em !important;
             opacity: 0.8;
         }
 
-        /* 3. 備註：像手帳般的細膩文字 */
         #it-list .text-sm.text-gray-500.font-bold.italic {
             font-size: 13px !important;
             font-weight: 500 !important;
-            font-style: normal !important; /* 拿掉強烈斜體，更耐看 */
-            line-height: 1.6 !important; /* 增加行距，適合長句子 */
-            color: #8E9185 !important; /* 更柔和的灰色 */
+            font-style: normal !important; 
+            line-height: 1.6 !important; 
+            color: #8E9185 !important; 
             margin-top: 8px !important;
             padding-left: 8px;
-            border-left: 2px solid #EAE9E0; /* 加上側邊裝飾線，區分備註區 */
+            border-left: 2px solid #EAE9E0; 
         }
 
-        /* 4. 時間標籤微調 */
         #it-list .text-[15px].font-bold.text-gray-500 {
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 0.1em;
-            color: var(--morandi-gold); /* 時間改用金色點綴，更有度假感 */
+            color: var(--morandi-gold); 
         }
 
-        /* --- 🔔 重要任務與 🎒 行李清單優化 --- */
-
-        /* 1. 分頁大標題：維持精品雜誌感 */
         #content-missions h3, #content-packing h3, #content-memories h3 {
             letter-spacing: 0.1em !important;
             color: #2D3128;
         }
 
-        /* 2. 任務類別小標（出發前、旅程中等） */
         #missions-container h4 {
             letter-spacing: 0.3em !important;
             font-size: 10px !important;
@@ -380,7 +346,6 @@
             padding-left: 4px;
         }
 
-        /* 3. 任務與行李品項文字 */
         #missions-container span, #content-packing span {
             font-size: 14px !important;
             font-weight: 500 !important;
@@ -388,14 +353,12 @@
             color: var(--morandi-text);
         }
 
-        /* 4. 已完成項目的優雅處理（刪節線與淡化） */
         .line-through {
-            text-decoration-color: var(--morandi-gold) !important; /* 刪節線用金棕色，比較美 */
+            text-decoration-color: var(--morandi-gold) !important; 
             opacity: 0.4 !important;
             font-weight: 400 !important;
         }
 
-        /* 5. 行李清單主人標籤 (Tina's / Darren's) */
         #content-packing p.font-black, #content-packing p.font-bold {
             letter-spacing: 0.4em !important;
             font-size: 11px !important;
@@ -404,15 +367,11 @@
             margin-bottom: 15px !important;
         }
 
-        /* 6. 行李類別切換鈕 (Icon Tabs) 間距優化 */
         .pack-filter-btn {
             margin-right: 6px !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
         }
 
-        /* --- 🛫 航班資訊與 🏨 飯店住宿精研 --- */
-
-        /* 1. 航班編號：像登機證一樣的標籤感 */
         #flights-list .bg-\[\#6B705C\] {
             background: #4A4E40 !important;
             padding: 4px 12px !important;
@@ -422,45 +381,37 @@
             font-size: 13px !important;
         }
 
-        /* 2. 出發與抵達地：大氣且專業 */
         #flights-list .text-lg.font-black {
-            font-size: 22px !important; /* 加大城市名稱 */
+            font-size: 22px !important; 
             letter-spacing: 0.05em !important;
             color: #2D3128;
         }
 
-        /* 3. 飯店名稱：像五星級飯店的抬頭 */
         #hotels-list .text-lg.font-black {
             font-size: 20px !important;
             line-height: 1.4 !important;
             letter-spacing: 0.02em !important;
         }
 
-        /* 4. 關鍵資訊標籤（房號、座位、時間） */
         #flights-list .text-sm.font-bold.text-gray-400, 
         #hotels-list .text-sm.text-gray-500 {
             font-size: 12px !important;
             letter-spacing: 0.05em !important;
-            color: var(--morandi-olive) !important; /* 改用橄欖綠，更有整體感 */
+            color: var(--morandi-olive) !important; 
         }
 
-        /* 5. 備註區：延續行程頁面的「手札線條」設計 */
         #flights-list .bg-gray-50, #hotels-list .bg-gray-50 {
             background-color: #FBFBFA !important;
-            border-left: 3px solid var(--morandi-gold) !important; /* 改用金色垂直線 */
+            border-left: 3px solid var(--morandi-gold) !important; 
             border-radius: 0 16px 16px 0 !important;
             padding: 12px 15px !important;
         }
 
-        /* 6. 飛行路徑線條微調 */
         #flights-list .h-\[1\.5px\] {
-            background-color: #DDB892 !important; /* 飛行航線改用金棕色 */
+            background-color: #DDB892 !important; 
             opacity: 0.6;
         }
 
-        /* --- ⏱️ 飛行時間與總時數精研 --- */
-
-        /* 1. 起飛與抵達的「時間數字」 */
         #flights-list .text-sm.font-bold.text-\[\#6B705C\] {
             font-family: 'Montserrat', sans-serif !important;
             font-size: 16px !important;
@@ -470,37 +421,31 @@
             color: var(--morandi-olive) !important;
         }
 
-        /* 2. 飛機中間的「總飛行時數」 */
         #flights-list .text-\[9px\].text-gray-400.font-bold {
             font-size: 10px !important;
-            letter-spacing: 0.15em !important; /* 寬字距更有高級感 */
+            letter-spacing: 0.15em !important; 
             text-transform: uppercase;
             color: #B7B7A4 !important;
             font-weight: 600 !important;
-            background: #F8F7F2; /* 給它一點底色，壓在金線上才清楚 */
+            background: #F8F7F2; 
             padding: 0 4px;
             z-index: 1;
         }
 
-        /* 3. 優化起飛/抵達容器的間距 */
         #flights-list .text-center.flex-1 {
             padding-top: 4px;
         }
 
-        /* --- ✈️ 航班資訊：名字與時間完美垂直置中 --- */
-
-        /* 1. 讓左右兩邊的容器內部一律置中 */
         #flights-list .text-center.flex-1:first-child,
         #flights-list .text-center.flex-1:last-child {
-            text-align: center !important; /* 🌟 核心：強制內部文字置中 */
-            padding: 0 5px !important;    /* 縮小間距，給文字更多空間 */
+            text-align: center !important; 
+            padding: 0 5px !important;    
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        /* 2. 城市名稱：不換行、縮字距、置中 */
         #flights-list .text-lg.font-black {
             white-space: nowrap !important;
             font-size: 16px !important;
@@ -509,7 +454,6 @@
             text-align: center !important;
         }
 
-        /* 3. 時間數字：置中並維持與名字的間距 */
         #flights-list .text-sm.font-bold.text-\[\#6B705C\] {
             width: 100%;
             text-align: center !important;
@@ -518,19 +462,16 @@
             font-family: 'Montserrat', sans-serif !important;
         }
 
-        /* 4. 中間飛機與時數區塊：固定寬度作為中心軸 */
         #flights-list .shrink-0.min-w-\[50px\] {
             min-width: 80px !important;
             margin: 0 10px;
         }
 
-        /* 5. 讓整行內容底部對齊，確保時間線絕對平行 */
         #flights-list .flex.items-center.justify-between {
             align-items: flex-end !important; 
             padding-bottom: 2px;
         }
 
-        /* --- 🤝 平帳彈窗：左右平衡校正 --- */
         #settle-confirm-modal .centered-modal-content {
             border: 1px solid rgba(0,0,0,0.05);
         }
@@ -542,7 +483,6 @@
             letter-spacing: 0.1em !important;
         }
 
-        /* 讓「還沒還沒」也有細邊框，增加存在感 */
         #settle-confirm-modal button.bg-gray-100 {
             background-color: white !important;
             border: 1.5px solid #EAE9E0 !important;
@@ -550,27 +490,23 @@
             box-shadow: none !important;
         }
 
-        /* --- 🛫 航班卡片 完美修復版 --- */
-
-        /* 1. 建立對稱網格：讓左右兩邊永遠等寬 */
         .flight-grid-row {
             display: flex;
-            align-items: center; /* 🌟 核心：強制左右兩區塊垂直置中對齊飛機 */
+            align-items: center; 
             justify-content: space-between;
             width: 100%;
         }
 
         .flight-col {
-            flex: 1; /* 左右各佔 1/3 多一點點 */
+            flex: 1; 
             display: flex;
             flex-direction: column;
-            align-items: center; /* 🌟 核心：內容水平置中 */
+            align-items: center; 
             justify-content: center;
         }
 
-        /* 2. 城市名稱：限制寬度，允許換行但保持置中 */
         .city-name {
-            font-size: 18px !important; /* 稍微縮小 2px 換取空間 */
+            font-size: 18px !important; 
             font-weight: 900;
             color: #2D3128;
             line-height: 1.2;
@@ -579,7 +515,6 @@
             margin-bottom: 4px;
         }
 
-        /* 3. 時間文字：完美置中在名字下 */
         .time-text {
             font-family: 'Montserrat', sans-serif !important;
             font-size: 16px !important;
@@ -587,9 +522,8 @@
             color: var(--morandi-olive);
         }
 
-        /* 4. 中間飛機路徑 */
         .flight-path {
-            flex: 0 0 70px; /* 固定飛機區域寬度 */
+            flex: 0 0 70px; 
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -606,27 +540,26 @@
             font-weight: 700;
             color: #B7B7A4;
             letter-spacing: 0.05em;
-            background: white; /* 蓋掉線條 */
+            background: white; 
             padding: 0 4px;
             margin-top: 2px;
         }
 
-        /* 5. 報到提醒：徹底置中修復 */
         .checkin-box {
-            background-color: rgba(255, 247, 237, 0.7); /* 橘色背景 */
+            background-color: rgba(255, 247, 237, 0.7); 
             border: 1px solid rgba(255, 237, 213, 0.7);
             border-radius: 12px;
-            height: 42px; /* 固定高度 */
+            height: 42px; 
             padding: 0 15px;
             display: flex;
-            align-items: center; /* 🌟 垂直置中 */
+            align-items: center; 
             justify-content: space-between;
         }
 
         .checkin-label, .checkin-time {
             display: flex;
             align-items: center;
-            height: 100%; /* 撐滿高度後 align-items 就會生效 */
+            height: 100%; 
             line-height: 1 !important;
         }
 
@@ -643,20 +576,15 @@
             color: #ea580c;
         }
 
-        /* --- 🏨 飯店卡片視覺細節再進化 --- */
-
-        /* 1. 讓飯店卡片多一個淡金色頂邊，增加儀式感 */
         #hotels-list .app-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* 2. 讓訂房資訊的小標籤 (NAME, CODE) 數字更俐落 */
         #hotels-list .font-black {
             font-family: 'Montserrat', 'Noto Sans TC', sans-serif !important;
             letter-spacing: 0.02em;
         }
 
-        /* 3. 讓飯店導航按鈕寬度撐滿，在飯店頁面更好按 */
         #hotels-list .action-link {
             display: flex !important;
             width: 100% !important;
@@ -664,58 +592,50 @@
             border-radius: 12px !important;
         }
 
-        /* 4. 修正飯店名稱的行間距 */
         #hotels-list .text-xl.font-black {
             line-height: 1.35 !important;
             margin-bottom: 2px;
         }
 
-        /* 航空卡片頂部標籤絕對平行校正 */
         #flights-list .flex.items-center.gap-1.5 span,
         #flights-list .flex.items-center.gap-1 span {
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            height: 24px !important; /* 🌟 統一設定所有標籤(含Seat)的視覺高度 */
+            height: 24px !important; 
         }
 
-        /* 讓 SEAT 字體再精緻一點點 */
         #flights-list span.text-\[10px\].font-black {
             font-family: 'Montserrat', sans-serif !important;
         }
 
-        /* 讓天氣卡片變窄，不再佔據大面積 */
         .weather-card {
             padding: 12px 16px !important;
             min-height: 70px !important;
             margin-bottom: 1rem !important;
         }
         
-        /* 🌟 天氣城市名放大：更有高級感 */
         .weather-card span.text-\[10px\] {
-            font-size: 16px !important; /* 原本只有 10px */
+            font-size: 16px !important; 
             font-weight: 900 !important;
-            letter-spacing: 0.1em; /* 增加字距 */
+            letter-spacing: 0.1em; 
             text-transform: uppercase;
-            opacity: 1 !important; /* 讓顏色更紮實 */
+            opacity: 1 !important; 
             margin-bottom: 4px;
             display: block;
         }
 
-        /* 讓右上角的 LIVE 燈稍微縮小一點，配合精悍版 */
         #weather-status-tag {
             top: 6px !important;
             right: 8px !important;
             transform: scale(0.85);
         }
 
-        /* 🌟 強制修正行動端日期輸入框的寬度與樣式 */
         #departure-date-input {
-            min-width: 0 !important; /* 防止被瀏覽器預設寬度撐開 */
-            -webkit-appearance: none; /* 去除 iOS 預設陰影 */
+            min-width: 0 !important; 
+            -webkit-appearance: none; 
         }
 
-        /* 隱藏某些瀏覽器內建的月曆圖示，讓畫面更乾淨 */
         #departure-date-input::-webkit-calendar-picker-indicator {
             background: transparent;
             bottom: 0;
@@ -729,7 +649,6 @@
             width: auto;
         }
 
-        /* 讓 CARD/CASH 標籤更有高級感：增加字距、變細一點 */
         .tag-method {
             letter-spacing: 0.05em;
             font-weight: 800 !important;
@@ -738,13 +657,11 @@
             font-size: 8px !important;
         }
 
-        /* 修正日期欄位的小計位置 */
         .date-header-subtotal {
-            padding-right: 8px; /* 增加右邊距 */
+            padding-right: 8px; 
             opacity: 0.9;
         }
 
-        /* 讓個人明細卡的金額對齊更專業 */
         .detail-row {
             display: flex;
             justify-content: space-between;
@@ -752,9 +669,6 @@
             margin-bottom: 4px;
         }
 
-        /* 🌟 針對 Darren 反饋的全局字體放大計畫 */
-
-        /* 1. 日期欄位標題與小計 */
         .date-header-text {
             font-size: 17px !important;
             font-weight: 900 !important;
@@ -764,7 +678,6 @@
             font-weight: 800 !important;
         }
 
-        /* 2. CARD/CASH 標籤變大、變粗 */
         .tag-method {
             font-size: 11px !important;
             letter-spacing: 0.05em;
@@ -773,40 +686,35 @@
             border-radius: 8px !important;
         }
 
-        /* 3. 修正「個人支付方式明細」的內容字體 */
         #exp-list .text-xs.font-black {
-            font-size: 14px !important; /* 刷卡/現金金額放大 */
+            font-size: 14px !important; 
             line-height: 1.8;
         }
         #exp-list .text-\[9px\].font-bold {
-            font-size: 11px !important; /* 標題標籤放大 */
+            font-size: 11px !important; 
         }
 
-        /* 🌟 讓「全部」按鈕的文字變大、變厚 */
         #chip-all {
-            font-size: 18px !important; /* 放大字體 */
-            font-weight: 900 !important; /* 加到最粗 */
+            font-size: 18px !important; 
+            font-weight: 900 !important; 
             display: flex;
             align-items: center;
             justify-content: center;
-            letter-spacing: 0.1em; /* 稍微拉開字距，更有精品感 */
+            letter-spacing: 0.1em; 
         }
 
-        /* 確保所有按鈕的高度一致，視覺才不會跳動 */
         .filter-chip {
-            min-height: 65px; /* 統一高度，配合隔壁兩行字的按鈕 */
+            min-height: 65px; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 順便微調 Tina 和 Darren 的名字大小，維持視覺平衡 */
         .filter-chip .font-black.text-sm {
             font-size: 17px !important;
             margin-bottom: 2px;
         }
 
-        /* 修正：個人支付明細卡的字體大小 */
         .detail-card-label { font-size: 16px !important; font-weight: 700; color: #4A4E40; }
-        /* 🌟 極簡精品記帳卡 */
+        
         .expense-card-final {
             background: white;
             border-radius: 20px !important;
@@ -814,26 +722,23 @@
             margin-bottom: 1rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
             border: 1px solid #F1F1F1;
-            /* 🌟 改變佈局：改為直向排列，徹底解決擁擠問題 */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
 
-        /* 名字與方式的小標籤：維持橫向、不准變大 */
         .final-badge {
             display: inline-flex;
             align-items: center;
             gap: 4px;
             font-size: 11px !important;
             font-weight: 800;
-            padding: 4px 12px; /* 🌟 增加一點上下左右呼吸空間 */
+            padding: 4px 12px; 
             border-radius: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.04em; /* 🌟 增加字距防擁擠 */
+            letter-spacing: 0.04em; 
         }
 
-        /* 結清狀態的小圓點標籤 */
         .status-pill {
             font-size: 10px !important;
             font-weight: 900;
@@ -841,9 +746,6 @@
             border-radius: 6px;
         }
 
-        /* 🌟 行程卡片：黃金比例微調 */
-
-        /* 1. 時間範圍 (17:00 - 18:30) - 調降至 17px */
         .schedule-item-time {
             font-size: 17px !important; 
             font-weight: 800 !important;
@@ -851,79 +753,46 @@
             letter-spacing: -0.01em;
         }
 
-        /* 2. 分類標籤 (景點/備註) - 調降至 12px，維持精緻感 */
         .schedule-item-badge {
-            font-size: 15px !important;    /* 這裡調大字體 */
-            padding: 4px 12px !important;  /* 增加左右空間，讓長度跟著字變 */
-            font-weight: 900 !important;   /* 讓字體更黑、更清楚 */
+            font-size: 15px !important;    
+            padding: 4px 12px !important;  
+            font-weight: 900 !important;   
             background: #FFFFFF !important;
             border-radius: 8px !important;
             display: inline-flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
-            white-space: nowrap;           /* 確保文字不會因為變大而自動換行 */
+            white-space: nowrap;           
         }
 
-        /* 3. 行程大標題 (Tichuca 水母酒吧) - 調降至 20px */
         .schedule-item-title {
             font-size: 20px !important;
             font-weight: 900 !important;
-            line-height: 1.4 !important; /* 增加行高，讓兩行字不相撞 */
+            line-height: 1.4 !important; 
             margin-top: 6px !important;
             color: #2D3128 !important;
             letter-spacing: -0.02em;
-            word-break: break-word; /* 🌟 解決長標題撐破排版 */
+            word-break: break-word; 
         }
 
-        /* 4. 下方備註小字 (必須檢查護照...) - 調降至 14.5px */
         .schedule-item-note {
             font-size: 14.5px !important;
             font-weight: 500 !important;
             line-height: 1.6 !important;
             color: #555 !important;
             margin-top: 6px !important;
-            word-break: break-word; /* 🌟 解決長網址撐破排版，強制換行 */
+            word-break: break-word; 
             overflow-wrap: anywhere;
         }
 
-        /* 5. 底部按鈕 (導航/複製) - 稍微縮小一點點 */
         .action-button-text {
             font-size: 13px !important;
             font-weight: 700 !important;
         }
 
-        /* 增加卡片左右的呼吸空間 */
         .schedule-card {
             padding: 20px !important;
             margin-bottom: 15px !important;
-        }
-
-        /* 🌟 修正後的並排按鈕樣式 */
-        .notes-display-btn-v2 {
-            /* 取消之前的固定寬度與大邊距 */
-            width: 100% !important; 
-            margin: 0 !important; 
-            padding: 10px 0 !important;
-            letter-spacing: 1px !important; /* 並排時字距縮小一點點，才不會換行 */
-            font-size: 13px !important;
-            text-indent: 0 !important;
-            
-            /* 維持質感顏色 */
-            color: #F8AD9D !important;
-            background: rgba(248, 173, 157, 0.08) !important;
-            border: 1.5px solid rgba(248, 173, 157, 0.3) !important;
-            border-radius: 16px !important;
-            
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 讓相機 Emoji 稍微帶點透明度，不要太突兀 */
-        .notes-display-btn-v2 span {
-            font-size: 16px;
-            margin-left: 2px;
-            opacity: 0.8;
         }
     </style>
 </head>
@@ -1002,13 +871,10 @@
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
                 
-                <div class="flex gap-3 px-1 mb-6 mt-2">
-                    <button onclick="window.viewDayMap()" class="flex-[1.8] bg-white border-2 border-[#6B705C] text-[#6B705C] py-3 rounded-2xl font-black text-[13px] shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                <!-- 🌟 移除照片紀錄按鈕，將路線預覽按鈕拉滿版 -->
+                <div class="px-1 mb-6 mt-2">
+                    <button onclick="window.viewDayMap()" class="w-full bg-white border-2 border-[#6B705C] text-[#6B705C] py-3 rounded-2xl font-black text-[13px] shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform">
                         🗺️ <span id="current-day-label">Day 1</span> 路線預覽
-                    </button>
-                    
-                    <button onclick="window.switchTab('memories')" class="notes-display-btn-v2 flex-1 shadow-sm active:scale-95 transition-transform">
-                        紀錄<span>📸</span>
                     </button>
                 </div>
 
@@ -1093,39 +959,6 @@
                     <button onclick="window.cancelEditHotel()" id="btn-cancel-hotel" class="w-full mt-2 bg-gray-200 text-gray-600 py-3.5 rounded-xl text-sm font-bold hidden">取消</button>
                 </div>
                 <div id="hotels-list"></div>
-
-                <!-- 🔒 數位證件保險箱 -->
-                <div class="mt-8 px-1">
-                    <h3 class="text-base font-black text-[#4A4E40] mb-4">安全保險箱 🔒</h3>
-                    <div id="vault-locked" class="app-card p-8 bg-gray-50 text-center border-2 border-dashed border-gray-200">
-                        <div class="text-3xl mb-3">🔑</div>
-                        <p class="text-xs font-bold text-gray-400 mb-4">此區塊已加密，請輸入密碼解鎖</p>
-                        <p id="vault-error-msg" class="text-xs font-bold text-red-400 mb-4 hidden">密碼不正確喔！🤫 請再試一次</p>
-                        <div class="flex gap-2 justify-center">
-                            <input type="password" id="vault-pin" placeholder="PIN" class="w-24 p-2 rounded-xl text-center text-sm font-black border border-gray-200 outline-none">
-                            <button onclick="window.unlockVault()" class="bg-[#4A4E40] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-md">解鎖</button>
-                        </div>
-                    </div>
-                    <div id="vault-content" class="hidden">
-                        <div class="app-card p-5 bg-white border-2 border-[#6B705C]">
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-xs font-black text-[#6B705C]">📂 雲端備份證件</span>
-                                <button onclick="document.getElementById('vault-content').classList.add('hidden'); document.getElementById('vault-locked').classList.remove('hidden');" class="text-[10px] bg-gray-100 px-2 py-1 rounded font-bold hover:bg-gray-200 transition-colors">重新上鎖</button>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3 mb-4">
-                                <label class="bg-gray-50 border border-gray-100 p-3 rounded-xl text-center cursor-pointer transition-colors hover:bg-gray-100">
-                                    <input type="file" class="hidden" onchange="window.uploadToVault('passport', this)">
-                                    <span class="text-lg">🛂</span><span class="block text-[9px] font-bold text-gray-400 mt-1">上傳護照</span>
-                                </label>
-                                <label class="bg-gray-50 border border-gray-100 p-3 rounded-xl text-center cursor-pointer transition-colors hover:bg-gray-100">
-                                    <input type="file" class="hidden" onchange="window.uploadToVault('insurance', this)">
-                                    <span class="text-lg">🏥</span><span class="block text-[9px] font-bold text-gray-400 mt-1">上傳保險單</span>
-                                </label>
-                            </div>
-                            <div id="vault-list" class="space-y-3"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- 任務分頁 -->
@@ -1145,34 +978,6 @@
                     <button onclick="window.cancelEditMission()" id="btn-cancel-mission" class="w-full mt-2 bg-gray-200 text-gray-600 py-3 rounded-xl font-black text-sm hidden transition-transform active:scale-95">取消修改</button>
                 </div>
                 <div id="missions-container" class="space-y-6"></div>
-            </div>
-
-            <!-- 回憶分頁 -->
-            <div id="content-memories" class="tab-content hidden">
-                <div class="mb-6 px-1">
-                    <h3 class="text-xl font-black text-[#4A4E40]">甜蜜瞬間 📖</h3>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Our Honeymoon Journal</p>
-                </div>
-                <div class="app-card p-5 mb-8 bg-white border-2 border-dashed border-[#DDB892]">
-                    <div class="flex gap-3 mb-3">
-                        <label class="w-16 h-16 shrink-0 bg-gray-50 rounded-2xl border-2 border-gray-100 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative">
-                            <input type="file" id="mem-image" accept="image/*" class="hidden" onchange="window.previewMemImage(this)">
-                            <div id="mem-preview-placeholder" class="text-center absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-xl">📸</span><span class="block text-[8px] font-black text-gray-400 mt-1">上傳照片</span>
-                            </div>
-                            <img id="mem-preview-img" class="hidden w-full h-full object-cover relative z-10">
-                        </label>
-                        <textarea id="mem-text" placeholder="這一刻的心情是...？" class="flex-1 bg-gray-50 p-3 rounded-2xl text-sm outline-none resize-none h-16 border border-gray-100"></textarea>
-                    </div>
-                    <div class="flex gap-2 items-center mb-4">
-                        <span class="text-xs font-black text-gray-400">當前心情：</span>
-                        <select id="mem-mood" class="bg-gray-100 px-3 py-1.5 rounded-full text-xs font-black outline-none border-none">
-                            <option value="🥰">🥰 超甜蜜</option><option value="🤩">🤩 太驚艷</option><option value="🤤">🤤 好好吃</option><option value="😎">😎 買瘋了</option><option value="😴">😴 累攤了</option>
-                        </select>
-                    </div>
-                    <button onclick="window.addMemory()" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl font-black text-sm shadow-md transition-transform active:scale-95">發 布 瞬 間</button>
-                </div>
-                <div id="memories-list" class="relative"></div>
             </div>
 
             <!-- 記帳分頁 -->
@@ -1257,7 +1062,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v14.7</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.1</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1461,7 +1266,8 @@
         const appId = "honeymoon-2026";
         
         let currentUser = null, allExpenses = [], currentPayerFilter = 'all', currentDayFilter = 'Day 1', departureDate = null;
-        let itineraryData = [], flightsData = [], hotelsData = [], packingData = [], chatHistory = [], memoriesData = [], vaultData = [], missionsData = [];
+        // 🌟 移除 memoriesData 與 vaultData 陣列
+        let itineraryData = [], flightsData = [], hotelsData = [], packingData = [], chatHistory = [], missionsData = [];
         let dayList = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], dayDates = {};
         let editingItineraryId = null, editingFlightId = null, editingHotelId = null, editingExpenseId = null, editingMissionId = null;
         
@@ -1547,7 +1353,6 @@
                 const btn = event.currentTarget; const orig = btn.innerHTML; btn.innerHTML = "✅ 已複製"; setTimeout(() => { btn.innerHTML = orig; }, 1500);
             } catch (err) { console.error('複製失敗', err); }
         };
-        window.handleImgError = (img) => { img.onerror = null; img.src = 'https://img.icons8.com/plasticine/200/heart.png'; if(img.parentElement) img.parentElement.classList.remove('skeleton'); img.classList.add('p-12', 'bg-gray-50', 'img-loaded'); };
 
         window.getWeather = async () => { 
             const weatherEl = document.getElementById('weather-display');
@@ -2517,18 +2322,7 @@
         // 🌟 更新過濾器切換邏輯
         window.setPackFilter = (c) => { currentPackFilter = c; window.renderPacking(); };
 
-        window.renderMemories = () => {
-            const list = document.getElementById('memories-list'); if (!list) return;
-            if (memoriesData.length === 0) { list.innerHTML = `<div class="text-center py-20 text-gray-300 font-bold italic">還沒有紀錄任何瞬間喔... 🖋️</div>`; list.classList.remove('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2'); return; }
-            list.classList.add('border-l-2', 'border-[#DDB892]/30', 'ml-3', 'pl-5', 'py-2');
-            list.innerHTML = memoriesData.sort((a,b) => b.createdAt - a.createdAt).map(m => `<div class="relative group mb-6 last:mb-0"><div class="absolute -left-[27px] top-4 w-3.5 h-3.5 bg-white border-[3.5px] border-[#DDB892] rounded-full z-10 shadow-sm"></div><div class="app-card bg-white overflow-hidden shadow-sm border border-gray-100">${m.image ? `<div class="relative w-full h-48 skeleton overflow-hidden"><img src="${m.image}" loading="lazy" class="w-full h-48 object-cover img-fade-in" onload="this.classList.add('img-loaded'); this.parentElement.classList.remove('skeleton')" onerror="window.handleImgError(this)"></div>` : ''}<div class="p-4"><div class="flex justify-between items-start mb-2"><span class="text-2xl">${m.mood || '✨'}</span><div class="text-right"><div class="text-[10px] font-black text-gray-400">${new Date(m.createdAt).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}</div><button onclick="window.deleteItem('memories', '${m.id}')" class="text-[10px] text-red-300 font-bold mt-1 transition-colors hover:text-red-500">✕ 刪除</button></div></div>${m.text ? `<p class="text-[#4A4E40] text-sm leading-relaxed font-medium mt-2">${m.text}</p>` : ''}</div></div></div>`).join('');
-        };
-        window.addMemory = async () => { const text = document.getElementById('mem-text').value.trim(); const mood = document.getElementById('mem-mood').value; const imgFile = document.getElementById('mem-image').files[0]; if(!text && !imgFile) return; let base64Img = ""; if (imgFile) { base64Img = await new Promise((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(imgFile); }); } await addDoc(getColl('memories'), { text, mood, image: base64Img, author: currentUser ? currentUser.uid : 'anonymous', createdAt: Date.now() }); document.getElementById('mem-text').value = ''; if(document.getElementById('mem-image')) document.getElementById('mem-image').value = ''; document.getElementById('mem-preview-img').classList.add('hidden'); document.getElementById('mem-preview-placeholder').classList.remove('hidden'); };
-        window.previewMemImage = (input) => { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = (e) => { document.getElementById('mem-preview-img').src = e.target.result; document.getElementById('mem-preview-img').classList.remove('hidden'); document.getElementById('mem-preview-placeholder').classList.add('hidden'); }; reader.readAsDataURL(input.files[0]); } };
-
-        window.unlockVault = () => { const pin = document.getElementById('vault-pin').value; const errorMsg = document.getElementById('vault-error-msg'); if (pin === "1112") { document.getElementById('vault-locked').classList.add('hidden'); document.getElementById('vault-content').classList.remove('hidden'); document.getElementById('vault-pin').value = ""; if(errorMsg) errorMsg.classList.add('hidden'); } else { if(errorMsg) errorMsg.classList.remove('hidden'); document.getElementById('vault-pin').value = ""; } };
-        window.uploadToVault = async (type, input) => { if (!input.files[0] || !currentUser) return; const reader = new FileReader(); reader.onload = async (e) => { await addDoc(getColl('vault'), { type: type, image: e.target.result, createdAt: Date.now() }); input.value = ''; }; reader.readAsDataURL(input.files[0]); };
-        window.renderVault = () => { const list = document.getElementById('vault-list'); if (!list) return; list.innerHTML = vaultData.sort((a,b) => b.createdAt - a.createdAt).map(v => `<div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl mb-3 border border-gray-100"><img src="${v.image}" onclick="window.open('${v.image}')" class="w-14 h-14 object-cover rounded-xl shadow-sm cursor-zoom-in"><div class="flex-1"><div class="text-[11px] font-black uppercase text-[#6B705C]">${v.type === 'passport' ? '🛂 護照影本' : '🏥 旅遊保險'}</div><div class="text-[9px] text-gray-400 font-bold">${new Date(v.createdAt).toLocaleDateString()} 備份</div></div><button onclick="window.deleteItem('vault', '${v.id}')" class="text-red-200 hover:text-red-400 p-2">✕</button></div>`).join(''); };
+        // 🌟 瘦身：徹底移除了 照片牆(Memories) 與 保險箱(Vault) 的所有相關函式，釋放系統資源
 
         window.editMission = (id) => { const item = missionsData.find(m => m.id === id); if (!item) return; editingMissionId = id; document.getElementById('mission-category').value = item.category; document.getElementById('mission-task').value = item.task; document.getElementById('btn-add-mission').innerText = '確認修改 ✅'; document.getElementById('btn-cancel-mission').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
         window.cancelEditMission = () => { editingMissionId = null; document.getElementById('mission-task').value = ''; document.getElementById('mission-category').value = 'pre'; document.getElementById('btn-add-mission').innerText = '指 派 任 務'; document.getElementById('btn-cancel-mission').classList.add('hidden'); };
@@ -3013,10 +2807,41 @@
             onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
             onSnapshot(getColl('flights'), (s) => { flightsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderFlights(); });
             onSnapshot(getColl('hotels'), (s) => { hotelsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderHotels(); });
-            onSnapshot(getColl('memories'), (s) => { memoriesData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMemories(); });
-            onSnapshot(getColl('vault'), (s) => { vaultData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderVault(); });
+            // 🌟 瘦身：移除了 Memories 與 Vault 的背景同步監聽器，大幅節省網路頻寬與流量
             onSnapshot(getColl('missions'), (s) => { missionsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderMissions(); });
         }
+
+        // 🌟 解決 iOS 虛擬鍵盤遮擋 Modal 問題 (動態計算鍵盤高度並推高面板)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const keyboardHeight = window.innerHeight - window.visualViewport.height;
+                const expensePanel = document.querySelector('#expense-modal .modal-panel');
+                const geminiPanel = document.getElementById('gemini-panel');
+                
+                if (keyboardHeight > 50) {
+                    // 鍵盤彈起：將底部 padding 設為「鍵盤高度」，把按鈕推上來
+                    if (expensePanel) expensePanel.style.paddingBottom = `${keyboardHeight}px`;
+                    if (geminiPanel) geminiPanel.style.paddingBottom = `${keyboardHeight}px`;
+                } else {
+                    // 鍵盤收合：恢復安全距離
+                    if (expensePanel) expensePanel.style.paddingBottom = `env(safe-area-inset-bottom)`;
+                    if (geminiPanel) geminiPanel.style.paddingBottom = `env(safe-area-inset-bottom)`;
+                }
+            });
+        }
+
+        // 🌟 確保輸入框獲得焦點時，該欄位會自動滾動到畫面中間
+        document.addEventListener('focusin', (e) => {
+            if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
+                setTimeout(() => {
+                    // 檢查是否在 Modal 的捲動區域內
+                    const inModal = e.target.closest('.modal-content-scroll') || e.target.closest('#gemini-chat');
+                    if (inModal) {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300); // 稍微等待鍵盤完全彈起
+            }
+        });
 
         // 🌟 預載並喚醒手機隱藏的語音庫
         document.addEventListener('DOMContentLoaded', () => {
