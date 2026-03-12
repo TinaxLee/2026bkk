@@ -1199,8 +1199,10 @@
                         <div class="flex items-start gap-3">
                             <span class="text-2xl leading-none mt-0.5">⚖️</span>
                             <div class="flex flex-col w-full">
-                                <span class="text-[10px] font-bold opacity-80 mb-2 tracking-widest">共同結算 (已扣除個人/請客)</span>
-                                <div id="settlement-amount" class="flex flex-col gap-1.5">
+                                <!-- 🌟 修正：放大「共同結算」標題字體至 12px -->
+                                <span class="text-[12px] font-bold opacity-80 mb-2 tracking-widest">共同結算 (已扣除個人/請客)</span>
+                                <!-- 🌟 修正：加上 w-full 與稍微加大的間距 gap-2，為新的收據式排版做準備 -->
+                                <div id="settlement-amount" class="flex flex-col gap-2 w-full">
                                     <div class="text-sm font-black">計算中...</div>
                                 </div>
                             </div>
@@ -1241,7 +1243,8 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-3"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal">v12.9</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors">清除記憶</button></div>
+                        <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v13.6</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2041,14 +2044,26 @@
             document.getElementById('total-thb').innerText = window.fmtRound(displayTotal['THB']);
             document.getElementById('total-twd').innerText = window.fmtRound(displayTotal['TWD']);
 
-            // 🌟 結算區塊邏輯 (雙幣別獨立結算)
+            // 🌟 結算區塊邏輯 (雙幣別獨立結算 - 終極排版修復)
             const getSettlementHtml = (curr, symbol) => {
                 const half = sharedTotal[curr] / 2;
                 const tBalance = paidShared.tina[curr] - half;
                 const dBalance = paidShared.darren[curr] - half;
 
-                if (tBalance > 1) return `Darren 需給 Tina <span class="text-[#F8AD9D] ml-1 font-black">${symbol} ${window.fmtRound(tBalance)}</span>`;
-                if (dBalance > 1) return `Tina 需給 Darren <span class="text-[#DDB892] ml-1 font-black">${symbol} ${window.fmtRound(dBalance)}</span>`;
+                // 🌟 核心修正：將符號放大至 14px，讓它與數字更搭配
+                const renderRow = (payer, receiver, amount, colorClass) => {
+                    return `
+                        <div class="flex justify-between items-center w-full py-0.5">
+                            <span class="text-[13px] font-bold opacity-90 tracking-wide">${payer} 需給 ${receiver}</span>
+                            <span class="${colorClass} text-[18px] font-black tracking-tighter flex items-baseline" style="font-family: 'Montserrat', sans-serif;">
+                                <span class="text-[14px] mr-1.5 opacity-80 font-sans tracking-normal font-bold">${symbol}</span>${window.fmtRound(amount)}
+                            </span>
+                        </div>
+                    `;
+                };
+
+                if (tBalance > 1) return renderRow('Darren', 'Tina', tBalance, 'text-[#F8AD9D]');
+                if (dBalance > 1) return renderRow('Tina', 'Darren', dBalance, 'text-[#DDB892]');
                 return null;
             };
 
@@ -2057,11 +2072,13 @@
             
             const settlementEl = document.getElementById('settlement-amount');
             let settleHtmls = [];
-            if (thbSettle) settleHtmls.push(`<div class="text-sm font-bold bg-white/20 px-3 py-1.5 rounded-lg inline-block">${thbSettle}</div>`);
-            if (twdSettle) settleHtmls.push(`<div class="text-sm font-bold bg-white/20 px-3 py-1.5 rounded-lg inline-block">${twdSettle}</div>`);
+            
+            // 🌟 外層容器修正：增加上下間距 (py-3)，讓排版更有呼吸空間
+            if (thbSettle) settleHtmls.push(`<div class="bg-white/20 px-3.5 py-3 rounded-xl shadow-sm w-full">${thbSettle}</div>`);
+            if (twdSettle) settleHtmls.push(`<div class="bg-white/20 px-3.5 py-3 rounded-xl shadow-sm w-full">${twdSettle}</div>`);
 
             if (settleHtmls.length === 0) {
-                settlementEl.innerHTML = `<div class="text-sm font-black text-white/90">目前帳目完美打平 ✨</div>`;
+                settlementEl.innerHTML = `<div class="text-sm font-black text-white/90 py-2">目前帳目完美打平 ✨</div>`;
             } else {
                 settlementEl.innerHTML = settleHtmls.join('');
             }
@@ -2889,4 +2906,3 @@
     </script>
 </body>
 </html>
- 
