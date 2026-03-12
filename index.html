@@ -1243,7 +1243,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v14.4</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v14.5</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2659,7 +2659,8 @@
                             const transMeaning = cd.meaning || '';
                             const transPhonetic = cd.phonetic || '';
 
-                            cardBtnHtml += `<div class="mt-2"><button onclick="window.showThaiCard('${transWord.replace(/'/g, "\\'")}', '${transMeaning.replace(/'/g, "\\'")}', '${transPhonetic.replace(/'/g, "\\'")}')" class="bg-white border-2 border-[#6B705C] text-[#6B705C] px-4 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-transform w-full">🔊 朗讀：${transMeaning.replace(/'/g, "\\'")}</button></div>`;
+                            // 🌟 護眼升級：拔除粗邊框、降低字重(font-bold)、改為左對齊(justify-start)並增加圖文間距
+                            cardBtnHtml += `<div class="mt-2.5"><button onclick="window.showThaiCard('${transWord.replace(/'/g, "\\'")}', '${transMeaning.replace(/'/g, "\\'")}', '${transPhonetic.replace(/'/g, "\\'")}')" class="bg-white border border-gray-200 text-[#4A4E40] px-4 py-3 rounded-xl text-[13px] font-bold shadow-sm flex items-center justify-start gap-3 active:scale-95 transition-transform w-full"><span class="text-base opacity-70">🔊</span> <span class="tracking-wide">${transMeaning.replace(/'/g, "\\'")}</span></button></div>`;
                         } catch (e) { console.error("歷史字卡解析失敗", e); }
                     }
                     
@@ -2673,7 +2674,8 @@
                             if (lastBrace !== -1) jsonStr = jsonStr.substring(0, lastBrace + 1);
                             const expData = JSON.parse(jsonStr);
                             const safeJson = jsonStr.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
-                            expenseBtnHtml += `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
+                            // 🌟 順便微調：將 font-black 改為 font-bold，減輕壓迫感
+                            expenseBtnHtml += `<div class="mt-3 border-t border-[#F8D7D1] pt-3"><button onclick="window.confirmAIExpense('${safeJson}', this)" class="w-full bg-[#6B705C] text-white px-4 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">💰 確認入帳：${expData.item} (${expData.currency} ${expData.cost})</button></div>`;
                         } catch (e) { console.error("歷史記五十解析失敗", e); }
                     }
 
@@ -2688,9 +2690,10 @@
                             const mapData = JSON.parse(jsonStr);
                             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapData.name)}`;
                             
+                            // 🌟 順便微調：將 font-black 改為 font-bold
                             mapBtnHtml += `
                                 <div class="mt-3 border-t border-[#F8D7D1] pt-3">
-                                    <a href="${mapUrl}" target="_blank" class="bg-[#8E9775] text-white px-4 py-3 rounded-xl text-sm font-black shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 w-full no-underline" style="text-decoration: none;">
+                                    <a href="${mapUrl}" target="_blank" class="bg-[#8E9775] text-white px-4 py-3 rounded-xl text-sm font-bold shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2 w-full no-underline" style="text-decoration: none;">
                                         📍 導航去：${mapData.name}
                                     </a>
                                 </div>
