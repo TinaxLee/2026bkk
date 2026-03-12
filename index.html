@@ -1244,7 +1244,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v13.6</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v13.7</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2225,7 +2225,8 @@
                                         </div>
 
                                         <div class="text-right ml-4 flex flex-col justify-center items-end">
-                                            <div class="text-[24px] font-black text-[#2D3128] leading-none mb-3">${mainAmount}</div>
+                                            <!-- 🌟 修正：將主要金額字體從 24px 縮小至 21px -->
+                                            <div class="text-[21px] font-black text-[#2D3128] leading-none mb-3">${mainAmount}</div>
                                             
                                             <div class="flex items-center justify-end gap-2">
                                                 ${settleBtnHtml}
