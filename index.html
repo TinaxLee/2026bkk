@@ -1243,7 +1243,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v13.8</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v14.4</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1261,24 +1261,25 @@
                     
                     <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1 no-scrollbar"></div>
                     
+                    <!-- 🌟 修正：把前四個實用按鈕，改為呼叫「秒回字卡」系統 -->
                     <div class="px-1 mb-6 flex gap-2.5 overflow-x-auto no-scrollbar pb-2">
-                        <button onclick="window.askGemini('請教我泰國常用的禮貌用語，包含：你好、謝謝(女生說)、謝謝(男生說)、對不起/不好意思、再見。', false, '🗣️ 查詢禮貌用語')" 
-                            class="shrink-0 bg-[#8E9775] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">🗣️ 禮貌用語</button>
+                        <button onclick="window.getFixedCards('polite')" 
+                            class="shrink-0 bg-[#8E9775] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">🗣️ 禮貌用語</button>
 
-                        <button onclick="window.askGemini('請教我泰國吃飯點餐常用的泰文，包含：多一點香菜、不要辣、結帳/買單、這個多少錢、可以算便宜一點嗎。', false, '🍽️ 查詢點餐用語')" 
-                            class="shrink-0 bg-[#DDB892] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">🍽️ 點餐用語</button>
+                        <button onclick="window.getFixedCards('order')" 
+                            class="shrink-0 bg-[#DDB892] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">🍽️ 點餐用語</button>
 
-                        <button onclick="window.askGemini('教我按摩時常用的泰文，例如：重一點、輕一點、這裡很痛、不要折背，請給泰文、發音跟中文對照。', false, '💆 按摩溝通')" 
-                            class="shrink-0 bg-[#B5838D] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">💆 按摩溝通</button>
+                        <button onclick="window.getFixedCards('drink')" 
+                            class="shrink-0 bg-[#A5A58D] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">🥤 冰塊甜度</button>
 
-                        <button onclick="window.askGemini('我要跟計程車司機溝通，請幫我寫出常用的「跳錶」(By Meter)、「去這裡」(Go here)的泰文與發音，並提醒我泰國叫車避雷針。', false, '🚕 叫車小抄')" 
-                            class="shrink-0 bg-[#E9C46A] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">🚕 叫車小抄</button>
+                        <button onclick="window.getFixedCards('food')" 
+                            class="shrink-0 bg-[#6B705C] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">🍜 必吃美食</button>
 
-                        <button onclick="window.askGemini('我們現在在泰國，請根據目前的行程或天數，隨機推薦三道這區必吃的在地美食，並附上泰文名稱！', false, '🍱 抽美食盲盒')" 
-                            class="shrink-0 bg-[#6B705C] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">🍱 美食盲盒</button>
+                        <button onclick="window.getFixedCards('massage')" 
+                            class="shrink-0 bg-[#B5838D] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">💆 按摩溝通</button>
 
-                        <button onclick="window.askGemini('請跳過廢話，直接隨機推薦三款泰國必喝特色飲料，必須包含：中文名、泰文名、發音、以及給 Tina 與 Darren 的甜度建議。', false, '🥤 抽飲料盲盒')" 
-                            class="shrink-0 bg-[#A5A58D] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md">🥤 飲料盲盒</button>
+                        <button onclick="window.getFixedCards('taxi')" 
+                            class="shrink-0 bg-[#E9C46A] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md active:scale-95 transition-transform">🚕 叫車小抄</button>
 
                         <a href="tel:1155" class="shrink-0 bg-[#CD5C5C] text-white px-4 py-3 rounded-2xl text-[11px] font-bold shadow-md flex items-center gap-1.5 no-underline">
                             <span>🚑</span> 觀光警察 1155
@@ -2697,14 +2698,15 @@
                         } catch (e) { console.error("地圖代碼解析失敗", e); }
                     }
 
-                    // 🌟 終極隱形過濾器：就算 AI 亂吐沒有括號的無效代碼，也強制將它從畫面抹除
+                    // 🌟 終極修復：壓縮多餘的換行符號
                     let displayText = cleanText
                         .replace(/SHOW_CARD:\s*\{[\s\S]*?\}/g, '')
-                        .replace(/SHOW_CARD:[^\n]*/g, '') // 殺掉所有殘留的 SHOW_CARD
+                        .replace(/SHOW_CARD:[^\n]*/g, '')
                         .replace(/SAVE_EXPENSE:\s*\{[\s\S]*?\}/g, '')
-                        .replace(/SAVE_EXPENSE:[^\n]*/g, '') // 殺掉所有殘留的 SAVE_EXPENSE
+                        .replace(/SAVE_EXPENSE:[^\n]*/g, '')
                         .replace(/MAP_SEARCH:\s*\{[\s\S]*?\}/g, '')
-                        .replace(/MAP_SEARCH:[^\n]*/g, '') // 殺掉所有殘留的 MAP_SEARCH
+                        .replace(/MAP_SEARCH:[^\n]*/g, '')
+                        .replace(/(\r?\n\s*){2,}/g, '\n\n') // 🌟 核心：把2個以上的連續換行(包含夾雜空白)，強制壓縮成最多1行空白！
                         .trim();
 
                     return `
@@ -2722,7 +2724,62 @@
             chat.scrollTop = chat.scrollHeight;
         };
 
-        // 🌟 補齊遺失的「查詢附近美食」功能函式
+        // 🌟 新增：實用小抄秒回系統 (保證不用等、不漏字)
+        window.getFixedCards = async (type) => {
+            window.toggleGemini(true);
+            const chat = document.getElementById('gemini-chat');
+            let bubbleText = "", cards = "", title = "";
+
+            if (type === 'polite') {
+                title = '🗣️ 查詢禮貌用語';
+                bubbleText = "最美的 Tina 跟帥氣的 Darren，泰國人非常注重禮貌喔！快把這幾句學起來，保證讓你們走到哪都被熱情招待！🙏";
+                // 🌟 新增：是的、不是、廁所在哪裡
+                cards = `SHOW_CARD: {"word":"สวัสดีครับ","meaning":"你好 (Darren 說)","phonetic":"Sa-wat-dee krap (撒哇滴 卡)"}\nSHOW_CARD: {"word":"สวัสดีค่ะ","meaning":"你好 (Tina 說)","phonetic":"Sa-wat-dee ka (撒哇滴 咖)"}\nSHOW_CARD: {"word":"ขอบคุณครับ","meaning":"謝謝 (Darren 說)","phonetic":"Khop-khun krap (叩昆 卡)"}\nSHOW_CARD: {"word":"ขอบคุณค่ะ","meaning":"謝謝 (Tina 說)","phonetic":"Khop-khun ka (叩昆 咖)"}\nSHOW_CARD: {"word":"ใช่","meaning":"是的","phonetic":"Chai (柴)"}\nSHOW_CARD: {"word":"ไม่ใช่","meaning":"不是","phonetic":"Mai chai (麥 柴)"}\nSHOW_CARD: {"word":"ห้องน้ำอยู่ไหน","meaning":"廁所在哪裡？","phonetic":"Hong-nam yoo nai (轟南 尤 乃)"}\nSHOW_CARD: {"word":"ขอโทษ","meaning":"對不起 / 不好意思","phonetic":"Khor-thot (摳透)"}\nSHOW_CARD: {"word":"ไม่เป็นไร","meaning":"沒關係","phonetic":"Mai pen rai (麥騙萊)"}\nSHOW_CARD: {"word":"ลาก่อน","meaning":"再見","phonetic":"La-gon (拉拱)"}`;
+            } else if (type === 'order') {
+                title = '🍽️ 查詢點餐用語';
+                bubbleText = "😋 吃貨模式啟動！老公老婆去夜市或餐廳點餐，直接秀出這些字卡，或是按發音給老闆聽！";
+                // 🌟 新增：很好吃 / 好喝 (A-roi mak)
+                cards = `SHOW_CARD: {"word":"ขอผักชีเยอะๆ","meaning":"多一點香菜","phonetic":"Khor pak-chee yuh-yuh"}\nSHOW_CARD: {"word":"ไม่เผ็ด","meaning":"完全不要辣","phonetic":"Mai pet"}\nSHOW_CARD: {"word":"เผ็ดนิดหน่อย","meaning":"微辣就好","phonetic":"Pet nid noi (配 尼 諾以)"}\nSHOW_CARD: {"word":"อร่อยมาก","meaning":"很好吃 / 好喝！","phonetic":"A-roi mak (阿萊 罵)"}\nSHOW_CARD: {"word":"เก็บตังค์ด้วย","meaning":"結帳 / 買單","phonetic":"Gep tang duay"}\nSHOW_CARD: {"word":"อันนี้เท่าไหร่","meaning":"這個多少錢？","phonetic":"An-nee tao-rai"}\nSHOW_CARD: {"word":"แพงไป","meaning":"太貴了啦！","phonetic":"Paeng pai (騙 掰)"}\nSHOW_CARD: {"word":"ลดหน่อยได้ไหม","meaning":"可以算便宜一點嗎？","phonetic":"Lot noi dai mai"}`;
+            } else if (type === 'drink') {
+                // 🌟 替換盲盒：改為超實用的飲料甜度冰塊小抄
+                title = '🥤 飲料甜度與冰塊';
+                bubbleText = "🥤 泰國飲料預設都是「全糖全冰」，不想甜死的話，點手搖飲或咖啡時這幾張字卡絕對是你們的救星！";
+                // 🌟 新增：「半糖 (50%)」，泰國點半糖最標準說法就是 Wan 50%
+                cards = `SHOW_CARD: {"word":"หวาน 50%","meaning":"半糖 (50%)","phonetic":"Wan 50 percent (灣 50 趴仙)"}\nSHOW_CARD: {"word":"หวานน้อย","meaning":"少糖 (微糖)","phonetic":"Wan noi (灣 諾以)"}\nSHOW_CARD: {"word":"ไม่หวาน","meaning":"完全無糖","phonetic":"Mai wan (麥 灣)"}\nSHOW_CARD: {"word":"น้ำแข็งน้อย","meaning":"少冰","phonetic":"Nam-khaeng noi (南坑 諾以)"}\nSHOW_CARD: {"word":"ไม่ใส่น้ำแข็ง","meaning":"去冰","phonetic":"Mai sai nam-khaeng (麥 塞 南坑)"}\nSHOW_CARD: {"word":"หวานปกติ","meaning":"正常甜 (泰國極甜)","phonetic":"Wan pok-ka-ti"}`;
+            } else if (type === 'food') {
+                // 🌟 替換盲盒：改為經典必吃美食指菜單
+                title = '🍜 必吃經典美食';
+                bubbleText = "😋 盲盒有風險，吃經典最安全！看到菜單眼花撩亂時，直接拿這些字卡給店員看，保證不踩雷！";
+                cards = `SHOW_CARD: {"word":"ต้มยำกุ้ง","meaning":"冬蔭功 (酸辣蝦湯)","phonetic":"Tom Yum Goong"}\nSHOW_CARD: {"word":"ผัดไทย","meaning":"泰式炒河粉","phonetic":"Pad Thai"}\nSHOW_CARD: {"word":"กะเพราหมูสับ","meaning":"打拋豬肉","phonetic":"Ka-prao Moo Sab"}\nSHOW_CARD: {"word":"ส้มตำ","meaning":"青木瓜沙拉","phonetic":"Som Tum"}\nSHOW_CARD: {"word":"ข้าวเหนียวมะม่วง","meaning":"芒果糯米飯","phonetic":"Khao Niao Mamuang"}`;
+            } else if (type === 'massage') {
+                title = '💆 按摩溝通用語';
+                bubbleText = "💆‍♀️ 仙女 Tina 按摩就是要舒服到睡著！遇到力道不對，馬上用這幾句跟師傅溝通，千萬不要忍耐喔！";
+                cards = `SHOW_CARD: {"word":"หนักหน่อย","meaning":"重一點","phonetic":"Nak noi"}\nSHOW_CARD: {"word":"เบาหน่อย","meaning":"輕一點","phonetic":"Bao noi"}\nSHOW_CARD: {"word":"ตรงนี้เจ็บมาก","meaning":"這裡很痛","phonetic":"Trong nee jep mak"}\nSHOW_CARD: {"word":"ไม่ต้องดัดหลัง","meaning":"不要折背 (拉筋)","phonetic":"Mai dtong dat lang"}\nSHOW_CARD: {"word":"สบายมาก","meaning":"很舒服","phonetic":"Sa-bai mak"}`;
+            } else if (type === 'taxi') {
+                title = '🚕 叫車小抄與避雷';
+                bubbleText = "🚕 霸總 Darren，在泰國叫車記得首選 Grab 或 Bolt APP！\n\n⚠️ 【管家避雷針】：如果路邊攔嘟嘟車 (Tuk-tuk) 或計程車，一定要聽到司機答應「By Meter (跳錶)」或先談好合理價錢才上車喔！遇到喊天價的，微笑拒絕換下一台就好！";
+                // 🌟 新增：我想要去...、機場、飯店、行李
+                cards = `SHOW_CARD: {"word":"กดมิเตอร์ด้วย","meaning":"請跳錶 (By Meter)","phonetic":"Got me-ter duay"}\nSHOW_CARD: {"word":"อยากไป...","meaning":"我想要去...","phonetic":"Yak pai... (雅 掰...)"}\nSHOW_CARD: {"word":"ไปที่นี่","meaning":"我要去這裡 (指著地圖)","phonetic":"Pai tee nee"}\nSHOW_CARD: {"word":"สนามบิน","meaning":"機場","phonetic":"Sa-nam bin (沙南 賓)"}\nSHOW_CARD: {"word":"โรงแรม","meaning":"飯店 / 酒店","phonetic":"Rong-raem (隆 蘭)"}\nSHOW_CARD: {"word":"กระเป๋า","meaning":"行李","phonetic":"Kra-pao (嘎包)"}\nSHOW_CARD: {"word":"จอดตรงนี้","meaning":"在這裡停車","phonetic":"Jot trong nee"}\nSHOW_CARD: {"word":"ระวังหน่อย","meaning":"請開慢/小心一點","phonetic":"Ra-wang noi"}`;
+            }
+
+            const finalAssistantText = bubbleText + "\n\n" + cards;
+
+            // 1. 先秒速渲染到畫面上，讓體驗極致順暢
+            chatHistory.push({ role: "user", content: title, imgUrl: null, createdAt: Date.now() });
+            chatHistory.push({ role: "assistant", content: finalAssistantText, createdAt: Date.now() });
+            
+            if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+            window.renderChatHistory();
+
+            // 2. 背景偷偷存入 Firebase，不影響操作速度
+            if (currentUser) {
+                try {
+                    await addDoc(getPrivColl('chatHistory'), { role: 'user', content: title, imgUrl: null, createdAt: Date.now() });
+                    await addDoc(getPrivColl('chatHistory'), { role: 'assistant', content: finalAssistantText, createdAt: Date.now() });
+                } catch(e) { console.error("Save fixed cards failed", e); }
+            }
+        };
+
         window.getFoodRecommendation = (place) => {
             if (!place) return;
             const prompt = `我們現在在「${place}」附近，請推薦 3 家走路能到的高評價必吃美食或餐廳。請註明：大約價位、必點菜色，最後請給 MAP_SEARCH 代碼方便我們導航！`;
