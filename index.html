@@ -769,6 +769,13 @@
             letter-spacing: 0.05em; 
         }
 
+        .status-pill {
+            font-size: 10px !important;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
         /* 🌟 行程卡片：黃金比例微調 (解決擁擠感與跨平台大小問題) */
 
         /* 1. 時間範圍：解除極黑體，改用一般粗體，增加優雅感 */
@@ -1111,7 +1118,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v16.1</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v16.3</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2740,7 +2747,7 @@
                 title = '🚕 叫車小抄與避雷';
                 bubbleText = "🚕 霸總 Darren，在泰國叫車記得首選 Grab 或 Bolt APP！\n\n⚠️ 【管家避雷針】：如果路邊攔嘟嘟車 (Tuk-tuk) 或計程車，一定要聽到司機答應「By Meter (跳錶)」或先談好合理價錢才上車喔！遇到喊天價的，微笑拒絕換下一台就好！";
                 // 🌟 新增：我想要去...、機場、飯店、行李
-                cards = `SHOW_CARD: {"word":"กดมิเตอร์ด้วย","meaning":"請跳錶 (By Meter)","phonetic":"Got me-ter duay"}\nSHOW_CARD: {"word":"อยากไป...","meaning":"我想要去...","phonetic":"Yak pai... (雅 掰...)"}\nSHOW_CARD: {"word":"ไปที่นี่","meaning":"我要去這裡 (指著地圖)","phonetic":"Pai tee nee"}\nSHOW_CARD: {"word":"สนามบิน","meaning":"機場","phonetic":"Sa-nam bin (沙南 賓)"}\nSHOW_CARD: {"word":"โรงแรม","meaning":"飯店 / 酒店","phonetic":"Rong-raem (隆 蘭)"}\nSHOW_CARD: {"word":"กระเป๋า","meaning":"行李","phonetic":"Kra-pao (嘎包)"}\nSHOW_CARD: {"word":"จอดตรงนี้","meaning":"在這裡停車","phonetic":"Jot trong nee"}\nSHOW_CARD: {"word":"ระวังหน่อย","meaning":"請開慢/小心一點","phonetic":"Ra-wang noi"}`;
+                cards = `SHOW_CARD: {"word":"กดมิเตอร์ด้วย","meaning":"請跳錶 (By Meter)","phonetic":"Got me-ter duay"}\nSHOW_CARD: {"word":"อยากไป...","meaning":"我想要去...","phonetic":"Yak pai... (雅 掰...)"}\nSHOW_CARD: {"word":"ไปที่นี่","meaning":"我要去這裡 (指著地圖)","phonetic":"Pai tee nee"}\nSHOW_CARD: {"word":"สนามบิน","meaning":"機場","phonetic":"Sa-nam bin (沙南 賓)"}\nSHOW_CARD: {"word":"โรงแรม","meaning":"飯店 / 酒店","phonetic":"Rong-raem (隆 蘭)"}\nSHOW_CARD: {"word":"กระเป๋า","meaning":"行李","phonetic":"Kra-pao (嘎包)"}\nSHOW_CARD: {"word":"จอดตรงนี้","meaning":"在這裡停車","phonetic":"Jot trong nee"}\nSHOW_CARD: {"word":"ระวังหน่อย","meaning":"請开慢/小心一點","phonetic":"Ra-wang noi"}`;
             }
 
             const finalAssistantText = bubbleText + "\n\n" + cards;
