@@ -1081,7 +1081,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.4</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.5</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -2337,12 +2337,14 @@
                 container.innerHTML = `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
                         ${items.map(i => `
+                            <!-- 🌟 修正：改為 items-start 防止多行時按鈕浮空，並加上 shrink-0 防止擠壓 -->
                             <div class="p-3 flex items-start gap-2.5 border-b border-gray-50 last:border-0 transition-colors">
                                 <div onclick="window.togglePack('${i.id}', ${i.checked})" class="w-5 h-5 rounded-md border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all cursor-pointer ${i.checked?'bg-[#6B705C] border-[#6B705C]':'border-gray-300'}">
                                     ${i.checked ? '<span class="text-white text-[10px] leading-none">✓</span>' : ''}
                                 </div>
-                                <span class="flex-1 text-[13px] leading-tight pt-0.5 ${i.checked?'line-through text-gray-300 opacity-60':'font-bold text-[#4A4E40]'}">${i.item}</span>
-                                <button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300 hover:text-red-400 shrink-0 transition-colors">✕</button>
+                                <!-- 🌟 核心修正：加上 min-w-0 break-words whitespace-pre-wrap 強制長網址換行 -->
+                                <span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-[13px] leading-tight pt-0.5 ${i.checked?'line-through text-gray-300 opacity-60':'font-bold text-[#4A4E40]'}">${i.item}</span>
+                                <button onclick="window.deleteItem('packing','${i.id}')" class="text-gray-300 hover:text-red-400 shrink-0 mt-0.5 transition-colors">✕</button>
                             </div>
                         `).join('')}
                     </div>
@@ -2412,7 +2414,8 @@
             html += Object.keys(cats).map(key => { 
                 const items = pendingMissions.filter(m => m.category === key); 
                 if (items.length === 0 && key !== 'pre') return ''; 
-                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-center gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 text-sm text-[#4A4E40] font-bold">${m.task}</span><div class="flex gap-2"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
+                // 🌟 修正：對齊 items-start、按鈕 shrink-0、文字 min-w-0 break-words
+                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-start gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 shrink-0 mt-0.5 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-sm text-[#4A4E40] font-bold leading-relaxed">${m.task}</span><div class="flex gap-2 shrink-0 mt-0.5"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
             }).join('');
 
             if (completedMissions.length > 0) {
@@ -2426,12 +2429,13 @@
                         </div>
                         <div id="completed-missions-list" class="hidden bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden opacity-70">
                             ${completedMissions.map(m => `
-                                <div class="p-3 flex items-center gap-3 border-b border-gray-200 last:border-0">
-                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all bg-[#6B705C] border-[#6B705C] cursor-pointer">
+                                <!-- 🌟 修正：對齊 items-start、按鈕 shrink-0、文字 min-w-0 break-words -->
+                                <div class="p-3 flex items-start gap-3 border-b border-gray-200 last:border-0">
+                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-5 h-5 shrink-0 mt-0.5 rounded border-2 flex items-center justify-center transition-all bg-[#6B705C] border-[#6B705C] cursor-pointer">
                                         <span class="text-white text-[10px]">✓</span>
                                     </div>
-                                    <span class="flex-1 text-xs line-through text-gray-400 font-medium">${m.task}</span>
-                                    <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-300 hover:text-red-300 px-1 text-base">✕</button>
+                                    <span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-xs line-through text-gray-400 font-medium leading-relaxed">${m.task}</span>
+                                    <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-300 hover:text-red-300 px-1 text-base shrink-0 mt-0.5">✕</button>
                                 </div>
                             `).join('')}
                         </div>
