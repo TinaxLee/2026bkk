@@ -60,6 +60,25 @@
         }
 
         /* 🌟 UI 觸控優化：鎖定 UI 控制項，防止誤觸產生文字選取區塊 */
+        .bottom-nav, 
+        .main-header, 
+        button, 
+        .nav-btn, 
+        .fab, 
+        .day-tab, 
+        .filter-chip, 
+        .pack-global-filters button,
+        .modal-header,
+        .weather-card {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .heart-text { color: var(--heart-pink); font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .couple-name { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1.1; font-weight: 700; color: #2D3128; letter-spacing: 0.05em; margin: 0.5rem 0; }
         .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
         
@@ -917,6 +936,13 @@
                         <input type="text" id="it-activity" placeholder="景點/店名" class="flex-1 bg-gray-50 input-base rounded-xl text-sm outline-none">
                     </div>
                     <input type="text" id="it-address" placeholder="輸入泰文地址或座標 (選填)" class="w-full bg-gray-50 input-base rounded-xl text-sm mb-3 outline-none border border-gray-100">
+                    
+                    <!-- 🌟 升級：將交通工具圖示改為「自由輸入框」，支援輸入多個 Emoji (例：🚕/🚆) -->
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="it-transit-icon" value="🚕" placeholder="🚕/🚆" class="w-20 shrink-0 bg-gray-50 px-2 rounded-xl text-center text-lg outline-none border border-gray-100 font-bold">
+                        <input type="text" id="it-transit-info" placeholder="到下個地點 (例：🚕15分 / 🚆30分)" class="flex-1 bg-gray-50 input-base rounded-xl text-sm outline-none border border-gray-100 font-bold">
+                    </div>
+
                     <textarea id="it-note" placeholder="備註 (如：必點菜色、提醒)" class="w-full bg-gray-50 p-3 rounded-xl text-sm mb-3 outline-none border border-gray-100 h-16 resize-none"></textarea>
                     
                     <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-3.5 rounded-xl font-bold text-sm">加入行程地圖</button>
@@ -1081,20 +1107,48 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.5</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.9</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
                     <!-- 🌟 隨身翻譯機 (完美修復顯示) -->
-                    <div class="px-1 mb-4">
-                        <div class="bg-white p-2 rounded-2xl flex gap-2 border-2 border-[#DDB892]/50 shadow-sm items-center">
-                            <select id="translate-lang-selector" class="bg-gray-100 px-2 py-1 rounded-lg text-lg outline-none font-bold">
-                                <option value="泰文">🇹🇭</option>
-                                <option value="英文">🇺🇸</option>
-                            </select>
-                            <input type="text" id="quick-translate-input" placeholder="輸入中文秒翻譯..." class="flex-1 bg-transparent text-sm outline-none font-bold text-[#4A4E40] placeholder-gray-400">
-                            <button onclick="window.quickTranslate()" class="bg-[#DDB892] text-white px-4 py-2 rounded-xl font-black text-xs shadow-sm active:scale-95 transition-transform whitespace-nowrap">翻譯 🔊</button>
+                <div class="flex justify-between items-center mb-4 px-1 mt-6">
+                    <h3 class="text-base font-black text-[#4A4E40]">今日行程 🗺️</h3>
+                    <button onclick="window.toggleSection('itinerary')" class="text-xs bg-[#6B705C] text-white px-4 py-1.5 rounded-full font-bold shadow-sm">＋新增行程</button>
+                </div>
+
+                <!-- 🌟 行程時間新增了結束時間輸入框並改為隱藏面板 -->
+                <div id="itinerary-grid" class="expand-panel app-card p-5 bg-white/80 mb-5 border-dashed border-2 border-gray-200">
+                    <div class="flex gap-2 mb-3">
+                        <select id="it-day" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none"></select>
+                        <div class="flex-1 flex items-center bg-gray-50 rounded-xl px-2 border border-gray-100">
+                            <input type="time" id="it-time-start" class="w-full bg-transparent text-sm font-bold text-center outline-none">
+                            <span class="text-gray-300 font-bold mx-1">-</span>
+                            <input type="time" id="it-time-end" class="w-full bg-transparent text-sm font-bold text-center outline-none">
                         </div>
+                    </div>
+                    <div class="flex gap-3 mb-3">
+                        <select id="it-type" class="w-1/3 bg-gray-50 input-base rounded-xl text-sm font-bold outline-none">
+                            <option value="view">📸 景點</option><option value="food">🍴 美食</option><option value="shop">🛍️ 購物</option><option value="massage">💆 按摩</option><option value="play">🎢 玩樂</option><option value="note">📝 備註</option>
+                        </select>
+                        <input type="text" id="it-activity" placeholder="景點/店名" class="flex-1 bg-gray-50 input-base rounded-xl text-sm outline-none">
+                    </div>
+                    <input type="text" id="it-address" placeholder="輸入泰文地址或座標 (選填)" class="w-full bg-gray-50 input-base rounded-xl text-sm mb-3 outline-none border border-gray-100">
+                    
+                    <!-- 🌟 升級：加入 min-w-0 防止 flex 子元素被長文字撐破 -->
+                    <div class="flex gap-2 mb-3 w-full">
+                        <input type="text" id="it-transit-icon" value="🚕" placeholder="🚕 或 BTS" class="w-24 shrink-0 bg-gray-50 px-2 rounded-xl text-center text-[15px] outline-none border border-gray-100 font-black text-[#6B705C] min-w-0">
+                        <input type="text" id="it-transit-info" placeholder="到下個地點 (例：🚕15分 / 🚆30分)" class="flex-1 bg-gray-50 input-base rounded-xl text-sm outline-none border border-gray-100 font-bold min-w-0">
+                    </div>
+
+                    <textarea id="it-note" placeholder="備註 (如：必點菜色、提醒)" class="w-full bg-gray-50 p-3 rounded-xl text-sm mb-3 outline-none border border-gray-100 h-16 resize-none"></textarea>
+                    
+                    <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-3.5 rounded-xl font-bold text-sm">加入行程地圖</button>
+                    <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-200 text-gray-600 w-full mt-2 py-3.5 rounded-xl font-bold text-sm hidden">取消修改</button>
+                </div>
+                
+                <div id="it-list"></div>
+            </div>
                     </div>
                     
                     <div id="gemini-chat" class="flex-1 overflow-y-auto mb-4 space-y-4 px-1 no-scrollbar"></div>
@@ -1552,7 +1606,7 @@
                 const currentCategory = categoryMap[item.type] || '📍 行程';
                 const typeClass = classMap[item.type] || 'timeline-view';
 
-                return `
+                let cardHtml = `
                     <div class="app-card schedule-card ${typeClass} timeline-item relative">
                         <div class="flex justify-between items-start">
                             <div class="flex-1 min-w-0 pr-2"> <!-- 🌟 關鍵：min-w-0 防止被長網址撐開 -->
@@ -1590,6 +1644,29 @@
                             <button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link action-button-text">💡 攻略</button>
                         </div>
                     </div>`;
+
+                let transitHtml = '';
+                if (item.transitInfo) {
+                    const icon = item.transitIcon || '🚕';
+                    transitHtml = `
+                        <!-- 🌟 專屬交通動線分隔視覺：加入 max-w-full, break-words, text-center 完美防爆破版 -->
+                        <div class="flex flex-col items-center justify-center my-2 pl-3 opacity-90 w-full overflow-hidden">
+                            <div class="relative flex flex-col items-center w-[85%] max-w-[280px]">
+                                <!-- 橫線背景 -->
+                                <div class="absolute w-full h-[1.5px] bg-[#DDB892] opacity-70 top-[14px] z-0">
+                                    <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
+                                    <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
+                                </div>
+                                <!-- 圖示與文字 -->
+                                <span class="text-[14px] font-black text-[#6B705C] tracking-wider z-10 bg-[var(--bg-light)] px-3 mb-1 max-w-full break-words text-center leading-tight">${icon}</span>
+                                <span class="text-[12px] font-black text-[#A5A58D] z-10 bg-[var(--bg-light)] px-3 tracking-widest text-center leading-tight max-w-full break-words whitespace-pre-wrap">${item.transitInfo}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return cardHtml + transitHtml;
+
             }).join('');
         };
         
@@ -1600,6 +1677,11 @@
             document.getElementById('it-day').value = item.day; 
             document.getElementById('it-type').value = item.type; 
             document.getElementById('it-activity').value = item.activity; 
+            
+            // 🌟 讀取交通資訊
+            if (document.getElementById('it-transit-icon')) document.getElementById('it-transit-icon').value = item.transitIcon || '🚕';
+            if (document.getElementById('it-transit-info')) document.getElementById('it-transit-info').value = item.transitInfo || '';
+
             if (document.getElementById('it-note')) document.getElementById('it-note').value = item.note || ''; 
             if (document.getElementById('it-address')) document.getElementById('it-address').value = item.address || ''; 
             if (item.time.includes('-')) { 
@@ -1620,6 +1702,11 @@
             editingItineraryId = null; 
             document.getElementById('it-activity').value = ''; 
             if (document.getElementById('it-time-end')) document.getElementById('it-time-end').value = ''; 
+            
+            // 🌟 清空交通資訊
+            if (document.getElementById('it-transit-icon')) document.getElementById('it-transit-icon').value = '🚕';
+            if (document.getElementById('it-transit-info')) document.getElementById('it-transit-info').value = '';
+
             if (document.getElementById('it-note')) document.getElementById('it-note').value = ''; 
             if (document.getElementById('it-address')) document.getElementById('it-address').value = ''; 
             document.getElementById('it-day').value = currentDayFilter; 
@@ -1641,7 +1728,13 @@
             const timeVal = endTime ? `${startTime} - ${endTime}` : startTime; 
             const typeVal = document.getElementById('it-type').value; 
             
-            const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal }; 
+            // 🌟 儲存交通資訊
+            const transitIconEl = document.getElementById('it-transit-icon');
+            const transitIcon = transitIconEl ? transitIconEl.value : '🚕';
+            const transitInfoEl = document.getElementById('it-transit-info');
+            const transitInfo = transitInfoEl ? transitInfoEl.value.trim() : '';
+
+            const data = { day: dayVal, time: timeVal, activity: act, address: addr, note: noteVal, type: typeVal, transitIcon: transitIcon, transitInfo: transitInfo }; 
             
             try {
                 if (editingItineraryId) { 
