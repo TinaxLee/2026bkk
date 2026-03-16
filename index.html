@@ -1623,22 +1623,29 @@
 
                 let transitHtml = '';
                 if (item.transitInfo) {
-                    const icon = item.transitIcon || '🚕';
-                    transitHtml = `
-                        <!-- 🌟 專屬交通動線分隔視覺：加入 max-w-full, break-words, text-center 完美防爆破版 -->
-                        <div class="flex flex-col items-center justify-center my-2 pl-3 opacity-90 w-full overflow-hidden">
-                            <div class="relative flex flex-col items-center w-[85%] max-w-[280px]">
-                                <!-- 橫線背景 -->
-                                <div class="absolute w-full h-[1.5px] bg-[#DDB892] opacity-70 top-[14px] z-0">
-                                    <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
-                                    <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
+                    // 🌟 斜線分裂魔法：偵測斜線，將長文字拆分成多層獨立的點點線軌跡！
+                    const infos = item.transitInfo.split(/[\/／]/).map(s => s.trim()).filter(s => s);
+                    const icons = (item.transitIcon || '🚕').split(/[\/／]/).map(s => s.trim());
+
+                    // 為每一段交通資訊獨立生成一條超有質感的懸浮連線
+                    transitHtml = infos.map((info, idx) => {
+                        // 如果圖示不夠，自動套用第一個圖示
+                        const icon = icons[idx] !== undefined ? icons[idx] : (icons[0] || '🚕');
+                        return `
+                            <div class="flex flex-col items-center justify-center my-2 w-full opacity-90">
+                                <div class="relative flex flex-col items-center w-[85%] max-w-[280px]">
+                                    <!-- 橫線背景 -->
+                                    <div class="absolute w-full h-[1.5px] bg-[#DDB892] opacity-60 top-[14px] z-0">
+                                        <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
+                                        <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
+                                    </div>
+                                    <!-- 圖示與文字 (還原無印風排版) -->
+                                    <span class="text-[14px] font-black text-[#6B705C] tracking-wider z-10 bg-[var(--bg-light)] px-3 mb-1 max-w-full break-words text-center leading-tight">${icon}</span>
+                                    <span class="text-[12px] font-black text-[#A5A58D] z-10 bg-[var(--bg-light)] px-3 tracking-widest text-center leading-tight max-w-full break-words whitespace-pre-wrap">${info}</span>
                                 </div>
-                                <!-- 圖示與文字 -->
-                                <span class="text-[14px] font-black text-[#6B705C] tracking-wider z-10 bg-[var(--bg-light)] px-3 mb-1 max-w-full break-words text-center leading-tight">${icon}</span>
-                                <span class="text-[12px] font-black text-[#A5A58D] z-10 bg-[var(--bg-light)] px-3 tracking-widest text-center leading-tight max-w-full break-words whitespace-pre-wrap">${item.transitInfo}</span>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }).join('');
                 }
 
                 return cardHtml + transitHtml;
