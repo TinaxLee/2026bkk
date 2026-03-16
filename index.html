@@ -44,6 +44,8 @@
         /* 🌟 OS 專屬優化 1：封印 iOS 的「邊緣回彈」(Rubber-banding) */
         html {
             overscroll-behavior-y: none;
+            -webkit-text-size-adjust: 100%; /* 🌟 跨平台優化：防止 iOS/Android 系統自動干預字體縮放比例 */
+            text-size-adjust: 100%;
         }
 
         body { 
@@ -53,13 +55,11 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             padding-bottom: calc(110px + env(safe-area-inset-bottom)); 
-            overscroll-behavior-y: none; /* 徹底封印回彈 */
+            overscroll-behavior-y: none; 
+            -webkit-text-size-adjust: 100%;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .heart-text { color: var(--heart-pink); font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* 🌟 UI 觸控優化：鎖定 UI 控制項，防止誤觸產生文字選取區塊 */
         .couple-name { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1.1; font-weight: 700; color: #2D3128; letter-spacing: 0.05em; margin: 0.5rem 0; }
         .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
         
@@ -746,48 +746,65 @@
             border-radius: 6px;
         }
 
+        /* 🌟 行程卡片：黃金比例微調 (解決擁擠感與跨平台大小問題) */
+
+        /* 1. 時間範圍：解除極黑體，改用一般粗體，增加優雅感 */
         .schedule-item-time {
-            font-size: 17px !important; 
-            font-weight: 800 !important;
-            color: #333 !important;
-            letter-spacing: -0.01em;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px !important; 
+            font-weight: 700 !important; /* 從 800/900 降回 700 */
+            color: #4A4E40 !important;
+            letter-spacing: 0.02em;
         }
 
+        /* 2. 分類標籤：字體稍微收斂，增加內部留白 */
         .schedule-item-badge {
-            font-size: 15px !important;    
-            padding: 4px 12px !important;  
-            font-weight: 900 !important;   
+            font-size: 13px !important;    
+            padding: 4px 10px !important;  
+            font-weight: 800 !important;   
             background: #FFFFFF !important;
             border-radius: 8px !important;
             display: inline-flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important;
-            white-space: nowrap;           
+            letter-spacing: 0.05em;
         }
 
+        /* 3. 行程大標題：維持視覺焦點，但字距稍微收緊 */
         .schedule-item-title {
-            font-size: 20px !important;
-            font-weight: 900 !important;
-            line-height: 1.4 !important; 
-            margin-top: 6px !important;
+            font-size: 22px !important; /* 稍微放大，確立主從關係 */
+            font-weight: 800 !important; /* 使用 800 讓 iOS 和 Android 都能呈現漂亮的厚度 */
+            line-height: 1.3 !important; 
+            margin-top: 8px !important;
+            margin-bottom: 6px !important;
             color: #2D3128 !important;
-            letter-spacing: -0.02em;
+            letter-spacing: 0.01em;
             word-break: break-word; 
         }
 
-        .schedule-item-note {
-            font-size: 14.5px !important;
-            font-weight: 500 !important;
-            line-height: 1.6 !important;
-            color: #555 !important;
+        /* 4. 🌟 新增：地址與備註的專屬排版 (解決 Icon 對齊與字體過重問題) */
+        .schedule-item-detail {
+            display: flex;
+            align-items: flex-start; /* 確保 Emoji 和文字頂部對齊 */
+            gap: 6px; /* Emoji 和文字的完美距離 */
+            font-size: 14px !important; /* 放大到 14px，照顧 Android 用戶 */
+            font-weight: 600 !important; /* 🌟 關鍵：從 極黑體(900) 降為 半粗體(600)！字體變大但不會覺得粗重醜陋！ */
+            line-height: 1.6 !important; /* 增加行距，讓大腦呼吸 */
+            color: #6B705C !important;
             margin-top: 6px !important;
-            word-break: break-word; 
-            overflow-wrap: anywhere;
         }
 
+        .schedule-item-detail .emoji-icon {
+            font-size: 14px;
+            flex-shrink: 0; /* 絕對不准壓縮 Emoji */
+            margin-top: 2px; /* 微調 Emoji 位置，對齊文字第一行 */
+        }
+
+        /* 5. 底部按鈕：微調大小，讓觸控範圍更好按 */
         .action-button-text {
             font-size: 13px !important;
             font-weight: 700 !important;
+            letter-spacing: 0.05em;
         }
 
         .schedule-card {
@@ -900,7 +917,7 @@
                         <input type="text" id="it-activity" placeholder="景點/店名" class="flex-1 bg-gray-50 input-base rounded-xl text-sm outline-none">
                     </div>
                     <input type="text" id="it-address" placeholder="輸入泰文地址或座標 (選填)" class="w-full bg-gray-50 input-base rounded-xl text-sm mb-3 outline-none border border-gray-100">
-                    <textarea id="it-note" placeholder="備註 (如：必點菜色、提醒)" class="w-full bg-gray-50 p-3 rounded-xl text-sm mb-3 outline-none border border-gray-100 h-16"></textarea>
+                    <textarea id="it-note" placeholder="備註 (如：必點菜色、提醒)" class="w-full bg-gray-50 p-3 rounded-xl text-sm mb-3 outline-none border border-gray-100 h-16 resize-none"></textarea>
                     
                     <button onclick="window.addItinerary()" id="btn-add-itinerary" class="bg-[#4A4E40] text-white w-full py-3.5 rounded-xl font-bold text-sm">加入行程地圖</button>
                     <button onclick="window.cancelEditItinerary()" id="btn-cancel-itinerary" class="bg-gray-200 text-gray-600 w-full mt-2 py-3.5 rounded-xl font-bold text-sm hidden">取消修改</button>
@@ -924,7 +941,8 @@
                     <div class="grid grid-cols-3 gap-3 mb-1 px-1"><span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛫 出發</span><span class="text-[9px] font-black text-[#6B705C] uppercase text-center">🛬 抵達</span><span class="text-[9px] font-black text-[#F8AD9D] uppercase text-center">⌚ 報到</span></div>
                     <div class="grid grid-cols-3 gap-3 mb-4"><input type="time" id="f-depTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"><input type="time" id="f-arrTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"><input type="time" id="f-checkinTime" class="p-3 rounded-xl text-sm outline-none border border-gray-200 text-center"></div>
                     <input type="text" id="f-seat" placeholder="座位號碼" class="w-full p-3 rounded-xl text-sm mb-4 outline-none border border-gray-200">
-                    <input type="text" id="f-note" placeholder="備註 (如：行李重量、餐點)" class="w-full p-3 rounded-xl text-sm mb-5 outline-none border border-gray-200">
+                    <!-- 🌟 升級：將單行輸入改為多行 textarea -->
+                    <textarea id="f-note" placeholder="備註 (如：行李重量、餐點)" class="w-full p-3 rounded-xl text-sm mb-5 outline-none border border-gray-200 h-20 resize-none"></textarea>
                     <button onclick="window.addFlight()" id="btn-add-flight" class="w-full bg-[#6B705C] text-white py-4 rounded-xl text-sm font-bold shadow-md">儲存航班</button>
                     <button onclick="window.cancelEditFlight()" id="btn-cancel-flight" class="w-full mt-2 bg-gray-100 text-gray-500 py-3.5 rounded-xl text-sm font-bold hidden">取消修改</button>
                 </div>
@@ -952,7 +970,8 @@
                     
                     <div class="flex flex-col gap-3 mb-4">
                         <input type="text" id="h-room" placeholder="房號" class="w-full p-3 rounded-xl text-sm outline-none border border-gray-200">
-                        <input type="text" id="h-note" placeholder="備註 (如：早到、加床)" class="w-full p-3 rounded-xl text-sm outline-none border border-gray-200">
+                        <!-- 🌟 升級：將單行輸入改為多行 textarea -->
+                        <textarea id="h-note" placeholder="備註 (如：早到、加床)" class="w-full p-3 rounded-xl text-sm outline-none border border-gray-200 h-20 resize-none"></textarea>
                     </div>
                     
                     <button onclick="window.addHotel()" id="btn-add-hotel" class="w-full bg-[#DDB892] text-white py-3.5 rounded-xl text-sm font-bold shadow-md">儲存飯店資訊</button>
@@ -1062,7 +1081,7 @@
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
                         <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.1</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v15.4</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -1542,15 +1561,30 @@
                                     <span class="schedule-item-badge">${currentCategory}</span>
                                 </div>
                                 <div class="schedule-item-title">${item.activity}</div>
-                                ${item.address ? `<div class="text-[11px] text-[#6B705C] font-bold mt-1.5 whitespace-normal break-all">📍 ${item.address}</div>` : ''}
-                                ${item.note ? `<div class="schedule-item-note">📝 ${item.note}</div>` : ''}
+                                
+                                <!-- 🌟 終極排版修復：使用 schedule-item-detail 完美處理 Icon 對齊與文字換行 -->
+                                ${item.address ? `
+                                    <div class="schedule-item-detail">
+                                        <span class="emoji-icon">📍</span>
+                                        <span class="break-words">${item.address}</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${item.note ? `
+                                    <div class="schedule-item-detail">
+                                        <span class="emoji-icon">📝</span>
+                                        <!-- 🌟 升級：加上 whitespace-pre-wrap 讓多行文字乖乖換行顯示 -->
+                                        <span class="break-words whitespace-pre-wrap">${item.note}</span>
+                                    </div>
+                                ` : ''}
+
                             </div>
                             <div class="flex flex-col gap-3 ml-2 shrink-0"> <!-- 🌟 關鍵：shrink-0 保證按鈕絕對不被擠壓 -->
                                 <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
                                 <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
                             </div>
                         </div>
-                        <div class="flex flex-wrap gap-2 pt-3 mt-3 border-t border-gray-50">
+                        <div class="flex flex-wrap gap-2 pt-4 mt-4 border-t border-gray-50">
                             <a href="${mapUrl}" target="_blank" class="action-link action-button-text">📍 導航</a>
                             <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link action-button-text">📋 複製地址</button>
                             <button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link action-button-text">💡 攻略</button>
@@ -1677,7 +1711,8 @@
                             ${f.note ? `
                                 <div class="bg-[#FBFBFA] border-l-3 border-[#DDB892] rounded-r-xl p-3">
                                     <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-widest mb-1 leading-none">Note</div>
-                                    <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${f.note}</div>
+                                    <!-- 🌟 升級：加上 whitespace-pre-wrap 讓多行文字乖乖換行顯示 -->
+                                    <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed whitespace-pre-wrap break-words">${f.note}</div>
                                 </div>
                             ` : ''}
                         </div>
@@ -1732,7 +1767,8 @@
                         ${h.note ? `
                             <div class="bg-gray-50 border-l-2 border-[#DDB892] rounded-r-xl p-4 mt-2">
                                 <div class="text-[9px] text-[#B7B7A4] font-black uppercase tracking-[0.2em] mb-1.5">SPECIAL NOTES</div>
-                                <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed">${h.note}</div>
+                                <!-- 🌟 升級：加上 whitespace-pre-wrap 讓多行文字乖乖換行顯示 -->
+                                <div class="text-[13px] font-medium text-[#4A4E40] leading-relaxed whitespace-pre-wrap break-words">${h.note}</div>
                             </div>
                         ` : ''}
                     </div>`; 
