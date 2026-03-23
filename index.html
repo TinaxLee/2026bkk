@@ -144,7 +144,57 @@
 
         .weather-card {
             background: linear-gradient(135deg, #8E9775 0%, #6B705C 100%); color: white;
-            border-radius: 1.2rem; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+            border-radius: 1.2rem; padding: 1.2rem 1.2rem 1rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* 城市切換按鈕 */
+        .wx-city-tab {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px; font-weight: 700;
+            padding: 5px 14px; border-radius: 20px;
+            border: 1.5px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.5);
+            background: transparent;
+            transition: all 0.2s ease;
+            letter-spacing: 0.05em;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .wx-city-tab.wx-active {
+            background: rgba(255,255,255,0.22);
+            border-color: rgba(255,255,255,0.7);
+            color: white;
+        }
+        .wx-city-tab:active { transform: scale(0.95); }
+
+        /* 五日預報折疊面板 */
+        .wx-forecast-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+            opacity: 0;
+        }
+        .wx-forecast-panel.wx-open {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        /* ▼ 展開箭頭動畫 */
+        .wx-chevron { transition: transform 0.35s ease; display: inline-block; font-size: 9px; color: rgba(255,255,255,0.45); }
+        .wx-chevron.wx-up { transform: rotate(180deg); }
+
+        /* 時間軸：結束時間 */
+        .it-time-end {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(183,183,164,0.8);
+            letter-spacing: 0.01em;
+            line-height: 1;
+            padding-bottom: 6px;
+            white-space: nowrap;
         }
 
         .action-link {
@@ -636,11 +686,7 @@
             font-family: 'Montserrat', sans-serif !important;
         }
 
-        .weather-card {
-            padding: 12px 16px !important;
-            min-height: 70px !important;
-            margin-bottom: 1rem !important;
-        }
+        .weather-card-placeholder { /* placeholder */ }
         
         .weather-card span.text-\[10px\] {
             font-size: 16px !important; 
@@ -1085,17 +1131,34 @@
         <main class="p-4">
             <!-- 行程分頁 -->
             <div id="content-itinerary" class="tab-content">
-                <div class="weather-card relative shadow-lg cursor-pointer active:scale-[0.98] transition-transform overflow-hidden" 
-                     onclick="window.getWeather(); window.askGemini('我們現在在泰國，請根據曼谷與普吉目前的即時氣象，給予最帥氣的 Darren 和最美的 Tina 最貼心的蜜月穿搭建議與防護提醒！', false, '🌤️ 獲取蜜月穿搭建議')">
-                    
-                    <div id="weather-status-tag" class="absolute top-3 right-3 flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full border border-white/10 z-10">
-                        <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                        <span class="text-[9px] font-bold text-white uppercase tracking-tighter">LIVE</span>
+                <!-- 🌟 天氣卡：城市切換 + 展開五日預報 -->
+                <div id="weather-card-root" class="weather-card shadow-lg" onclick="window.toggleWeatherCard()">
+
+                    <!-- 第一列：城市按鈕 + LIVE + 展開箭頭 -->
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex gap-2">
+                            <button id="wx-tab-0" onclick="event.stopPropagation(); window.switchWeatherCity(0)" class="wx-city-tab wx-active">Bangkok</button>
+                            <button id="wx-tab-1" onclick="event.stopPropagation(); window.switchWeatherCity(1)" class="wx-city-tab">Phuket</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full border border-white/10">
+                                <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                                <span class="text-[9px] font-bold text-white uppercase tracking-tighter">LIVE</span>
+                            </div>
+                            <span id="wx-chevron" class="wx-chevron">▼</span>
+                        </div>
                     </div>
 
-                    <div id="weather-display" class="w-full">
-                        <div class="text-center text-white/50 py-4 italic text-sm">正在讀取雙城氣象...</div>
+                    <!-- 第二列：目前天氣 -->
+                    <div id="wx-current">
+                        <div class="text-center text-white/40 py-4 text-sm italic">正在讀取氣象...</div>
                     </div>
+
+                    <!-- 第三列：五日預報（折疊） -->
+                    <div id="wx-forecast" class="wx-forecast-panel"></div>
+
+                    <!-- 同步時間 -->
+                    <div id="wx-sync" class="text-center text-[9px] font-bold text-white/30 tracking-[0.3em] uppercase mt-2"></div>
                 </div>
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
@@ -1592,51 +1655,118 @@
             } catch (err) { console.error('複製失敗', err); }
         };
 
-        window.getWeather = async () => { 
-            const weatherEl = document.getElementById('weather-display');
+        // 🌟 天氣卡全域狀態
+        window._wxData = null;       // 儲存兩城市完整資料
+        window._wxCity = 0;          // 0=Bangkok, 1=Phuket
+        window._wxExpanded = false;  // 五日預報展開狀態
+
+        const _wxDescMap = (code) => {
+            if (code === 0) return '晴天';
+            if (code <= 1) return '晴時多雲';
+            if (code <= 3) return '多雲';
+            if (code <= 48) return '霧';
+            if (code <= 57) return '毛毛雨';
+            if (code <= 67) return '雨天';
+            if (code <= 77) return '下雪';
+            if (code <= 82) return '陣雨';
+            if (code >= 95) return '雷陣雨';
+            return '多雲';
+        };
+        const _wxEmojiMap = (code) => {
+            if (code === 0) return '☀️';
+            if (code <= 2) return '🌤️';
+            if (code <= 3) return '☁️';
+            if (code >= 51 && code <= 67) return '🌧️';
+            if (code >= 80 && code <= 82) return '🌦️';
+            if (code >= 95) return '⛈️';
+            return '🌤️';
+        };
+
+        window._wxRender = () => {
+            const data = window._wxData;
+            if (!data) return;
+            const d = data[window._wxCity];
             const now = new Date();
-            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
 
-            const getEmoji = (code) => {
-                if (code === 0) return '☀️';
-                if (code <= 3) return '🌤️';
-                if (code >= 51 && code <= 67) return '🌧️';
-                if (code >= 95) return '⛈️';
-                return '🌤️';
-            };
+            // 更新城市按鈕 active 狀態
+            document.querySelectorAll('.wx-city-tab').forEach((btn, i) => {
+                btn.classList.toggle('wx-active', i === window._wxCity);
+            });
 
-            try { 
-                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FBangkok"); 
+            // 當前天氣
+            const curEl = document.getElementById('wx-current');
+            if (curEl) {
+                curEl.innerHTML = `
+                    <div class="flex items-end gap-4 pb-1">
+                        <div>
+                            <div style="font-family:'Montserrat',sans-serif;font-size:52px;font-weight:900;color:white;line-height:1;">
+                                ${Math.round(d.current.temperature_2m)}°
+                            </div>
+                            <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.55);margin-top:4px;font-family:'Montserrat',sans-serif;">
+                                ${Math.round(d.daily.temperature_2m_min[0])}° – ${Math.round(d.daily.temperature_2m_max[0])}°
+                            </div>
+                            <div style="font-size:17px;font-weight:800;color:white;margin-top:6px;">${_wxDescMap(d.current.weather_code)}</div>
+                        </div>
+                        <div style="font-size:52px;margin-bottom:4px;line-height:1;">${_wxEmojiMap(d.current.weather_code)}</div>
+                    </div>`;
+            }
+
+            // 五日預報
+            const forecastEl = document.getElementById('wx-forecast');
+            if (forecastEl) {
+                const dayNames = ['日','一','二','三','四','五','六'];
+                const days = d.daily.time.slice(0, 5).map((dateStr, i) => {
+                    const label = i === 0 ? '今' : dayNames[new Date(dateStr).getDay()];
+                    const rain = d.daily.precipitation_probability_max?.[i] ?? 0;
+                    const maxT = Math.round(d.daily.temperature_2m_max[i]);
+                    const minT = Math.round(d.daily.temperature_2m_min[i]);
+                    const emoji = _wxEmojiMap(d.daily.weather_code[i]);
+                    return `
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+                            <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.55);">${label}</span>
+                            <span style="font-size:22px;line-height:1.2;">${emoji}</span>
+                            <span style="font-size:10px;font-weight:700;color:rgba(147,210,255,0.85);">${rain}%</span>
+                            <span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:white;">${maxT}°</span>
+                            <span style="font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;color:rgba(255,255,255,0.45);">${minT}°</span>
+                        </div>`;
+                }).join('');
+                forecastEl.innerHTML = `
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.12);display:flex;gap:4px;">
+                        ${days}
+                    </div>`;
+            }
+
+            // 同步時間
+            const syncEl = document.getElementById('wx-sync');
+            if (syncEl) syncEl.textContent = `SYNC • ${timeStr}`;
+        };
+
+        window.switchWeatherCity = (idx) => {
+            window._wxCity = idx;
+            window._wxRender();
+        };
+
+        window.toggleWeatherCard = () => {
+            window._wxExpanded = !window._wxExpanded;
+            const panel = document.getElementById('wx-forecast');
+            const chevron = document.getElementById('wx-chevron');
+            if (panel) panel.classList.toggle('wx-open', window._wxExpanded);
+            if (chevron) chevron.classList.toggle('wx-up', window._wxExpanded);
+        };
+
+        window.getWeather = async () => {
+            try {
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,time&timezone=Asia%2FBangkok&forecast_days=5");
                 if (!res.ok) throw new Error();
-                const data = await res.json(); 
-                
-                // 渲染極簡雙城佈局
-                weatherEl.innerHTML = `
-                    <div class="flex flex-col w-full">
-                        <div class="flex items-center py-2">
-                            <div class="flex-1 flex flex-col items-center border-r border-white/5">
-                                <div class="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">Bangkok</div>
-                                <div class="text-3xl font-black text-white leading-none mb-1">${Math.round(data[0].current.temperature_2m)}°</div>
-                                <div class="text-[10px] font-bold text-white/40 mb-2">${Math.round(data[0].daily.temperature_2m_min[0])}° - ${Math.round(data[0].daily.temperature_2m_max[0])}°</div>
-                                <div class="text-3xl transform hover:scale-110 transition-transform">${getEmoji(data[0].current.weather_code)}</div>
-                            </div>
-
-                            <div class="flex-1 flex flex-col items-center">
-                                <div class="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] mb-1">Phuket</div>
-                                <div class="text-3xl font-black text-white leading-none mb-1">${Math.round(data[1].current.temperature_2m)}°</div>
-                                <div class="text-[10px] font-bold text-white/40 mb-2">${Math.round(data[1].daily.temperature_2m_min[0])}° - ${Math.round(data[1].daily.temperature_2m_max[0])}°</div>
-                                <div class="text-3xl transform hover:scale-110 transition-transform">${getEmoji(data[1].current.weather_code)}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center text-[8px] font-bold text-white/20 tracking-[0.3em] mt-2 uppercase">
-                            Sync • ${timeStr}
-                        </div>
-                    </div>
-                `; 
-            } catch(e) { 
-                weatherEl.innerHTML = `<div class="text-center text-white/30 py-6 text-[10px] tracking-widest uppercase italic">Weather Offline</div>`; 
-            } 
+                const raw = await res.json();
+                // open-meteo 多座標回傳陣列
+                window._wxData = Array.isArray(raw) ? raw : [raw];
+                window._wxRender();
+            } catch(e) {
+                const curEl = document.getElementById('wx-current');
+                if (curEl) curEl.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.3);padding:16px 0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Weather Offline</div>`;
+            }
         };
         
         // 🌟 換算器使用「精準模式 (fmtExact)」，保留小數點 (並且把顯示精度拉到 4 位！)
@@ -1801,8 +1931,10 @@
                 const isLast = idx === sorted.length - 1;
 
                 // 左側只顯示開始時間，卡片內顯示完整時間區間
-                const displayTime = (item.time || '').split('-')[0].trim();
-                const hasTimeRange = item.time && item.time.includes('-');
+                const timeParts = (item.time || '').split('-').map(t => t.trim());
+                const displayTime = timeParts[0];
+                const displayEndTime = timeParts[1] || '';
+                const hasTimeRange = !!displayEndTime;
 
                 // 🌟 交通連接線（保留原版美感）
                 let transitHtml = '';
@@ -1829,6 +1961,7 @@
                     <div class="it-timeline-row">
                         <div class="it-time-col">
                             <div class="it-time-label">${displayTime}</div>
+                            ${displayEndTime ? `<div class="it-time-end">${displayEndTime}</div>` : ''}
                             <div class="it-dot type-${item.type || 'view'}"></div>
                             ${!isLast ? `<div class="it-line-seg"></div>` : ''}
                         </div>
@@ -1837,7 +1970,6 @@
                                 <div class="it-card-header">
                                     <div class="it-card-main">
                                         <div class="it-card-title">${item.activity}</div>
-                                        ${hasTimeRange ? `<div class="it-card-time-range">${item.time}</div>` : ''}
                                         <span class="it-card-badge">${currentCategory}</span>
                                     </div>
                                     <div class="it-card-ctrl">
