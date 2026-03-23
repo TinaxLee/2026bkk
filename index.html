@@ -1756,14 +1756,21 @@
         };
 
         window.getWeather = async () => {
+            const DAILY = 'temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max';
+            const CURRENT = 'temperature_2m,weather_code';
+            const TZ = 'Asia%2FBangkok';
+            const urls = [
+                `https://api.open-meteo.com/v1/forecast?latitude=13.75&longitude=100.50&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`,
+                `https://api.open-meteo.com/v1/forecast?latitude=7.88&longitude=98.39&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`
+            ];
             try {
-                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=13.75,7.88&longitude=100.50,98.39&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,time&timezone=Asia%2FBangkok&forecast_days=5");
-                if (!res.ok) throw new Error();
-                const raw = await res.json();
-                // open-meteo 多座標回傳陣列
-                window._wxData = Array.isArray(raw) ? raw : [raw];
+                const [r0, r1] = await Promise.all(urls.map(u => fetch(u)));
+                if (!r0.ok || !r1.ok) throw new Error('API error');
+                const [d0, d1] = await Promise.all([r0.json(), r1.json()]);
+                window._wxData = [d0, d1];
                 window._wxRender();
             } catch(e) {
+                console.error('Weather fetch failed:', e);
                 const curEl = document.getElementById('wx-current');
                 if (curEl) curEl.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.3);padding:16px 0;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">Weather Offline</div>`;
             }
