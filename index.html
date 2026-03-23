@@ -841,6 +841,188 @@
             padding: 20px !important;
             margin-bottom: 15px !important;
         }
+
+        /* ============================================================
+           🌟 新版折疊式行程時間軸
+           ============================================================ */
+        .it-timeline-wrapper { position: relative; }
+
+        .it-timeline-row {
+            display: flex;
+            align-items: stretch;
+            position: relative;
+        }
+
+        /* 左側時間欄 */
+        .it-time-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 58px;
+            flex-shrink: 0;
+        }
+
+        .it-time-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--morandi-gold);
+            letter-spacing: 0.01em;
+            line-height: 1;
+            padding-top: 16px;
+            padding-bottom: 6px;
+            white-space: nowrap;
+        }
+
+        .it-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2.5px solid white;
+            flex-shrink: 0;
+            z-index: 1;
+            background: #E5E7EB;
+            box-shadow: 0 0 0 2px #E5E7EB;
+        }
+        .it-dot.type-food     { background: #F8AD9D; box-shadow: 0 0 0 2px #F8AD9D; }
+        .it-dot.type-view     { background: #8E9775; box-shadow: 0 0 0 2px #8E9775; }
+        .it-dot.type-shop     { background: #DDB892; box-shadow: 0 0 0 2px #DDB892; }
+        .it-dot.type-massage  { background: #B5838D; box-shadow: 0 0 0 2px #B5838D; }
+        .it-dot.type-play     { background: #CB997E; box-shadow: 0 0 0 2px #CB997E; }
+        .it-dot.type-note     { background: #A5A58D; box-shadow: 0 0 0 2px #A5A58D; }
+
+        /* 時間軸縱線（自動撐滿高度）*/
+        .it-line-seg {
+            width: 2px;
+            flex: 1;
+            background: #EAE9E0;
+            min-height: 16px;
+        }
+
+        /* 右側卡片容器 */
+        .it-card-wrap {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 0 0 12px;
+        }
+
+        /* 卡片本體 */
+        .it-card-inner {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            border: 1px solid #F1F1F1;
+            cursor: pointer;
+            transition: box-shadow 0.2s, border-color 0.2s;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .it-card-inner:active { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .it-card-inner.expanded {
+            box-shadow: 0 8px 24px rgba(107,112,92,0.12);
+            border-color: #DDB892;
+        }
+
+        /* 卡片永遠可見的標頭 */
+        .it-card-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 14px 12px;
+            gap: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .it-card-main { flex: 1; min-width: 0; }
+
+        .it-card-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #2D3128;
+            line-height: 1.3;
+            word-break: break-word;
+            letter-spacing: 0.01em;
+        }
+
+        .it-card-time-range {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            color: #B7B7A4;
+            margin-top: 3px;
+            letter-spacing: 0.02em;
+        }
+
+        .it-card-badge {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 800;
+            background: #F8F7F2;
+            border-radius: 8px;
+            padding: 3px 9px;
+            margin-top: 5px;
+            letter-spacing: 0.05em;
+            color: var(--morandi-olive);
+        }
+
+        /* 右側編輯/刪除按鈕（永遠顯示）*/
+        .it-card-ctrl {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .it-card-ctrl button {
+            width: 30px !important;
+            height: 30px !important;
+            min-width: 30px !important;
+            min-height: 30px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 8px !important;
+            background: #F8F7F2 !important;
+            font-size: 14px !important;
+            color: #B7B7A4 !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            transition: all 0.15s ease !important;
+        }
+        .it-card-ctrl button:active {
+            background: #EAE9E0 !important;
+            transform: scale(0.9) !important;
+            color: #6B705C !important;
+        }
+
+        /* 折疊展開的內容區 */
+        .it-card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .it-card-inner.expanded .it-card-body {
+            max-height: 900px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .it-card-body-inner {
+            padding: 0 14px 14px;
+            border-top: 1px solid #F5F5F2;
+        }
+
+        /* 備註中的超連結樣式 */
+        a.it-note-link {
+            color: var(--morandi-olive) !important;
+            text-decoration: underline !important;
+            word-break: break-all;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
@@ -1572,92 +1754,123 @@
         window.closeDeleteModal = () => { document.getElementById('delete-day-modal').classList.remove('open'); };
         window.confirmDeleteDay = async () => { const dayName = document.getElementById('delete-day-target').value; const updatedList = dayList.filter(d => d !== dayName); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : ''; window.closeDeleteModal(); };
 
+        // 🌟 手風琴折疊控制：點擊卡片任意處展開/收起，展開一個時其餘自動關閉
+        window.toggleItCard = (id, event) => {
+            if (event) event.stopPropagation();
+            const card = document.querySelector(`.it-card-inner[data-id="${id}"]`);
+            if (!card) return;
+            const isExpanded = card.classList.contains('expanded');
+            // 關閉所有已展開的卡片
+            document.querySelectorAll('.it-card-inner.expanded').forEach(c => c.classList.remove('expanded'));
+            // 若原本是關閉的，則展開它
+            if (!isExpanded) card.classList.add('expanded');
+        };
+
         window.renderItinerary = () => {
             const list = document.getElementById('it-list'); if (!list) return;
             const sorted = itineraryData.filter(i => i.day === currentDayFilter).sort((a,b) => (a.time || '').localeCompare(b.time || ''));
             if (sorted.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-12 font-bold">這天還沒有安排喔 💤</div>`; return; }
             
-            // 1. 定義分類與樣式對照表 (確保與 select 的 value 對應)
             const categoryMap = { 'view': '📸 景點', 'food': '🍴 美食', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'note': '📝 備註', 'itinerary': '📍 行程' };
-            const classMap = { 'view': 'timeline-view', 'food': 'timeline-food', 'shop': 'timeline-shop', 'massage': 'timeline-massage', 'play': 'timeline-play', 'note': 'timeline-note' };
 
-            list.innerHTML = sorted.map(item => {
+            // 🌟 自動展開：找出最靠近當前時間的行程
+            const now = new Date();
+            const nowMins = now.getHours() * 60 + now.getMinutes();
+            let autoOpenId = null, minDiff = Infinity;
+            sorted.forEach(item => {
+                const startStr = (item.time || '').split('-')[0].trim();
+                const parts = startStr.split(':');
+                if (parts.length === 2) {
+                    const itemMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                    const diff = Math.abs(itemMins - nowMins);
+                    if (diff < minDiff) { minDiff = diff; autoOpenId = item.id; }
+                }
+            });
+
+            // 🌟 備註 URL 偵測並轉為可點擊超連結
+            const linkifyNote = (text) => {
+                const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return escaped.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" onclick="event.stopPropagation()" class="it-note-link">${u}</a>`);
+            };
+
+            const rows = sorted.map((item, idx) => {
                 const safeAddr = (item.address || "").replace(/'/g, "\\'"); const safeAct = item.activity.replace(/'/g, "\\'");
                 const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.activity + ' ' + (item.address || ''))}`;
-                
-                // 2. 根據資料抓取對應的文字與顏色類別
                 const currentCategory = categoryMap[item.type] || '📍 行程';
-                const typeClass = classMap[item.type] || 'timeline-view';
+                const isExpanded = item.id === autoOpenId;
+                const isLast = idx === sorted.length - 1;
 
-                let cardHtml = `
-                    <div class="app-card schedule-card ${typeClass} timeline-item relative">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1 min-w-0 pr-2"> <!-- 🌟 關鍵：min-w-0 防止被長網址撐開 -->
-                                <div class="flex items-center gap-2 mb-1.5">
-                                    <div class="schedule-item-time">${item.time}</div>
-                                    <span class="schedule-item-badge">${currentCategory}</span>
-                                </div>
-                                <div class="schedule-item-title">${item.activity}</div>
-                                
-                                <!-- 🌟 終極排版修復：使用 schedule-item-detail 完美處理 Icon 對齊與文字換行 -->
-                                ${item.address ? `
-                                    <div class="schedule-item-detail">
-                                        <span class="emoji-icon">📍</span>
-                                        <span class="break-words">${item.address}</span>
-                                    </div>
-                                ` : ''}
-                                
-                                ${item.note ? `
-                                    <div class="schedule-item-detail">
-                                        <span class="emoji-icon">📝</span>
-                                        <!-- 🌟 升級：加上 whitespace-pre-wrap 讓多行文字乖乖換行顯示 -->
-                                        <span class="break-words whitespace-pre-wrap">${item.note}</span>
-                                    </div>
-                                ` : ''}
+                // 左側只顯示開始時間，卡片內顯示完整時間區間
+                const displayTime = (item.time || '').split('-')[0].trim();
+                const hasTimeRange = item.time && item.time.includes('-');
 
-                            </div>
-                            <div class="flex flex-col gap-3 ml-2 shrink-0"> <!-- 🌟 關鍵：shrink-0 保證按鈕絕對不被擠壓 -->
-                                <button onclick="window.deleteItem('itinerary', '${item.id}')" class="text-gray-300 text-lg">✕</button>
-                                <button onclick="window.editItinerary('${item.id}')" class="text-gray-400 text-lg hover:text-[#6B705C]">✎</button>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 pt-4 mt-4 border-t border-gray-50">
-                            <a href="${mapUrl}" target="_blank" class="action-link action-button-text">📍 導航</a>
-                            <button onclick="window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link action-button-text">📋 複製地址</button>
-                            <button onclick="window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link action-button-text">💡 攻略</button>
-                        </div>
-                    </div>`;
-
+                // 🌟 交通連接線（保留原版美感）
                 let transitHtml = '';
                 if (item.transitInfo) {
-                    // 🌟 斜線分裂魔法：偵測斜線，將長文字拆分成多層獨立的點點線軌跡！
                     const infos = item.transitInfo.split(/[\/／]/).map(s => s.trim()).filter(s => s);
                     const icons = (item.transitIcon || '🚕').split(/[\/／]/).map(s => s.trim());
-
-                    // 為每一段交通資訊獨立生成一條超有質感的懸浮連線
-                    transitHtml = infos.map((info, idx) => {
-                        // 如果圖示不夠，自動套用第一個圖示
-                        const icon = icons[idx] !== undefined ? icons[idx] : (icons[0] || '🚕');
+                    transitHtml = `<div class="mt-2 mb-1">` + infos.map((info, i) => {
+                        const icon = icons[i] !== undefined ? icons[i] : (icons[0] || '🚕');
                         return `
                             <div class="flex flex-col items-center justify-center my-2 w-full opacity-90">
-                                <div class="relative flex flex-col items-center w-[85%] max-w-[280px]">
-                                    <!-- 橫線背景 -->
+                                <div class="relative flex flex-col items-center w-[85%] max-w-[240px]">
                                     <div class="absolute w-full h-[1.5px] bg-[#DDB892] opacity-60 top-[14px] z-0">
                                         <div class="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
                                         <div class="absolute -right-1 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#DDB892] rounded-full"></div>
                                     </div>
-                                    <!-- 圖示與文字 (還原無印風排版) -->
                                     <span class="text-[14px] font-black text-[#6B705C] tracking-wider z-10 bg-[var(--bg-light)] px-3 mb-1 max-w-full break-words text-center leading-tight">${icon}</span>
                                     <span class="text-[12px] font-black text-[#A5A58D] z-10 bg-[var(--bg-light)] px-3 tracking-widest text-center leading-tight max-w-full break-words whitespace-pre-wrap">${info}</span>
                                 </div>
-                            </div>
-                        `;
-                    }).join('');
+                            </div>`;
+                    }).join('') + `</div>`;
                 }
 
-                return cardHtml + transitHtml;
-
+                return `
+                    <div class="it-timeline-row">
+                        <div class="it-time-col">
+                            <div class="it-time-label">${displayTime}</div>
+                            <div class="it-dot type-${item.type || 'view'}"></div>
+                            ${!isLast ? `<div class="it-line-seg"></div>` : ''}
+                        </div>
+                        <div class="it-card-wrap">
+                            <div class="it-card-inner ${isExpanded ? 'expanded' : ''}" data-id="${item.id}" onclick="window.toggleItCard('${item.id}', event)">
+                                <div class="it-card-header">
+                                    <div class="it-card-main">
+                                        <div class="it-card-title">${item.activity}</div>
+                                        ${hasTimeRange ? `<div class="it-card-time-range">${item.time}</div>` : ''}
+                                        <span class="it-card-badge">${currentCategory}</span>
+                                    </div>
+                                    <div class="it-card-ctrl">
+                                        <button onclick="event.stopPropagation(); window.editItinerary('${item.id}')">✎</button>
+                                        <button onclick="event.stopPropagation(); window.deleteItem('itinerary', '${item.id}')">✕</button>
+                                    </div>
+                                </div>
+                                <div class="it-card-body">
+                                    <div class="it-card-body-inner">
+                                        ${item.address ? `
+                                        <div class="schedule-item-detail">
+                                            <span class="emoji-icon">📍</span>
+                                            <span class="break-words">${item.address}</span>
+                                        </div>` : ''}
+                                        ${item.note ? `
+                                        <div class="schedule-item-detail">
+                                            <span class="emoji-icon">📝</span>
+                                            <span class="break-words whitespace-pre-wrap">${linkifyNote(item.note)}</span>
+                                        </div>` : ''}
+                                        <div class="flex flex-wrap gap-2 pt-4 mt-3 border-t border-gray-50">
+                                            <a href="${mapUrl}" target="_blank" onclick="event.stopPropagation()" class="action-link action-button-text">📍 導航</a>
+                                            <button onclick="event.stopPropagation(); window.copyLocation('${safeAct}', '${safeAddr}', event)" class="action-link action-button-text">📋 複製</button>
+                                            <button onclick="event.stopPropagation(); window.askGemini && window.askGemini('請問關於「${safeAct}」的詳細蜜月旅遊攻略，包含拍照建議與避雷提醒？', false, '💡 查詢攻略：${safeAct}')" class="action-link action-button-text">💡 攻略</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            ${transitHtml}
+                        </div>
+                    </div>`;
             }).join('');
+
+            list.innerHTML = `<div class="it-timeline-wrapper">${rows}</div>`;
         };
         
         window.editItinerary = (id) => { 
