@@ -87,6 +87,31 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* 🌟 AI 管家思考中：三顆彈跳泡泡（取代舊 thinking-dots） */
+        .ai-thinking-bubble {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 14px 18px; background: white;
+            border-radius: 20px; border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #F0EEE8;
+        }
+        .ai-thinking-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--morandi-gold);
+            animation: thinkBounce 1.2s ease-in-out infinite;
+        }
+        .ai-thinking-dot:nth-child(2) { animation-delay: 0.18s; background: var(--morandi-beige); }
+        .ai-thinking-dot:nth-child(3) { animation-delay: 0.36s; background: var(--morandi-olive); }
+        @keyframes thinkBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+            30%            { transform: translateY(-7px); opacity: 1; }
+        }
+
+        /* 🌟 Day Tab 滑動切換位移動畫 */
+        .it-slide-left  { animation: slideFromRight 0.28s cubic-bezier(0.4,0,0.2,1); }
+        .it-slide-right { animation: slideFromLeft  0.28s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes slideFromRight { from { opacity:0; transform:translateX(28px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes slideFromLeft  { from { opacity:0; transform:translateX(-28px); } to { opacity:1; transform:translateX(0); } }
+
         .heart-text { color: var(--heart-pink); font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .couple-name { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1.1; font-weight: 700; color: #2D3128; letter-spacing: 0.05em; margin: 0.5rem 0; }
         .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
@@ -221,8 +246,160 @@
 
         .converter-box { background: #f1f3ef; border-radius: 1.2rem; padding: 1.2rem; border: 1px dashed #B7B7A4; }
 
-        .thinking-dots::after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60% { content: '...'; } 80%, 100% { content: ''; } }
+        /* ============================================================
+           🌟 功能1：骨架屏 Skeleton Screen
+           ============================================================ */
+        @keyframes shimmer {
+            0%   { background-position: -400px 0; }
+            100% { background-position: 400px 0; }
+        }
+        .skeleton-block {
+            background: linear-gradient(90deg, #EDECEA 25%, #F5F4F2 50%, #EDECEA 75%);
+            background-size: 800px 100%;
+            animation: shimmer 1.6s infinite linear;
+            border-radius: 8px;
+        }
+        .it-skeleton-row {
+            display: flex; align-items: stretch; margin-bottom: 4px;
+        }
+        .it-skeleton-time-col {
+            display: flex; flex-direction: column; align-items: center;
+            width: 58px; flex-shrink: 0; padding-top: 8px;
+        }
+        .it-skeleton-dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #E5E7EB; margin: 4px 0;
+        }
+        .it-skeleton-line {
+            width: 2px; flex: 1; min-height: 60px; background: #EAE9E0;
+        }
+        .it-skeleton-card {
+            flex: 1; margin-left: 12px; padding: 14px;
+            background: white; border-radius: 20px;
+            border: 1px solid #F1F1F1;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+            margin-bottom: 12px;
+        }
+
+        /* ============================================================
+           🌟 功能5：暗色模式 Dark Mode（深色莫蘭迪）
+           ============================================================ */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --morandi-olive: #8E9775;
+                --morandi-beige: #9A9A88;
+                --morandi-gold:  #C9A87C;
+                --morandi-text:  #D4D0C8;
+                --bg-light:      #1C1C1E;
+                --heart-pink:    #D4897A;
+            }
+            body { background-color: #1C1C1E !important; color: #D4D0C8; }
+            .app-card, .it-card-inner { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            .main-header { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            .it-card-title { color: #E5E2DC !important; }
+            .it-card-badge { background: #3A3A3C !important; color: #8E9775 !important; }
+            .it-time-label { color: #C9A87C !important; }
+            .it-time-end   { color: rgba(154,154,136,0.7) !important; }
+            .it-dot        { border-color: #2C2C2E !important; }
+            .it-line-seg   { background: #3A3A3C !important; }
+            .schedule-item-detail { color: #8E9775 !important; }
+            .it-card-inner.expanded { border-color: #C9A87C !important; }
+            .it-card-ctrl button { background: #3A3A3C !important; color: #9A9A88 !important; }
+            .it-card-body-inner { border-top-color: #3A3A3C !important; }
+            .action-link { background: #3A3A3C !important; border-color: #48484A !important; color: #D4D0C8 !important; }
+            .it-skeleton-card { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            .skeleton-block { background: linear-gradient(90deg, #3A3A3C 25%, #48484A 50%, #3A3A3C 75%) !important; background-size: 800px 100% !important; }
+            .it-skeleton-dot { background: #48484A !important; }
+            .expand-panel { background: transparent !important; }
+            input, select, textarea { background: #2C2C2E !important; color: #D4D0C8 !important; border-color: #48484A !important; }
+            /* 天氣卡 */
+            .weather-card { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
+            .wx-city-tab { border-color: rgba(255,255,255,0.2) !important; }
+            .wx-city-tab.wx-active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.5) !important; }
+            /* Day Tabs */
+            .day-tab { background: #2C2C2E !important; border-color: #3A3A3C !important; color: #D4D0C8 !important; }
+            .day-tab.active { background: #6B705C !important; }
+            /* 底部 Nav */
+            .bottom-nav { background: rgba(30,30,32,0.97) !important; }
+            /* Filter / Chip */
+            .filter-chip { background: #2C2C2E !important; border-color: #3A3A3C !important; color: #9CA3AF !important; }
+            .pack-filter-btn { background: #3A3A3C !important; border-color: #48484A !important; }
+            /* Modal 面板 */
+            .modal-panel, #gemini-panel { background: #1C1C1E !important; }
+            .centered-modal-content { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            /* AI 對話 */
+            .ai-bubble { background-color: #2C2C2E !important; border-color: #3A3A3C !important; color: #C9A87C !important; }
+            .ai-thinking-bubble { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            /* Pull-to-refresh */
+            #ptr-indicator { background: #2C2C2E !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+            #ptr-spinner { border-color: #3A3A3C !important; border-top-color: #8E9775 !important; }
+            /* 標題文字 */
+            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: #D4D0C8 !important; }
+            .couple-name { color: #E5E2DC !important; }
+            /* 記帳卡片 */
+            .expense-card-final { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+        }
+
+        /* ============================================================
+           🌟 功能3：下拉刷新 Pull-to-refresh
+           ============================================================ */
+        #ptr-indicator {
+            position: fixed; top: calc(env(safe-area-inset-top) + 12px);
+            left: 50%; transform: translateX(-50%) translateY(-80px);
+            z-index: 4000;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+        }
+        #ptr-indicator.ptr-visible {
+            transform: translateX(-50%) translateY(0px);
+        }
+        #ptr-spinner {
+            width: 22px; height: 22px;
+            border: 2.5px solid #EAE9E0;
+            border-top-color: #6B705C;
+            border-radius: 50%;
+        }
+        #ptr-spinner.ptr-spin {
+            animation: ptrSpin 0.7s linear infinite;
+        }
+        @keyframes ptrSpin { to { transform: rotate(360deg); } }
+
+        /* ============================================================
+           🌟 功能6：卡片層次 — 漸層邊框 + 精緻感
+           ============================================================ */
+        .it-card-inner {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+            /* 漸層邊框用 outline + border 疊加技巧 */
+            border: 1px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            cursor: pointer;
+            transition: box-shadow 0.25s, transform 0.2s;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* 漸層邊框偽元素 */
+        .it-card-inner::before {
+            content: '';
+            position: absolute; inset: -1px;
+            border-radius: 21px;
+            background: linear-gradient(135deg, rgba(221,184,146,0.25) 0%, rgba(183,183,164,0.1) 50%, rgba(142,151,117,0.2) 100%);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .it-card-inner:hover::before,
+        .it-card-inner.expanded::before { opacity: 1; }
+        .it-card-inner:active { transform: scale(0.985); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .it-card-inner.expanded {
+            box-shadow: 0 8px 28px rgba(107,112,92,0.14);
+        }
 
         .day-tab {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -967,22 +1144,7 @@
             padding: 8px 0 0 12px;
         }
 
-        /* 卡片本體 */
-        .it-card-inner {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-            border: 1px solid #F1F1F1;
-            cursor: pointer;
-            transition: box-shadow 0.2s, border-color 0.2s;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .it-card-inner:active { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .it-card-inner.expanded {
-            box-shadow: 0 8px 24px rgba(107,112,92,0.12);
-            border-color: #DDB892;
-        }
+        /* 卡片本體 — 見下方功能6增強版 */
 
         /* 卡片永遠可見的標頭 */
         .it-card-header {
@@ -1088,6 +1250,11 @@
 </head>
 <body class="max-w-md mx-auto relative bg-white md:bg-gray-100 min-h-screen">
     
+    <!-- 🌟 功能3：下拉刷新指示器 -->
+    <div id="ptr-indicator">
+        <div id="ptr-spinner"></div>
+    </div>
+
     <div id="app-splash" class="fixed inset-0 z-[9999] bg-[#F8F7F2] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-none">
         
         <div class="text-4xl mb-8 animate-bounce opacity-80" style="filter: drop-shadow(0 5px 15px rgba(221,184,146,0.3));">✈️</div>
@@ -1890,7 +2057,25 @@
             container.innerHTML = html;
         };
         window.renderDayDropdown = () => { const select = document.getElementById('it-day'); if(select) { select.innerHTML = dayList.map(d => `<option value="${d}">${d}</option>`).join(''); select.value = dayList.includes(currentDayFilter) ? currentDayFilter : (dayList[0] || ''); } };
-        window.setDayFilter = (day) => { currentDayFilter = day; window.renderDayTabs(); window.renderItinerary(); const dayLabel = document.getElementById('current-day-label'); if (dayLabel) dayLabel.innerText = day; };
+        window.setDayFilter = (day, direction = null) => {
+            if (window.navigator.vibrate) window.navigator.vibrate(10);
+            currentDayFilter = day;
+            window.renderItinerarySkeleton();
+            requestAnimationFrame(() => {
+                window.renderDayTabs();
+                window.renderItinerary();
+                // 套用滑動方向動畫
+                if (direction) {
+                    const list = document.getElementById('it-list');
+                    if (list) {
+                        list.classList.remove('it-slide-left', 'it-slide-right');
+                        void list.offsetWidth; // reflow 觸發重播
+                        list.classList.add(direction === 'left' ? 'it-slide-left' : 'it-slide-right');
+                    }
+                }
+            });
+            const dayLabel = document.getElementById('current-day-label'); if (dayLabel) dayLabel.innerText = day;
+        };
         window.viewDayMap = () => {
             const dailyItems = itineraryData.filter(item => item.day === currentDayFilter && item.type !== 'note').sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99')); 
             if (dailyItems.length === 0) { const btn = document.querySelector('#day-map-action button'); if(btn){ const orig = btn.innerHTML; btn.innerHTML = "💤 今天尚未安排景點喔！"; setTimeout(() => { btn.innerHTML = orig; }, 2000); } return; }
@@ -1907,7 +2092,29 @@
         window.closeDeleteModal = () => { document.getElementById('delete-day-modal').classList.remove('open'); };
         window.confirmDeleteDay = async () => { const dayName = document.getElementById('delete-day-target').value; const updatedList = dayList.filter(d => d !== dayName); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), { list: updatedList }, { merge: true }); if (currentDayFilter === dayName) currentDayFilter = updatedList.length > 0 ? updatedList[0] : ''; window.closeDeleteModal(); };
 
-        // 🌟 手風琴折疊控制：點擊卡片任意處展開/收起，展開一個時其餘自動關閉
+        window.renderItinerarySkeleton = () => {
+            const list = document.getElementById('it-list'); if (!list) return;
+            list.innerHTML = [1,2,3].map((_, i) => `
+                <div class="it-skeleton-row">
+                    <div class="it-skeleton-time-col">
+                        <div class="skeleton-block" style="width:34px;height:12px;border-radius:6px;margin-bottom:4px;"></div>
+                        <div class="skeleton-block" style="width:24px;height:10px;border-radius:5px;margin-bottom:6px;opacity:0.6;"></div>
+                        <div class="it-skeleton-dot"></div>
+                        ${i < 2 ? `<div class="it-skeleton-line"></div>` : ''}
+                    </div>
+                    <div class="it-skeleton-card" style="display:flex;align-items:flex-start;gap:8px;">
+                        <div style="flex:1;">
+                            <div class="skeleton-block" style="width:${[58,72,62][i]}%;height:17px;margin-bottom:10px;border-radius:8px;"></div>
+                            <div class="skeleton-block" style="width:28%;height:10px;margin-bottom:10px;border-radius:6px;opacity:0.7;"></div>
+                            <div class="skeleton-block" style="width:85%;height:12px;border-radius:6px;opacity:0.6;"></div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+                            <div class="skeleton-block" style="width:28px;height:28px;border-radius:8px;"></div>
+                            <div class="skeleton-block" style="width:28px;height:28px;border-radius:8px;opacity:0.6;"></div>
+                        </div>
+                    </div>
+                </div>`).join('');
+        };
         window.toggleItCard = (id, event) => {
             if (event) event.stopPropagation();
             const card = document.querySelector(`.it-card-inner[data-id="${id}"]`);
@@ -3218,7 +3425,7 @@
             userMessageHtml += `<span class="inline-block user-bubble p-4 rounded-2xl text-base font-bold shadow-sm max-w-[85%]">${displayMessage}</span></div>`;
             chat.innerHTML += userMessageHtml;
 
-            const thinkingId = 'think-' + Date.now(); chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="inline-block bg-white p-4 rounded-2xl text-base shadow-sm border text-gray-400 italic font-bold">管家處理中...<span class="thinking-dots"></span></div></div>`; chat.scrollTop = chat.scrollHeight;
+            const thinkingId = 'think-' + Date.now(); chat.innerHTML += `<div id="${thinkingId}" class="mb-4 text-left"><div class="ai-thinking-bubble"><div class="ai-thinking-dot"></div><div class="ai-thinking-dot"></div><div class="ai-thinking-dot"></div></div></div>`; chat.scrollTop = chat.scrollHeight;
             
             try {
                 const pendingMissions = missionsData.filter(m => !m.checked).map(m => m.task).join('、');
@@ -3363,7 +3570,117 @@
         });
 
         window.switchTab('itinerary');
+        // 🌟 初次載入先顯示骨架屏
+        window.renderItinerarySkeleton();
         window.getWeather();
+
+        // ============================================================
+        // 🌟 功能4：觸覺回饋 — nav-btn + 全域委派覆蓋所有互動元件
+        // ============================================================
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('touchstart', () => {
+                if (window.navigator.vibrate) window.navigator.vibrate(10);
+            }, { passive: true });
+        });
+        // 全域事件委派：捕捉 action-link、卡片按鈕、FAB、Day Tab 等
+        document.addEventListener('touchstart', e => {
+            const t = e.target;
+            if (t.closest('.action-link') || t.closest('.it-card-ctrl') ||
+                t.closest('.fab')         || t.closest('.day-tab')       ||
+                t.closest('.pack-filter-btn') || t.closest('.filter-chip') ||
+                t.closest('.wx-city-tab') || t.closest('#weather-card-root') ||
+                (t.tagName === 'BUTTON' && !t.closest('.nav-btn'))) {
+                if (window.navigator.vibrate) window.navigator.vibrate(8);
+            }
+        }, { passive: true });
+
+        // ============================================================
+        // 🌟 功能5：根據系統時間自動切換 theme-color
+        // ============================================================
+        (function updateThemeColor() {
+            const hour = new Date().getHours();
+            const isDark = hour >= 18 || hour < 6;
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.content = isDark ? '#2C2C2E' : '#F8F7F2';
+        })();
+
+        // ============================================================
+        // 🌟 功能2：左右滑動切換 Day Tabs
+        // ============================================================
+        (function initSwipeGesture() {
+            const container = document.getElementById('content-itinerary');
+            if (!container) return;
+            let startX = 0, startY = 0, isDragging = false;
+            container.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                isDragging = true;
+            }, { passive: true });
+            container.addEventListener('touchend', e => {
+                if (!isDragging) return;
+                isDragging = false;
+                const dx = e.changedTouches[0].clientX - startX;
+                const dy = e.changedTouches[0].clientY - startY;
+                // 水平位移 > 60px 且水平方向比垂直大才觸發
+                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+                const idx = dayList.indexOf(currentDayFilter);
+                if (dx < 0 && idx < dayList.length - 1) {
+                    if (window.navigator.vibrate) window.navigator.vibrate([8, 20, 8]);
+                    window.setDayFilter(dayList[idx + 1], 'left');
+                } else if (dx > 0 && idx > 0) {
+                    if (window.navigator.vibrate) window.navigator.vibrate([8, 20, 8]);
+                    window.setDayFilter(dayList[idx - 1], 'right');
+                }
+            }, { passive: true });
+        })();
+
+        // ============================================================
+        // 🌟 功能3：下拉刷新 Pull-to-refresh
+        // ============================================================
+        (function initPullToRefresh() {
+            let startY = 0, pulling = false, triggered = false;
+            const indicator = document.getElementById('ptr-indicator');
+            const spinner  = document.getElementById('ptr-spinner');
+            const THRESHOLD = 72;
+
+            document.addEventListener('touchstart', e => {
+                if (window.scrollY > 10) return;
+                startY = e.touches[0].clientY;
+                pulling = true; triggered = false;
+            }, { passive: true });
+
+            document.addEventListener('touchmove', e => {
+                if (!pulling) return;
+                const dy = e.touches[0].clientY - startY;
+                if (dy > 10 && window.scrollY <= 0) {
+                    const progress = Math.min(dy / THRESHOLD, 1);
+                    if (progress > 0.3) {
+                        indicator.classList.add('ptr-visible');
+                        spinner.style.transform = `rotate(${progress * 360}deg)`;
+                    }
+                    if (dy >= THRESHOLD && !triggered) {
+                        triggered = true;
+                        spinner.classList.add('ptr-spin');
+                        if (window.navigator.vibrate) window.navigator.vibrate([15, 30, 15]);
+                    }
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchend', async () => {
+                if (!pulling) return;
+                pulling = false;
+                if (triggered) {
+                    await window.getWeather();
+                    window.renderItinerary();
+                }
+                setTimeout(() => {
+                    indicator.classList.remove('ptr-visible');
+                    spinner.classList.remove('ptr-spin');
+                    spinner.style.transform = '';
+                }, 600);
+            }, { passive: true });
+        })();
+
         // 🌟 A6：天氣超過 30 分鐘自動重新抓取
         window._wxLastFetch = Date.now();
         setInterval(() => {
