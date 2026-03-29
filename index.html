@@ -7,11 +7,29 @@
     <!-- ✅ 支援亮色與深色，讓系統偏好設定可以觸發 prefers-color-scheme -->
     <meta name="color-scheme" content="light dark">
     
-    <!-- 🌟 防閃爍 (FOUC Guard)：同步讀取 localStorage，在任何 CSS 渲染前套用主題 -->
+    <!-- 🌟 防閃爍 (FOUC Guard)：同步讀取 localStorage + 時間規則，在任何 CSS 渲染前套用主題 -->
     <script>
       (function(){
-        var t = localStorage.getItem('app-theme');
-        if (t) document.documentElement.setAttribute('data-theme', t);
+        // 清除過期的手動設定
+        var expire = parseInt(localStorage.getItem('app-theme-expire') || '0', 10);
+        if (expire && Date.now() > expire) {
+          localStorage.removeItem('app-theme');
+          localStorage.removeItem('app-theme-expire');
+        }
+        var manual = localStorage.getItem('app-theme');
+        var isDark;
+        if (manual === 'dark')       { isDark = true;  }
+        else if (manual === 'light') { isDark = false; }
+        else {
+          // 時間規則：18:00~06:00 深色
+          var h = new Date().getHours();
+          isDark = (h >= 18 || h < 6);
+          // 若時間是白天但系統深色，跟隨系統
+          if (!isDark && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            isDark = true;
+          }
+        }
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
       })();
     </script>
     
@@ -3734,63 +3752,100 @@
         // 優先順序：手動切換 (localStorage) > 系統偏好 (prefers-color-scheme)
         // ============================================================
 
-        // 讀取當前是否為深色（含兩種觸發條件）
-        const _isDarkNow = () => {
-            const saved = localStorage.getItem('app-theme');
-            if (saved === 'dark') return true;
-            if (saved === 'light') return false;
-            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        // ============================================================
+        // 🌙 主題管理系統（三優先級）
+        //
+        //  P1 手動優先  — localStorage 有值時以用戶選擇為準
+        //                 手動設定在「當天結束（凌晨0點）」後自動失效，
+        //                 讓第二天重新跟隨時間規則
+        //  P2 時間自動  — 18:00~06:00 深色 / 06:00~18:00 亮色
+        //  P3 系統同步  — 無手動設定時監聽 prefers-color-scheme 即時變化
+        //
+        //  updateTheme() 在以下時機呼叫：
+        //  - 頁面載入  - 手動切換  - 每分鐘 setInterval  - 系統主題事件
+        // ============================================================
+
+        const THEME_MANUAL_KEY  = 'app-theme';        // 'dark' | 'light'
+        const THEME_EXPIRE_KEY  = 'app-theme-expire';  // 失效時間戳
+
+        // 工具：今天午夜時間戳（手動設定的有效期）
+        const _midnightTs = () => {
+            const d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime();
         };
 
-        // 同步更新所有平台的 UI 元件
-        const _applyThemeMeta = (isDark) => {
-            // Android / PWA 頂部狀態列顏色
+        // 工具：依時間判斷應為深色
+        const _isNightTime = () => {
+            const h = new Date().getHours();
+            return h >= 18 || h < 6;
+        };
+
+        // 工具：清除已過期的手動設定
+        const _clearExpiredManual = () => {
+            const expire = parseInt(localStorage.getItem(THEME_EXPIRE_KEY) || '0', 10);
+            if (expire && Date.now() > expire) {
+                localStorage.removeItem(THEME_MANUAL_KEY);
+                localStorage.removeItem(THEME_EXPIRE_KEY);
+            }
+        };
+
+        // 核心：套用主題到 DOM + 所有平台 meta
+        const _applyTheme = (isDark) => {
+            // 1. data-theme attribute（CSS 選擇器觸發）
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+            // 2. Android 狀態列顏色
             const metaTheme = document.querySelector('meta[name="theme-color"]');
             if (metaTheme) metaTheme.content = isDark ? '#1C1C1E' : '#F8F7F2';
 
-            // iOS PWA 狀態列樣式：深色時用 black（白字），亮色維持 black-translucent
+            // 3. iOS PWA 狀態列：深色用 black（白字），亮色用 black-translucent（沉浸式）
             const metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
             if (metaStatus) metaStatus.content = isDark ? 'black' : 'black-translucent';
 
-            // 更新切換按鈕圖示
+            // 4. 切換按鈕圖示
             const btn = document.getElementById('theme-toggle-btn');
             if (btn) btn.textContent = isDark ? '☀️' : '🌙';
         };
 
-        // 初始化：頁面載入時根據 localStorage / 系統偏好同步 UI
-        window.initTheme = () => {
-            const isDark = _isDarkNow();
-            _applyThemeMeta(isDark);
+        // ★ 主函式：決定當前應套用哪個主題
+        window.updateTheme = () => {
+            _clearExpiredManual();
+            const manual = localStorage.getItem(THEME_MANUAL_KEY);
+
+            let isDark;
+            if (manual === 'dark')  { isDark = true;  }   // P1 手動深色
+            else if (manual === 'light') { isDark = false; }  // P1 手動亮色
+            else {
+                // P2 時間規則
+                isDark = _isNightTime();
+                // P3 若時間是白天但系統是深色，跟隨系統（系統偏好疊加在時間規則上）
+                if (!isDark && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    isDark = true;
+                }
+            }
+            _applyTheme(isDark);
         };
 
-        // 手動切換：儲存至 localStorage，覆蓋系統偏好
+        // 手動切換：存入 localStorage 並設定當天失效
         window.toggleTheme = () => {
             if (window.navigator.vibrate) window.navigator.vibrate(12);
+            _clearExpiredManual();
             const current = document.documentElement.getAttribute('data-theme');
-            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            let next;
-
-            if (!current) {
-                // 尚未手動設定，根據系統偏好決定切換方向
-                next = systemDark ? 'light' : 'dark';
-            } else {
-                next = current === 'dark' ? 'light' : 'dark';
-            }
-
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('app-theme', next);
-            _applyThemeMeta(next === 'dark');
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem(THEME_MANUAL_KEY, next);
+            localStorage.setItem(THEME_EXPIRE_KEY, _midnightTs().toString());
+            _applyTheme(next === 'dark');
         };
 
-        // 監聽系統主題變化（使用者在設定中切換時即時反映）
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            // 只在「未手動設定」時才跟隨系統
-            if (!localStorage.getItem('app-theme')) {
-                _applyThemeMeta(e.matches);
-            }
+        // P3：系統主題變化時，僅在無手動設定時跟隨
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (!localStorage.getItem(THEME_MANUAL_KEY)) window.updateTheme();
         });
 
-        window.initTheme();
+        // 每分鐘執行一次，確保跨越 18:00 / 06:00 時自動切換
+        setInterval(window.updateTheme, 60 * 1000);
+
+        // 頁面載入立即執行
+        window.updateTheme();
 
         // ============================================================
         // 🌟 功能2：左右滑動切換 Day Tabs
