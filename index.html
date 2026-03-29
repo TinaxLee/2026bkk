@@ -20,7 +20,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Android 專用：透過 Query String 強制刷新 Manifest -->
-    <link rel="manifest" href="manifest.json?v=20260309">
+    <link rel="manifest" href="manifest.json?v=20260330">
     <link rel="apple-touch-startup-image" href="icon.png">
 
     <!-- 🌟 預先連線字體伺服器，加速字體下載 -->
@@ -1544,8 +1544,8 @@
             <div id="gemini-panel" onclick="event.stopPropagation()">
                 <div class="p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <!-- 🌟 恢復版本號顯示，方便確認手機快取是否有更新 -->
-                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span class="text-[10px] text-gray-400 font-normal ml-1">v16.3</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
+                        <!-- 🌟 版本號由 JS APP_VERSION 自動注入 -->
+                        <div class="flex items-center gap-2"><h3 class="font-black text-xl text-[#4A4E40]">✨ 旗艦蜜月管家 <span id="app-version-display" class="text-[10px] text-gray-400 font-normal ml-1">v--</span></h3><button onclick="window.clearGemini()" class="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-400 font-bold active:bg-gray-200 transition-colors ml-2">清除記憶</button></div>
                         <button onclick="window.toggleGemini()" class="text-3xl text-gray-300">✕</button>
                     </div>
 
@@ -3743,6 +3743,62 @@
         const expDate = document.getElementById('exp-date');
         if(expDate) expDate.valueAsDate = new Date();
 
+    </script>
+
+    <!-- ============================================================
+         🌟 APP VERSION & SERVICE WORKER 註冊
+         ★ 唯一真相來源：只改這裡，UI 自動同步
+         ============================================================ -->
+    <script>
+        // ★ 改版本只需改這一行 ★
+        const APP_VERSION = '16.8';
+
+        // 自動注入 UI 版本號
+        const verEl = document.getElementById('app-version-display');
+        if (verEl) verEl.textContent = 'v' + APP_VERSION;
+
+        // ============================================================
+        // Service Worker 註冊 + 自動更新偵測
+        // ============================================================
+        if ('serviceWorker' in navigator) {
+            // 加上 ?v= 讓瀏覽器每次都重新請求 sw.js，不會被 HTTP 快取卡住
+            navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
+                .then(reg => {
+                    console.log(`✅ SW registered (v${APP_VERSION})`);
+
+                    // 主動檢查是否已有等待中的新版本（處理「已開著頁面」的情境）
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+
+                    // 偵測到新版 SW 安裝完成 → 通知它立刻接管
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // 有舊版在跑 → 新版準備好了，發訊息讓它立刻 skipWaiting
+                                console.log('🆕 新版 SW 準備完成，傳送 SKIP_WAITING...');
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    });
+
+                    // 每 60 秒主動偵測一次更新（解決長時間開著頁面不更新的問題）
+                    setInterval(() => reg.update(), 60 * 1000);
+                })
+                .catch(err => console.error('SW registration failed:', err));
+
+            // SW 控制權切換完成（skipWaiting 生效）→ 靜默重新整理
+            // ⚠️ refreshing flag 防止初次安裝也觸發 reload（無限刷新 bug）
+            let _swRefreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (_swRefreshing) return;
+                _swRefreshing = true;
+                console.log('🔄 新版 SW 接管，自動重新整理...');
+                window.location.reload();
+            });
+        }
     </script>
 </body>
 </html>
