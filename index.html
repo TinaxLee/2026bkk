@@ -97,10 +97,25 @@
         .bottom-nav {
             background: rgba(74, 78, 64, 0.95); backdrop-filter: blur(15px); position: fixed;
             bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 416px; border-radius: 2rem; height: 65px; z-index: 1000;
+            width: calc(100% - 32px); max-width: 416px; border-radius: 2rem; height: 72px; z-index: 1000;
             display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        .nav-btn { font-size: 1.25rem; cursor: pointer; transition: opacity 0.2s; padding: 12px; }
+        .nav-btn {
+            font-size: 1.25rem; cursor: pointer; transition: opacity 0.2s; padding: 8px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            min-width: 44px;
+        }
+        .nav-btn .nav-label {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 9px; font-weight: 700;
+            color: white; letter-spacing: 0.05em;
+            opacity: 0; max-height: 0; overflow: hidden;
+            transition: opacity 0.2s ease, max-height 0.2s ease;
+            white-space: nowrap;
+        }
+        .nav-btn:not(.opacity-30) .nav-label {
+            opacity: 1; max-height: 14px;
+        }
         .btn-press:active { transform: scale(0.92); }
 
         #gemini-modal, .custom-modal {
@@ -1422,12 +1437,12 @@
 
         <!-- 底部導覽列 -->
         <nav class="bottom-nav">
-            <div onclick="window.switchTab('missions')" id="btn-missions" class="nav-btn btn-press opacity-30">🔔</div>
-            <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30">🎒</div>
-            <div onclick="window.switchTab('core')" id="btn-core" class="nav-btn btn-press opacity-30">🛫</div>
-            <div onclick="window.switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press">🗺️</div>
-            <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30">💰</div>
-            <div onclick="window.toggleGemini()" class="nav-btn btn-press">✨</div>
+            <div onclick="window.switchTab('missions')" id="btn-missions" class="nav-btn btn-press opacity-30"><span>🔔</span><span class="nav-label">提醒</span></div>
+            <div onclick="window.switchTab('packing')" id="btn-packing" class="nav-btn btn-press opacity-30"><span>🎒</span><span class="nav-label">行李</span></div>
+            <div onclick="window.switchTab('core')" id="btn-core" class="nav-btn btn-press opacity-30"><span>🛫</span><span class="nav-label">航班住宿</span></div>
+            <div onclick="window.switchTab('itinerary')" id="btn-itinerary" class="nav-btn btn-press"><span>🗺️</span><span class="nav-label">行程</span></div>
+            <div onclick="window.switchTab('budget')" id="btn-budget" class="nav-btn btn-press opacity-30"><span>💰</span><span class="nav-label">記帳</span></div>
+            <div onclick="window.toggleGemini()" class="nav-btn btn-press"><span>✨</span><span class="nav-label">管家</span></div>
         </nav>
 
         <!-- 管理天數的 Modals -->
@@ -1768,6 +1783,7 @@
                 if (!r0.ok || !r1.ok) throw new Error('API error');
                 const [d0, d1] = await Promise.all([r0.json(), r1.json()]);
                 window._wxData = [d0, d1];
+                window._wxLastFetch = Date.now();
                 window._wxRender();
             } catch(e) {
                 console.error('Weather fetch failed:', e);
@@ -1910,19 +1926,35 @@
             
             const categoryMap = { 'view': '📸 景點', 'food': '🍴 美食', 'shop': '🛍️ 購物', 'massage': '💆 按摩', 'play': '🎢 玩樂', 'note': '📝 備註', 'itinerary': '📍 行程' };
 
-            // 🌟 自動展開：找出最靠近當前時間的行程
+            // 🌟 A1 修正：自動展開只在「今天日期的 Tab」才生效，且優先找最近未來時間點
             const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            const currentDayDate = dayDates[currentDayFilter] || '';
+            const isToday = currentDayDate === todayStr;
             const nowMins = now.getHours() * 60 + now.getMinutes();
-            let autoOpenId = null, minDiff = Infinity;
-            sorted.forEach(item => {
-                const startStr = (item.time || '').split('-')[0].trim();
-                const parts = startStr.split(':');
-                if (parts.length === 2) {
-                    const itemMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-                    const diff = Math.abs(itemMins - nowMins);
-                    if (diff < minDiff) { minDiff = diff; autoOpenId = item.id; }
-                }
-            });
+
+            let autoOpenId = null;
+            if (isToday) {
+                // 優先：找最近「還沒到或正在進行」的行程
+                let minFutureDiff = Infinity;
+                sorted.forEach(item => {
+                    const startStr = (item.time || '').split('-')[0].trim();
+                    const parts = startStr.split(':');
+                    if (parts.length === 2) {
+                        const itemMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                        const endStr = (item.time || '').includes('-') ? item.time.split('-')[1].trim() : startStr;
+                        const endParts = endStr.split(':');
+                        const endMins = endParts.length === 2 ? parseInt(endParts[0]) * 60 + parseInt(endParts[1]) : itemMins + 60;
+                        // 選「還沒結束」的行程中，開始時間最近的
+                        if (endMins >= nowMins) {
+                            const diff = Math.abs(itemMins - nowMins);
+                            if (diff < minFutureDiff) { minFutureDiff = diff; autoOpenId = item.id; }
+                        }
+                    }
+                });
+                // 備援：如果全部行程都過了，展開最後一個
+                if (!autoOpenId && sorted.length > 0) autoOpenId = sorted[sorted.length - 1].id;
+            }
 
             // 🌟 備註 URL 偵測並轉為可點擊超連結
             const linkifyNote = (text) => {
@@ -3284,7 +3316,7 @@
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'departure'), (docSnap) => { if (docSnap.exists()) { departureDate = docSnap.data().date; const dateInput = document.getElementById('departure-date-input'); if (dateInput) dateInput.value = departureDate; window.updateCountdownUI(); } });
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'days'), (docSnap) => { if (docSnap.exists() && docSnap.data().list) dayList = docSnap.data().list; if (!dayList.includes(currentDayFilter) && dayList.length > 0) currentDayFilter = dayList[0]; window.renderDayTabs(); window.renderDayDropdown(); if(document.getElementById('day-manage-modal') && document.getElementById('day-manage-modal').classList.contains('open')) window.renderDayManagerList(); });
             onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'dates'), (docSnap) => { if (docSnap.exists()) { dayDates = docSnap.data(); window.renderDayTabs(); } });
-            onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); });
+            onSnapshot(getColl('itinerary'), (s) => { itineraryData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderItinerary(); window._scheduledNotifs && (window._scheduledNotifs = new Set()) && window.scheduleItineraryNotifs && window.scheduleItineraryNotifs(); });
             onSnapshot(getColl('packing'), (s) => { packingData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderPacking(); });
             onSnapshot(getColl('expenses'), (s) => { allExpenses = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderExpenses(); });
             onSnapshot(getColl('flights'), (s) => { flightsData = s.docs.map(d => ({id: d.id, ...d.data()})); window.renderFlights(); });
@@ -3332,6 +3364,65 @@
 
         window.switchTab('itinerary');
         window.getWeather();
+        // 🌟 A6：天氣超過 30 分鐘自動重新抓取
+        window._wxLastFetch = Date.now();
+        setInterval(() => {
+            if (Date.now() - window._wxLastFetch >= 30 * 60 * 1000) {
+                window.getWeather();
+                window._wxLastFetch = Date.now();
+            }
+        }, 60 * 1000); // 每分鐘檢查一次
+
+        // 🌟 A4：Web Push Notification — 行程出發前 30 分鐘提醒
+        window._scheduledNotifs = new Set(); // 防止重複排程
+
+        window.requestNotifPermission = async () => {
+            if (!('Notification' in window)) return false;
+            if (Notification.permission === 'granted') return true;
+            if (Notification.permission === 'denied') return false;
+            const result = await Notification.requestPermission();
+            return result === 'granted';
+        };
+
+        window.scheduleItineraryNotifs = async () => {
+            const granted = await window.requestNotifPermission();
+            if (!granted) return;
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+            itineraryData.forEach(item => {
+                // 只排程今天的行程
+                const itemDate = dayDates[item.day] || '';
+                if (itemDate !== todayStr) return;
+                if (item.type === 'note') return; // 備註不提醒
+
+                const startStr = (item.time || '').split('-')[0].trim();
+                const parts = startStr.split(':');
+                if (parts.length !== 2) return;
+
+                const notifTime = new Date();
+                notifTime.setHours(parseInt(parts[0]), parseInt(parts[1]) - 30, 0, 0);
+                const msUntil = notifTime - now;
+
+                const notifKey = `${item.id}-${startStr}`;
+                if (msUntil > 0 && !window._scheduledNotifs.has(notifKey)) {
+                    window._scheduledNotifs.add(notifKey);
+                    setTimeout(() => {
+                        new Notification('🗺️ 行程快到囉！', {
+                            body: `30 分鐘後：${item.activity}（${startStr}）`,
+                            icon: './icon.png',
+                            badge: './icon.png',
+                            tag: notifKey,
+                        });
+                    }, msUntil);
+                }
+            });
+        };
+
+        // 每次行程資料更新時重新排程（已在 startSyncing 的 onSnapshot 後呼叫 renderItinerary，這裡監聽資料就好）
+        // 另外：在頁面載入後請求權限並排程
+        setTimeout(() => { window.scheduleItineraryNotifs(); }, 3000);
+
         const expDate = document.getElementById('exp-date');
         if(expDate) expDate.valueAsDate = new Date();
 
