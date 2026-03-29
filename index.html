@@ -4,8 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- 🌟 OS 專屬優化 3：防禦系統「深色模式」強制反轉，鎖定唯美淺色莫蘭迪底色 -->
-    <meta name="color-scheme" content="light">
+    <!-- ✅ 支援亮色與深色，讓系統偏好設定可以觸發 prefers-color-scheme -->
+    <meta name="color-scheme" content="light dark">
+    
+    <!-- 🌟 防閃爍 (FOUC Guard)：同步讀取 localStorage，在任何 CSS 渲染前套用主題 -->
+    <script>
+      (function(){
+        var t = localStorage.getItem('app-theme');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
     
     <!-- 🌟 解決白屏閃爍的關鍵：提早告訴手機 App 的底色 -->
     <meta name="theme-color" content="#F8F7F2">
@@ -32,13 +40,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&family=Dancing+Script:wght@700&display=block" rel="stylesheet">
     
     <style>
+        /* ============================================================
+           🎨 設計Token系統 — 亮色預設值
+           規則：所有元件只使用這些變數，不寫死 hex
+           ============================================================ */
         :root {
-            --morandi-olive: #6B705C;
-            --morandi-beige: #B7B7A4;
-            --morandi-gold: #DDB892;
-            --morandi-text: #4A4E40;
-            --bg-light: #F8F7F2;
-            --heart-pink: #F8AD9D;
+            /* Brand palette */
+            --morandi-olive:  #6B705C;
+            --morandi-beige:  #B7B7A4;
+            --morandi-gold:   #DDB892;
+            --morandi-text:   #4A4E40;
+            --bg-light:       #F8F7F2;   /* 向下相容舊程式碼 */
+            --heart-pink:     #F8AD9D;
+
+            /* ── Surface 層 ── */
+            --bg-primary:     #F8F7F2;
+            --bg-card:        #FFFFFF;
+            --bg-card-2:      #F8F7F2;
+            --bg-input:       #F8F7F2;
+            --bg-modal:       #F8F7F2;
+            --bg-nav:         rgba(74,78,64,0.95);
+
+            /* ── Border 層 ── */
+            --border-subtle:  #F1F1F1;
+            --border-default: #E5E7EB;
+            --border-input:   #EAE9E0;
+
+            /* ── Text 層 ── */
+            --text-primary:   #2D3128;
+            --text-body:      #4A4E40;
+            --text-caption:   #8E9185;
+            --text-muted:     #B7B7A4;
+
+            /* ── 元件專用 ── */
+            --card-shadow:    0 4px 14px rgba(0,0,0,0.05);
+            --ptr-bg:         #FFFFFF;
+            --ptr-spinner-track: #EAE9E0;
+            --ptr-spinner-head:  #6B705C;
+            --ai-bubble-bg:   #FCEBE8;
+            --ai-bubble-border: #F8D7D1;
+            --ai-bubble-text: #9D6B60;
+            --think-bg:       #FFFFFF;
+            --think-border:   #F0EEE8;
+            --skeleton-base:  #EDECEA;
+            --skeleton-shine: #F5F4F2;
+            --timeline-line:  #EAE9E0;
         }
 
         /* 🌟 OS 專屬優化 1：封印 iOS 的「邊緣回彈」(Rubber-banding) */
@@ -90,9 +136,9 @@
         /* 🌟 AI 管家思考中：三顆彈跳泡泡（取代舊 thinking-dots） */
         .ai-thinking-bubble {
             display: inline-flex; align-items: center; gap: 5px;
-            padding: 14px 18px; background: white;
+            padding: 14px 18px; background: var(--think-bg);
             border-radius: 20px; border-bottom-left-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #F0EEE8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid var(--think-border);
         }
         .ai-thinking-dot {
             width: 7px; height: 7px; border-radius: 50%;
@@ -116,8 +162,8 @@
         .couple-name { font-family: 'Playfair Display', serif; font-size: 2.4rem; line-height: 1.1; font-weight: 700; color: #2D3128; letter-spacing: 0.05em; margin: 0.5rem 0; }
         .ampersand { font-family: sans-serif !important; font-weight: 400; margin: 0 6px; }
         
-        .main-header { background: white; padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.03); }
-        .app-card { background: white; border-radius: 1.2rem; box-shadow: 0 4px 12px -5px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8); overflow: hidden; }
+        .main-header { background: var(--bg-card); padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 1.5rem; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.03); }
+        .app-card { background: var(--bg-card); border-radius: 1.2rem; box-shadow: 0 4px 12px -5px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.8); overflow: hidden; }
 
         .bottom-nav {
             background: rgba(74, 78, 64, 0.95); backdrop-filter: blur(15px); position: fixed;
@@ -254,7 +300,7 @@
             100% { background-position: 400px 0; }
         }
         .skeleton-block {
-            background: linear-gradient(90deg, #EDECEA 25%, #F5F4F2 50%, #EDECEA 75%);
+            background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
             background-size: 800px 100%;
             animation: shimmer 1.6s infinite linear;
             border-radius: 8px;
@@ -268,76 +314,158 @@
         }
         .it-skeleton-dot {
             width: 12px; height: 12px; border-radius: 50%;
-            background: #E5E7EB; margin: 4px 0;
+            background: var(--border-default); margin: 4px 0;
         }
         .it-skeleton-line {
-            width: 2px; flex: 1; min-height: 60px; background: #EAE9E0;
+            width: 2px; flex: 1; min-height: 60px; background: var(--timeline-line);
         }
         .it-skeleton-card {
             flex: 1; margin-left: 12px; padding: 14px;
-            background: white; border-radius: 20px;
-            border: 1px solid #F1F1F1;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+            background: var(--bg-card); border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--card-shadow);
             margin-bottom: 12px;
         }
 
         /* ============================================================
-           🌟 功能5：暗色模式 Dark Mode（深色莫蘭迪）
+           🌙 深色莫蘭迪 Token — 雙觸發：系統偏好 OR 手動切換
+           - 系統深色：@media prefers-color-scheme:dark（排除手動鎖定亮色）
+           - 手動深色：html[data-theme="dark"]（優先於系統設定）
            ============================================================ */
+        /* 觸發條件1：系統深色 且 用戶未手動鎖定亮色 */
         @media (prefers-color-scheme: dark) {
-            :root {
-                --morandi-olive: #8E9775;
-                --morandi-beige: #9A9A88;
-                --morandi-gold:  #C9A87C;
-                --morandi-text:  #D4D0C8;
-                --bg-light:      #1C1C1E;
-                --heart-pink:    #D4897A;
+            html:not([data-theme="light"]) {
+                --morandi-olive:  #8E9775; --morandi-beige:  #9A9A88;
+                --morandi-gold:   #C9A87C; --morandi-text:   #D4D0C8;
+                --bg-light:       #1C1C1E; --heart-pink:     #D4897A;
+                --bg-primary:     #1C1C1E; --bg-card:        #2C2C2E;
+                --bg-card-2:      #3A3A3C; --bg-input:       #2C2C2E;
+                --bg-modal:       #1C1C1E; --bg-nav:         rgba(28,28,30,0.97);
+                --border-subtle:  #3A3A3C; --border-default: #3A3A3C; --border-input: #48484A;
+                --text-primary:   #E5E2DC; --text-body:      #D4D0C8;
+                --text-caption:   #9A9A88; --text-muted:     #6A6A5A;
+                --card-shadow:    0 4px 20px rgba(0,0,0,0.35);
+                --ptr-bg:         #2C2C2E; --ptr-spinner-track: #3A3A3C; --ptr-spinner-head: #8E9775;
+                --ai-bubble-bg:   #2C2C2E; --ai-bubble-border: #3A3A3C; --ai-bubble-text: #C9A87C;
+                --think-bg:       #2C2C2E; --think-border:   #3A3A3C;
+                --skeleton-base:  #3A3A3C; --skeleton-shine: #48484A;
+                --timeline-line:  #3A3A3C;
             }
-            body { background-color: #1C1C1E !important; color: #D4D0C8; }
-            .app-card, .it-card-inner { background: #2C2C2E !important; border-color: #3A3A3C !important; }
-            .main-header { background: #2C2C2E !important; border-color: #3A3A3C !important; }
-            .it-card-title { color: #E5E2DC !important; }
-            .it-card-badge { background: #3A3A3C !important; color: #8E9775 !important; }
-            .it-time-label { color: #C9A87C !important; }
-            .it-time-end   { color: rgba(154,154,136,0.7) !important; }
-            .it-dot        { border-color: #2C2C2E !important; }
-            .it-line-seg   { background: #3A3A3C !important; }
-            .schedule-item-detail { color: #8E9775 !important; }
-            .it-card-inner.expanded { border-color: #C9A87C !important; }
-            .it-card-ctrl button { background: #3A3A3C !important; color: #9A9A88 !important; }
-            .it-card-body-inner { border-top-color: #3A3A3C !important; }
-            .action-link { background: #3A3A3C !important; border-color: #48484A !important; color: #D4D0C8 !important; }
-            .it-skeleton-card { background: #2C2C2E !important; border-color: #3A3A3C !important; }
-            .skeleton-block { background: linear-gradient(90deg, #3A3A3C 25%, #48484A 50%, #3A3A3C 75%) !important; background-size: 800px 100% !important; }
-            .it-skeleton-dot { background: #48484A !important; }
-            .expand-panel { background: transparent !important; }
-            input, select, textarea { background: #2C2C2E !important; color: #D4D0C8 !important; border-color: #48484A !important; }
-            /* 天氣卡 */
-            .weather-card { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
-            .wx-city-tab { border-color: rgba(255,255,255,0.2) !important; }
-            .wx-city-tab.wx-active { background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.5) !important; }
+        }
+        /* 觸發條件2：手動切換（優先於系統，localStorage 儲存） */
+        html[data-theme="dark"] {
+            --morandi-olive:  #8E9775; --morandi-beige:  #9A9A88;
+            --morandi-gold:   #C9A87C; --morandi-text:   #D4D0C8;
+            --bg-light:       #1C1C1E; --heart-pink:     #D4897A;
+            --bg-primary:     #1C1C1E; --bg-card:        #2C2C2E;
+            --bg-card-2:      #3A3A3C; --bg-input:       #2C2C2E;
+            --bg-modal:       #1C1C1E; --bg-nav:         rgba(28,28,30,0.97);
+            --border-subtle:  #3A3A3C; --border-default: #3A3A3C; --border-input: #48484A;
+            --text-primary:   #E5E2DC; --text-body:      #D4D0C8;
+            --text-caption:   #9A9A88; --text-muted:     #6A6A5A;
+            --card-shadow:    0 4px 20px rgba(0,0,0,0.35);
+            --ptr-bg:         #2C2C2E; --ptr-spinner-track: #3A3A3C; --ptr-spinner-head: #8E9775;
+            --ai-bubble-bg:   #2C2C2E; --ai-bubble-border: #3A3A3C; --ai-bubble-text: #C9A87C;
+            --think-bg:       #2C2C2E; --think-border:   #3A3A3C;
+            --skeleton-base:  #3A3A3C; --skeleton-shine: #48484A;
+            --timeline-line:  #3A3A3C;
+        }
+
+        /* ── 深色模式元件覆蓋（硬編碼顏色的補救） ── */
+        /* 使用雙選擇器確保系統深色與手動深色都能命中 */
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) body { background-color: var(--bg-primary); color: var(--text-body); } }
+        html[data-theme="dark"] body { background-color: var(--bg-primary); color: var(--text-body); }
+
+        /* 通用選擇器 helper — 匹配兩種深色觸發條件 */
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) {
+            /* Layout */
+            .main-header               { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .couple-name               { color: var(--text-primary) !important; }
+            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: var(--text-body) !important; }
+            /* Cards */
+            .app-card, .it-card-inner  { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .it-card-inner.expanded    { border-color: var(--morandi-gold) !important; }
+            .it-card-title             { color: var(--text-primary) !important; }
+            .it-card-badge             { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; }
+            .it-card-ctrl button       { background: var(--bg-card-2) !important; color: var(--text-caption) !important; }
+            .it-card-body-inner        { border-top-color: var(--border-subtle) !important; }
+            .schedule-item-detail      { color: var(--morandi-olive) !important; }
+            .action-link               { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; }
+            /* Timeline */
+            .it-time-label             { color: var(--morandi-gold) !important; }
+            .it-time-end               { color: var(--text-muted) !important; }
+            .it-dot                    { border-color: var(--bg-primary) !important; }
+            .it-line-seg               { background: var(--timeline-line) !important; }
+            /* Skeleton */
+            .it-skeleton-card          { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .it-skeleton-dot           { background: var(--bg-card-2) !important; }
+            .it-skeleton-line          { background: var(--timeline-line) !important; }
+            .skeleton-block            { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
+            /* Forms */
+            .expand-panel              { background: transparent !important; }
+            input, select, textarea    { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
+            /* Weather */
+            .weather-card              { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
+            .wx-city-tab               { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; }
+            .wx-city-tab.wx-active     { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; }
             /* Day Tabs */
-            .day-tab { background: #2C2C2E !important; border-color: #3A3A3C !important; color: #D4D0C8 !important; }
-            .day-tab.active { background: #6B705C !important; }
-            /* 底部 Nav */
-            .bottom-nav { background: rgba(30,30,32,0.97) !important; }
-            /* Filter / Chip */
-            .filter-chip { background: #2C2C2E !important; border-color: #3A3A3C !important; color: #9CA3AF !important; }
-            .pack-filter-btn { background: #3A3A3C !important; border-color: #48484A !important; }
-            /* Modal 面板 */
-            .modal-panel, #gemini-panel { background: #1C1C1E !important; }
-            .centered-modal-content { background: #2C2C2E !important; border-color: #3A3A3C !important; }
-            /* AI 對話 */
-            .ai-bubble { background-color: #2C2C2E !important; border-color: #3A3A3C !important; color: #C9A87C !important; }
-            .ai-thinking-bubble { background: #2C2C2E !important; border-color: #3A3A3C !important; }
-            /* Pull-to-refresh */
-            #ptr-indicator { background: #2C2C2E !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
-            #ptr-spinner { border-color: #3A3A3C !important; border-top-color: #8E9775 !important; }
-            /* 標題文字 */
-            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: #D4D0C8 !important; }
-            .couple-name { color: #E5E2DC !important; }
-            /* 記帳卡片 */
-            .expense-card-final { background: #2C2C2E !important; border-color: #3A3A3C !important; }
+            .day-tab                   { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; }
+            .day-tab.active            { background: var(--morandi-olive) !important; color: white !important; }
+            /* Nav */
+            .bottom-nav                { background: var(--bg-nav) !important; }
+            /* Filter */
+            .filter-chip               { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; }
+            .pack-filter-btn           { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; }
+            /* Modals */
+            .modal-panel, #gemini-panel { background: var(--bg-modal) !important; }
+            .centered-modal-content    { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            /* AI chat */
+            .ai-bubble                 { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; }
+            .ai-thinking-bubble        { background: var(--think-bg) !important; border-color: var(--think-border) !important; }
+            /* PTR */
+            #ptr-indicator             { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+            #ptr-spinner               { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; }
+            /* Expense */
+            .expense-card-final        { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        }}
+
+        html[data-theme="dark"] {
+            .main-header               { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .couple-name               { color: var(--text-primary) !important; }
+            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: var(--text-body) !important; }
+            .app-card, .it-card-inner  { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .it-card-inner.expanded    { border-color: var(--morandi-gold) !important; }
+            .it-card-title             { color: var(--text-primary) !important; }
+            .it-card-badge             { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; }
+            .it-card-ctrl button       { background: var(--bg-card-2) !important; color: var(--text-caption) !important; }
+            .it-card-body-inner        { border-top-color: var(--border-subtle) !important; }
+            .schedule-item-detail      { color: var(--morandi-olive) !important; }
+            .action-link               { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; }
+            .it-time-label             { color: var(--morandi-gold) !important; }
+            .it-time-end               { color: var(--text-muted) !important; }
+            .it-dot                    { border-color: var(--bg-primary) !important; }
+            .it-line-seg               { background: var(--timeline-line) !important; }
+            .it-skeleton-card          { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .it-skeleton-dot           { background: var(--bg-card-2) !important; }
+            .it-skeleton-line          { background: var(--timeline-line) !important; }
+            .skeleton-block            { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
+            .expand-panel              { background: transparent !important; }
+            input, select, textarea    { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
+            .weather-card              { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
+            .wx-city-tab               { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; }
+            .wx-city-tab.wx-active     { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; }
+            .day-tab                   { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; }
+            .day-tab.active            { background: var(--morandi-olive) !important; color: white !important; }
+            .bottom-nav                { background: var(--bg-nav) !important; }
+            .filter-chip               { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; }
+            .pack-filter-btn           { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; }
+            .modal-panel, #gemini-panel { background: var(--bg-modal) !important; }
+            .centered-modal-content    { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            .ai-bubble                 { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; }
+            .ai-thinking-bubble        { background: var(--think-bg) !important; border-color: var(--think-border) !important; }
+            #ptr-indicator             { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+            #ptr-spinner               { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; }
+            .expense-card-final        { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
         }
 
         /* ============================================================
@@ -348,7 +476,7 @@
             left: 50%; transform: translateX(-50%) translateY(-80px);
             z-index: 4000;
             width: 44px; height: 44px; border-radius: 50%;
-            background: white;
+            background: var(--ptr-bg);
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             display: flex; align-items: center; justify-content: center;
             transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
@@ -359,8 +487,8 @@
         }
         #ptr-spinner {
             width: 22px; height: 22px;
-            border: 2.5px solid #EAE9E0;
-            border-top-color: #6B705C;
+            border: 2.5px solid var(--ptr-spinner-track);
+            border-top-color: var(--ptr-spinner-head);
             border-radius: 50%;
         }
         #ptr-spinner.ptr-spin {
@@ -372,7 +500,7 @@
            🌟 功能6：卡片層次 — 漸層邊框 + 精緻感
            ============================================================ */
         .it-card-inner {
-            background: white;
+            background: var(--bg-card);
             border-radius: 20px;
             box-shadow: 0 4px 14px rgba(0,0,0,0.05);
             /* 漸層邊框用 outline + border 疊加技巧 */
@@ -431,7 +559,7 @@
         .tab-content { opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .tab-content:not(.hidden) { opacity: 1; transform: translateY(0); }
 
-        .ai-bubble { background-color: #FCEBE8; color: #9D6B60; border: 1px solid #F8D7D1; border-bottom-left-radius: 4px; }
+        .ai-bubble { background-color: var(--ai-bubble-bg); color: var(--ai-bubble-text); border: 1px solid var(--ai-bubble-border); border-bottom-left-radius: 4px; }
         .user-bubble { background-color: #6B705C; color: white; border-bottom-right-radius: 4px; }
 
         .splash-text { opacity: 0; animation: fadeInSplash 0.5s ease-out 0.15s forwards; }
@@ -1255,7 +1383,7 @@
         <div id="ptr-spinner"></div>
     </div>
 
-    <div id="app-splash" class="fixed inset-0 z-[9999] bg-[#F8F7F2] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-none">
+    <div id="app-splash" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-1000 pointer-events-none" style="background:var(--bg-primary);">
         
         <div class="text-4xl mb-8 animate-bounce opacity-80" style="filter: drop-shadow(0 5px 15px rgba(221,184,146,0.3));">✈️</div>
         
@@ -1300,8 +1428,15 @@
         </div>
     </div>
 
-    <div class="bg-[var(--bg-light)] min-h-screen shadow-2xl relative pb-24">
-        <header class="main-header">
+    <div class="min-h-screen shadow-2xl relative pb-24" style="background:var(--bg-primary);">
+        <header class="main-header" style="position:relative;">
+            <!-- 🌙 主題切換按鈕（隱藏版，右上角） -->
+            <button id="theme-toggle-btn" onclick="window.toggleTheme()"
+                style="position:absolute;top:calc(env(safe-area-inset-top)+10px);right:14px;
+                       width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border-default);
+                       background:var(--bg-card-2);display:flex;align-items:center;justify-content:center;
+                       font-size:16px;cursor:pointer;transition:all 0.25s ease;z-index:10;"
+                aria-label="切換深色/亮色模式">🌙</button>
             <div class="heart-text"><span>♥</span> SWEET GETAWAY <span>♥</span></div>
             <h1 class="couple-name">DARREN <span class="ampersand">&</span> TINA</h1>
             <div id="countdown-display" class="text-[11px] font-black text-white bg-[#DDB892] inline-block px-4 py-1 rounded-full shadow-sm mt-1 tracking-widest transition-colors duration-300">
@@ -3595,14 +3730,67 @@
         }, { passive: true });
 
         // ============================================================
-        // 🌟 功能5：根據系統時間自動切換 theme-color
+        // 🌙 主題管理系統
+        // 優先順序：手動切換 (localStorage) > 系統偏好 (prefers-color-scheme)
         // ============================================================
-        (function updateThemeColor() {
-            const hour = new Date().getHours();
-            const isDark = hour >= 18 || hour < 6;
-            const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.content = isDark ? '#2C2C2E' : '#F8F7F2';
-        })();
+
+        // 讀取當前是否為深色（含兩種觸發條件）
+        const _isDarkNow = () => {
+            const saved = localStorage.getItem('app-theme');
+            if (saved === 'dark') return true;
+            if (saved === 'light') return false;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        };
+
+        // 同步更新所有平台的 UI 元件
+        const _applyThemeMeta = (isDark) => {
+            // Android / PWA 頂部狀態列顏色
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) metaTheme.content = isDark ? '#1C1C1E' : '#F8F7F2';
+
+            // iOS PWA 狀態列樣式：深色時用 black（白字），亮色維持 black-translucent
+            const metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+            if (metaStatus) metaStatus.content = isDark ? 'black' : 'black-translucent';
+
+            // 更新切換按鈕圖示
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+        };
+
+        // 初始化：頁面載入時根據 localStorage / 系統偏好同步 UI
+        window.initTheme = () => {
+            const isDark = _isDarkNow();
+            _applyThemeMeta(isDark);
+        };
+
+        // 手動切換：儲存至 localStorage，覆蓋系統偏好
+        window.toggleTheme = () => {
+            if (window.navigator.vibrate) window.navigator.vibrate(12);
+            const current = document.documentElement.getAttribute('data-theme');
+            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let next;
+
+            if (!current) {
+                // 尚未手動設定，根據系統偏好決定切換方向
+                next = systemDark ? 'light' : 'dark';
+            } else {
+                next = current === 'dark' ? 'light' : 'dark';
+            }
+
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('app-theme', next);
+            _applyThemeMeta(next === 'dark');
+        };
+
+        // 監聽系統主題變化（使用者在設定中切換時即時反映）
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            // 只在「未手動設定」時才跟隨系統
+            if (!localStorage.getItem('app-theme')) {
+                _applyThemeMeta(e.matches);
+            }
+        });
+
+        window.initTheme();
 
         // ============================================================
         // 🌟 功能2：左右滑動切換 Day Tabs
@@ -3751,7 +3939,7 @@
          ============================================================ -->
     <script>
         // ★ 改版本只需改這一行 ★
-        const APP_VERSION = '16.8';
+        const APP_VERSION = '16.9';
 
         // 自動注入 UI 版本號
         const verEl = document.getElementById('app-version-display');
@@ -3759,8 +3947,16 @@
 
         // ============================================================
         // Service Worker 註冊 + 自動更新偵測
+        // ⚠️ SW 只能在 HTTPS 或 localhost 執行，file:// 開啟時自動跳過
         // ============================================================
         if ('serviceWorker' in navigator) {
+            const _isSecure = location.protocol === 'https:' ||
+                              location.hostname === 'localhost' ||
+                              location.hostname === '127.0.0.1';
+
+            if (!_isSecure) {
+                console.info('ℹ️ SW skipped: requires HTTPS or localhost (current:', location.protocol + '//' + location.hostname + ')');
+            } else {
             // 加上 ?v= 讓瀏覽器每次都重新請求 sw.js，不會被 HTTP 快取卡住
             navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
                 .then(reg => {
@@ -3777,17 +3973,23 @@
                         if (!newWorker) return;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // 有舊版在跑 → 新版準備好了，發訊息讓它立刻 skipWaiting
                                 console.log('🆕 新版 SW 準備完成，傳送 SKIP_WAITING...');
                                 newWorker.postMessage({ type: 'SKIP_WAITING' });
                             }
                         });
                     });
 
-                    // 每 60 秒主動偵測一次更新（解決長時間開著頁面不更新的問題）
+                    // 每 60 秒主動偵測一次更新
                     setInterval(() => reg.update(), 60 * 1000);
                 })
-                .catch(err => console.error('SW registration failed:', err));
+                .catch(err => {
+                    // SecurityError = 環境不支援，靜默跳過；其他錯誤才警告
+                    if (err.name === 'SecurityError') {
+                        console.info('ℹ️ SW SecurityError (可能是本地環境):', err.message);
+                    } else {
+                        console.warn('SW registration failed:', err);
+                    }
+                });
 
             // SW 控制權切換完成（skipWaiting 生效）→ 靜默重新整理
             // ⚠️ refreshing flag 防止初次安裝也觸發 reload（無限刷新 bug）
@@ -3798,6 +4000,7 @@
                 console.log('🔄 新版 SW 接管，自動重新整理...');
                 window.location.reload();
             });
+            } // end _isSecure
         }
     </script>
 </body>

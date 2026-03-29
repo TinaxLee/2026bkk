@@ -1,5 +1,5 @@
 // ★ 改版本只需改這一行，與 index.html 的 APP_VERSION 保持一致 ★
-const CACHE_NAME = 'honeymoon-cache-v16.8';
+const CACHE_NAME = 'honeymoon-cache-v16.9';
 
 const urlsToCache = [
   './',
