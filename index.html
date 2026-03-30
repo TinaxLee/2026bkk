@@ -390,101 +390,130 @@
         }
 
         /* ── 深色模式元件覆蓋（硬編碼顏色的補救） ── */
-        /* 使用雙選擇器確保系統深色與手動深色都能命中 */
+        /* ⚠️ 全部展開為平面選擇器，避免 CSS Nesting 在舊版 iOS/Android 失效 */
+
+        /* body 底色 */
         @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) body { background-color: var(--bg-primary); color: var(--text-body); } }
         html[data-theme="dark"] body { background-color: var(--bg-primary); color: var(--text-body); }
 
-        /* 通用選擇器 helper — 匹配兩種深色觸發條件 */
-        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) {
-            /* Layout */
-            .main-header               { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .couple-name               { color: var(--text-primary) !important; }
-            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: var(--text-body) !important; }
-            /* Cards */
-            .app-card, .it-card-inner  { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .it-card-inner.expanded    { border-color: var(--morandi-gold) !important; }
-            .it-card-title             { color: var(--text-primary) !important; }
-            .it-card-badge             { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; }
-            .it-card-ctrl button       { background: var(--bg-card-2) !important; color: var(--text-caption) !important; }
-            .it-card-body-inner        { border-top-color: var(--border-subtle) !important; }
-            .schedule-item-detail      { color: var(--morandi-olive) !important; }
-            .action-link               { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; }
-            /* Timeline */
-            .it-time-label             { color: var(--morandi-gold) !important; }
-            .it-time-end               { color: var(--text-muted) !important; }
-            .it-dot                    { border-color: var(--bg-primary) !important; }
-            .it-line-seg               { background: var(--timeline-line) !important; }
-            /* Skeleton */
-            .it-skeleton-card          { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .it-skeleton-dot           { background: var(--bg-card-2) !important; }
-            .it-skeleton-line          { background: var(--timeline-line) !important; }
-            .skeleton-block            { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
-            /* Forms */
-            .expand-panel              { background: transparent !important; }
-            input, select, textarea    { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
-            /* Weather */
-            .weather-card              { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
-            .wx-city-tab               { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; }
-            .wx-city-tab.wx-active     { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; }
-            /* Day Tabs */
-            .day-tab                   { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; }
-            .day-tab.active            { background: var(--morandi-olive) !important; color: white !important; }
-            /* Nav */
-            .bottom-nav                { background: var(--bg-nav) !important; }
-            /* Filter */
-            .filter-chip               { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; }
-            .pack-filter-btn           { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; }
-            /* Modals */
-            .modal-panel, #gemini-panel { background: var(--bg-modal) !important; }
-            .centered-modal-content    { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            /* AI chat */
-            .ai-bubble                 { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; }
-            .ai-thinking-bubble        { background: var(--think-bg) !important; border-color: var(--think-border) !important; }
-            /* PTR */
-            #ptr-indicator             { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
-            #ptr-spinner               { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; }
-            /* Expense */
-            .expense-card-final        { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-        }}
-
-        html[data-theme="dark"] {
-            .main-header               { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .couple-name               { color: var(--text-primary) !important; }
-            #content-itinerary h3, #content-missions h3, #content-packing h3 { color: var(--text-body) !important; }
-            .app-card, .it-card-inner  { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .it-card-inner.expanded    { border-color: var(--morandi-gold) !important; }
-            .it-card-title             { color: var(--text-primary) !important; }
-            .it-card-badge             { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; }
-            .it-card-ctrl button       { background: var(--bg-card-2) !important; color: var(--text-caption) !important; }
-            .it-card-body-inner        { border-top-color: var(--border-subtle) !important; }
-            .schedule-item-detail      { color: var(--morandi-olive) !important; }
-            .action-link               { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; }
-            .it-time-label             { color: var(--morandi-gold) !important; }
-            .it-time-end               { color: var(--text-muted) !important; }
-            .it-dot                    { border-color: var(--bg-primary) !important; }
-            .it-line-seg               { background: var(--timeline-line) !important; }
-            .it-skeleton-card          { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .it-skeleton-dot           { background: var(--bg-card-2) !important; }
-            .it-skeleton-line          { background: var(--timeline-line) !important; }
-            .skeleton-block            { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
-            .expand-panel              { background: transparent !important; }
-            input, select, textarea    { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
-            .weather-card              { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
-            .wx-city-tab               { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; }
-            .wx-city-tab.wx-active     { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; }
-            .day-tab                   { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; }
-            .day-tab.active            { background: var(--morandi-olive) !important; color: white !important; }
-            .bottom-nav                { background: var(--bg-nav) !important; }
-            .filter-chip               { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; }
-            .pack-filter-btn           { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; }
-            .modal-panel, #gemini-panel { background: var(--bg-modal) !important; }
-            .centered-modal-content    { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
-            .ai-bubble                 { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; }
-            .ai-thinking-bubble        { background: var(--think-bg) !important; border-color: var(--think-border) !important; }
-            #ptr-indicator             { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
-            #ptr-spinner               { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; }
-            .expense-card-final        { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        /* Layout */
+        html[data-theme="dark"] .main-header,
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .main-header { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; } }
+        html[data-theme="dark"] .main-header { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        html[data-theme="dark"] .couple-name { color: var(--text-primary) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .couple-name { color: var(--text-primary) !important; } }
+        html[data-theme="dark"] #content-itinerary h3,
+        html[data-theme="dark"] #content-missions h3,
+        html[data-theme="dark"] #content-packing h3 { color: var(--text-body) !important; }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]) #content-itinerary h3,
+            html:not([data-theme="light"]) #content-missions h3,
+            html:not([data-theme="light"]) #content-packing h3 { color: var(--text-body) !important; }
         }
+
+        /* Cards */
+        html[data-theme="dark"] .app-card,
+        html[data-theme="dark"] .it-card-inner { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]) .app-card,
+            html:not([data-theme="light"]) .it-card-inner { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        }
+        html[data-theme="dark"] .it-card-inner.expanded { border-color: var(--morandi-gold) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-card-inner.expanded { border-color: var(--morandi-gold) !important; } }
+        html[data-theme="dark"] .it-card-title { color: var(--text-primary) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-card-title { color: var(--text-primary) !important; } }
+        html[data-theme="dark"] .it-card-badge { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-card-badge { background: var(--bg-card-2) !important; color: var(--morandi-olive) !important; } }
+        html[data-theme="dark"] .it-card-ctrl button { background: var(--bg-card-2) !important; color: var(--text-caption) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-card-ctrl button { background: var(--bg-card-2) !important; color: var(--text-caption) !important; } }
+        html[data-theme="dark"] .it-card-body-inner { border-top-color: var(--border-subtle) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-card-body-inner { border-top-color: var(--border-subtle) !important; } }
+        html[data-theme="dark"] .schedule-item-detail { color: var(--morandi-olive) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .schedule-item-detail { color: var(--morandi-olive) !important; } }
+        html[data-theme="dark"] .action-link { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .action-link { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; color: var(--text-body) !important; } }
+
+        /* Timeline */
+        html[data-theme="dark"] .it-time-label { color: var(--morandi-gold) !important; }
+        html[data-theme="dark"] .it-time-end { color: var(--text-muted) !important; }
+        html[data-theme="dark"] .it-dot { border-color: var(--bg-primary) !important; }
+        html[data-theme="dark"] .it-line-seg { background: var(--timeline-line) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-time-label { color: var(--morandi-gold) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-time-end { color: var(--text-muted) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-dot { border-color: var(--bg-primary) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .it-line-seg { background: var(--timeline-line) !important; } }
+
+        /* Skeleton */
+        html[data-theme="dark"] .it-skeleton-card { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        html[data-theme="dark"] .it-skeleton-dot { background: var(--bg-card-2) !important; }
+        html[data-theme="dark"] .it-skeleton-line { background: var(--timeline-line) !important; }
+        html[data-theme="dark"] .skeleton-block { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]) .it-skeleton-card { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+            html:not([data-theme="light"]) .it-skeleton-dot { background: var(--bg-card-2) !important; }
+            html:not([data-theme="light"]) .it-skeleton-line { background: var(--timeline-line) !important; }
+            html:not([data-theme="light"]) .skeleton-block { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 800px 100% !important; }
+        }
+
+        /* Forms */
+        html[data-theme="dark"] .expand-panel { background: transparent !important; }
+        html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .expand-panel { background: transparent !important; } }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]) input,
+            html:not([data-theme="light"]) select,
+            html:not([data-theme="light"]) textarea { background: var(--bg-input) !important; color: var(--text-body) !important; border-color: var(--border-input) !important; }
+        }
+
+        /* Weather */
+        html[data-theme="dark"] .weather-card { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; }
+        html[data-theme="dark"] .wx-city-tab { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; }
+        html[data-theme="dark"] .wx-city-tab.wx-active { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .weather-card { background: linear-gradient(135deg, #5C6250 0%, #4A4E40 100%) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .wx-city-tab { border-color: rgba(255,255,255,0.2) !important; color: rgba(255,255,255,0.5) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .wx-city-tab.wx-active { background: rgba(255,255,255,0.18) !important; border-color: rgba(255,255,255,0.55) !important; color: white !important; } }
+
+        /* Day Tabs */
+        html[data-theme="dark"] .day-tab { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; }
+        html[data-theme="dark"] .day-tab.active { background: var(--morandi-olive) !important; color: white !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .day-tab { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-body) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .day-tab.active { background: var(--morandi-olive) !important; color: white !important; } }
+
+        /* Nav */
+        html[data-theme="dark"] .bottom-nav { background: var(--bg-nav) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .bottom-nav { background: var(--bg-nav) !important; } }
+
+        /* Filter */
+        html[data-theme="dark"] .filter-chip { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; }
+        html[data-theme="dark"] .pack-filter-btn { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .filter-chip { background: var(--bg-card) !important; border-color: var(--border-default) !important; color: var(--text-caption) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .pack-filter-btn { background: var(--bg-card-2) !important; border-color: var(--border-input) !important; } }
+
+        /* Modals */
+        html[data-theme="dark"] .modal-panel,
+        html[data-theme="dark"] #gemini-panel { background: var(--bg-modal) !important; }
+        html[data-theme="dark"] .centered-modal-content { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-theme="light"]) .modal-panel,
+            html:not([data-theme="light"]) #gemini-panel { background: var(--bg-modal) !important; }
+            html:not([data-theme="light"]) .centered-modal-content { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        }
+
+        /* AI chat */
+        html[data-theme="dark"] .ai-bubble { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; }
+        html[data-theme="dark"] .ai-thinking-bubble { background: var(--think-bg) !important; border-color: var(--think-border) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .ai-bubble { background-color: var(--ai-bubble-bg) !important; border-color: var(--ai-bubble-border) !important; color: var(--ai-bubble-text) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .ai-thinking-bubble { background: var(--think-bg) !important; border-color: var(--think-border) !important; } }
+
+        /* PTR */
+        html[data-theme="dark"] #ptr-indicator { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+        html[data-theme="dark"] #ptr-spinner { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) #ptr-indicator { background: var(--ptr-bg) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; } }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) #ptr-spinner { border-color: var(--ptr-spinner-track) !important; border-top-color: var(--ptr-spinner-head) !important; } }
+
+        /* Expense */
+        html[data-theme="dark"] .expense-card-final { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; }
+        @media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .expense-card-final { background: var(--bg-card) !important; border-color: var(--border-subtle) !important; } }
 
         /* ============================================================
            🌟 功能3：下拉刷新 Pull-to-refresh
@@ -3748,21 +3777,15 @@
         }, { passive: true });
 
         // ============================================================
-        // 🌙 主題管理系統
-        // 優先順序：手動切換 (localStorage) > 系統偏好 (prefers-color-scheme)
-        // ============================================================
-
-        // ============================================================
         // 🌙 主題管理系統（三優先級）
         //
         //  P1 手動優先  — localStorage 有值時以用戶選擇為準
-        //                 手動設定在「當天結束（凌晨0點）」後自動失效，
-        //                 讓第二天重新跟隨時間規則
+        //                 手動設定在「當天結束（凌晨0點）」後自動失效
         //  P2 時間自動  — 18:00~06:00 深色 / 06:00~18:00 亮色
         //  P3 系統同步  — 無手動設定時監聽 prefers-color-scheme 即時變化
         //
-        //  updateTheme() 在以下時機呼叫：
-        //  - 頁面載入  - 手動切換  - 每分鐘 setInterval  - 系統主題事件
+        //  updateTheme() 觸發時機：
+        //  頁面載入 / 手動切換 / 每分鐘 setInterval / 系統主題變化 / 頁面從背景恢復
         // ============================================================
 
         const THEME_MANUAL_KEY  = 'app-theme';        // 'dark' | 'light'
@@ -3843,6 +3866,11 @@
 
         // 每分鐘執行一次，確保跨越 18:00 / 06:00 時自動切換
         setInterval(window.updateTheme, 60 * 1000);
+
+        // 🌟 iOS 從背景切回來時補執行（setInterval 背景會暫停）
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') window.updateTheme();
+        });
 
         // 頁面載入立即執行
         window.updateTheme();
