@@ -1702,6 +1702,25 @@
                     </div>
                 </div>
 
+                <!-- 🌟 今日支出小結 -->
+                <div id="today-expense-card" class="app-card px-4 py-3 mb-5 hidden" style="background:var(--bg-card);">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-black text-[#B7B7A4] uppercase tracking-[0.2em]">📅 今日支出</span>
+                        <span id="today-expense-date" class="text-[9px] font-bold text-[#B7B7A4]"></span>
+                    </div>
+                    <div class="flex gap-4 mt-1.5">
+                        <div>
+                            <span class="text-[9px] font-bold text-[#B7B7A4] uppercase tracking-wider">THB</span>
+                            <div id="today-thb" style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--morandi-olive);line-height:1.2;">฿ 0</div>
+                        </div>
+                        <div style="width:1px;background:var(--border-default);margin:2px 0;"></div>
+                        <div>
+                            <span class="text-[9px] font-bold text-[#B7B7A4] uppercase tracking-wider">TWD</span>
+                            <div id="today-twd" style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--text-primary);line-height:1.2;">NT$ 0</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 🌟 升級：可收合的圓餅圖區塊 -->
                 <div id="chart-card" class="app-card mb-5 bg-white hidden overflow-hidden shadow-sm border border-[#EAE9E0]">
                     <!-- 🌟 修正：放大標題字體 (text-[13px])、加寬字距 (tracking-wider) -->
@@ -1740,6 +1759,7 @@
                         <span id="pack-progress-tina" class="text-[10px] font-bold text-[#F8AD9D]">Tina 0/0</span>
                         <span id="pack-progress-darren" class="text-[10px] font-bold text-[#8E9775]">Darren 0/0</span>
                     </div>
+                    <div id="pack-complete-msg" class="hidden text-center mt-2.5 text-[11px] font-black text-[#DDB892] tracking-wide">🎉 行李打包完畢，泰國等我們！</div>
                 </div>
 
                 <!-- 🌟 升級：全域統一分類標籤 (Global Filter) -->
@@ -2821,6 +2841,22 @@
             document.getElementById('total-thb').innerText = window.fmtRound(displayTotal['THB']);
             document.getElementById('total-twd').innerText = window.fmtRound(displayTotal['TWD']);
 
+            // 🌟 今日支出小結
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayExp = allExpenses.filter(e => e.date === todayStr);
+            const todayCard = document.getElementById('today-expense-card');
+            if (todayExp.length > 0) {
+                const tTHB = todayExp.filter(e => e.currency !== 'TWD').reduce((s, e) => s + e.cost, 0);
+                const tTWD = todayExp.filter(e => e.currency === 'TWD').reduce((s, e) => s + e.cost, 0);
+                const [y, m, d] = todayStr.split('-');
+                document.getElementById('today-expense-date').textContent = `${m}/${d}`;
+                document.getElementById('today-thb').textContent = `฿ ${window.fmtRound(tTHB)}`;
+                document.getElementById('today-twd').textContent = `NT$ ${window.fmtRound(tTWD)}`;
+                if (todayCard) todayCard.classList.remove('hidden');
+            } else {
+                if (todayCard) todayCard.classList.add('hidden');
+            }
+
             // 🌟 結算區塊邏輯 (雙幣別獨立結算 - 終極排版修復)
             const getSettlementHtml = (curr, symbol) => {
                 const half = sharedTotal[curr] / 2;
@@ -3298,11 +3334,14 @@
             if (labelEl)  labelEl.textContent = `${done} / ${total} 項`;
             if (tinaEl)   tinaEl.textContent  = `Tina ${tinaDone}/${tinaTotal}`;
             if (darrenEl) darrenEl.textContent = `Darren ${darrenDone}/${darrenTotal}`;
-            // 全部打包完成時，進度條變金色慶祝
-            if (fillEl && total > 0 && done === total) {
-                fillEl.style.background = 'linear-gradient(90deg,#DDB892,#C8A070)';
-            } else if (fillEl) {
-                fillEl.style.background = 'linear-gradient(90deg,#8E9775,#6B705C)';
+            // 全部打包完成時，進度條變金色 + 顯示慶祝文字
+            const completeMsg = document.getElementById('pack-complete-msg');
+            if (total > 0 && done === total) {
+                if (fillEl) fillEl.style.background = 'linear-gradient(90deg,#DDB892,#C8A070)';
+                if (completeMsg) completeMsg.classList.remove('hidden');
+            } else {
+                if (fillEl) fillEl.style.background = 'linear-gradient(90deg,#8E9775,#6B705C)';
+                if (completeMsg) completeMsg.classList.add('hidden');
             }
         };
 
@@ -4111,7 +4150,7 @@
          ============================================================ -->
     <script>
         // ★ 改版本只需改這一行 ★
-        const APP_VERSION = '17.1';
+        const APP_VERSION = '17.2';
 
         // 自動注入 UI 版本號
         const verEl = document.getElementById('app-version-display');
