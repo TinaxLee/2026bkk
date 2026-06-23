@@ -1727,6 +1727,21 @@
                     <button onclick="window.addPacking()" class="w-full bg-[#6B705C] text-white py-3.5 rounded-xl font-bold text-xs">加入清單</button>
                 </div>
                 
+                <!-- 🌟 打包進度條 -->
+                <div id="pack-progress-bar" class="app-card px-4 py-3 mb-4" style="background:var(--bg-card);">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[11px] font-black text-[#8E9185] uppercase tracking-[0.15em]">打包進度</span>
+                        <span id="pack-progress-label" class="text-[11px] font-black text-[#6B705C] tracking-wide">0 / 0 項</span>
+                    </div>
+                    <div style="background:var(--border-default);border-radius:99px;height:6px;overflow:hidden;">
+                        <div id="pack-progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#8E9775,#6B705C);border-radius:99px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);"></div>
+                    </div>
+                    <div class="flex justify-between mt-1.5">
+                        <span id="pack-progress-tina" class="text-[10px] font-bold text-[#F8AD9D]">Tina 0/0</span>
+                        <span id="pack-progress-darren" class="text-[10px] font-bold text-[#8E9775]">Darren 0/0</span>
+                    </div>
+                </div>
+
                 <!-- 🌟 升級：全域統一分類標籤 (Global Filter) -->
                 <div id="pack-global-filters" class="flex gap-2 mb-5 overflow-x-auto no-scrollbar pb-2 px-1"></div>
 
@@ -2391,10 +2406,13 @@
                 if (!autoOpenId && sorted.length > 0) autoOpenId = sorted[sorted.length - 1].id;
             }
 
-            // 🌟 備註 URL 偵測並轉為可點擊超連結
+            // 🌟 備註 URL + 電話號碼偵測並轉為可點擊連結
             const linkifyNote = (text) => {
                 const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                return escaped.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" onclick="event.stopPropagation()" class="it-note-link">${u}</a>`);
+                // 先轉 URL，再轉電話（避免互相干擾）
+                const withLinks = escaped.replace(/(https?:\/\/[^\s<]+)/g, u => `<a href="${u}" target="_blank" onclick="event.stopPropagation()" class="it-note-link">${u}</a>`);
+                // 電話：支援 +66、+886、02、08、09 開頭，允許空格/連字號分隔
+                return withLinks.replace(/(?<![">])(\+?(?:66|886)?[\s-]?(?:0\d{1,2})[\s-]?\d{3,4}[\s-]?\d{3,4})(?![^<]*<\/a>)/g, p => `<a href="tel:${p.replace(/[\s-]/g,'')}" onclick="event.stopPropagation()" class="it-note-link">📞 ${p}</a>`);
             };
 
             const rows = sorted.map((item, idx) => {
@@ -3261,6 +3279,31 @@
             };
             draw('tina', 'pk-list-tina'); 
             draw('darren', 'pk-list-darren');
+
+            // 🌟 更新打包進度條（計算全部分類，不受 currentPackFilter 影響）
+            const allItems = packingData;
+            const total = allItems.length;
+            const done  = allItems.filter(i => i.checked).length;
+            const tinaDone  = allItems.filter(i => i.owner === 'tina'   && i.checked).length;
+            const tinaTotal = allItems.filter(i => i.owner === 'tina').length;
+            const darrenDone  = allItems.filter(i => i.owner === 'darren' && i.checked).length;
+            const darrenTotal = allItems.filter(i => i.owner === 'darren').length;
+            const pct = total > 0 ? Math.round(done / total * 100) : 0;
+
+            const fillEl  = document.getElementById('pack-progress-fill');
+            const labelEl = document.getElementById('pack-progress-label');
+            const tinaEl  = document.getElementById('pack-progress-tina');
+            const darrenEl= document.getElementById('pack-progress-darren');
+            if (fillEl)   fillEl.style.width = pct + '%';
+            if (labelEl)  labelEl.textContent = `${done} / ${total} 項`;
+            if (tinaEl)   tinaEl.textContent  = `Tina ${tinaDone}/${tinaTotal}`;
+            if (darrenEl) darrenEl.textContent = `Darren ${darrenDone}/${darrenTotal}`;
+            // 全部打包完成時，進度條變金色慶祝
+            if (fillEl && total > 0 && done === total) {
+                fillEl.style.background = 'linear-gradient(90deg,#DDB892,#C8A070)';
+            } else if (fillEl) {
+                fillEl.style.background = 'linear-gradient(90deg,#8E9775,#6B705C)';
+            }
         };
 
         window.addPacking = async () => { const v = document.getElementById('pack-item').value; const c = document.getElementById('pack-category').value; const o = document.getElementById('pack-owner').value; if(!v || !currentUser) return; await addDoc(getColl('packing'), { item: v, owner: o, checked: false, category: c }); document.getElementById('pack-item').value = ''; };
@@ -4068,7 +4111,7 @@
          ============================================================ -->
     <script>
         // ★ 改版本只需改這一行 ★
-        const APP_VERSION = '17.0';
+        const APP_VERSION = '17.1';
 
         // 自動注入 UI 版本號
         const verEl = document.getElementById('app-version-display');
