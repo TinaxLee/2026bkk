@@ -1489,7 +1489,7 @@
             <div id="countdown-display" class="text-[11px] font-black text-white bg-[#DDB892] inline-block px-4 py-1 rounded-full shadow-sm mt-1 tracking-widest transition-colors duration-300">
                 蜜月籌備中... 🇹🇭
             </div>
-            <p class="text-[10px] font-black text-[#8E9775] mt-2 tracking-[0.2em] uppercase">2026 Bangkok Phuket ✈️</p>
+            <p class="text-[10px] font-black text-[#8E9775] mt-2 tracking-[0.2em] uppercase">2026 Thailand ✈️</p>
         </header>
 
         <main class="p-4">
@@ -1503,6 +1503,7 @@
                         <div class="flex gap-2">
                             <button id="wx-tab-0" onclick="event.stopPropagation(); window.switchWeatherCity(0)" class="wx-city-tab wx-active">Bangkok</button>
                             <button id="wx-tab-1" onclick="event.stopPropagation(); window.switchWeatherCity(1)" class="wx-city-tab">Phuket</button>
+                            <button id="wx-tab-2" onclick="event.stopPropagation(); window.switchWeatherCity(2)" class="wx-city-tab">Pattaya</button>
                         </div>
                         <div class="flex items-center gap-2">
                             <div class="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full border border-white/10">
@@ -1523,6 +1524,28 @@
 
                     <!-- 同步時間 -->
                     <div id="wx-sync" class="text-center text-[9px] font-bold text-white/30 tracking-[0.3em] uppercase mt-2"></div>
+                </div>
+
+                <!-- 🌟 時差對照卡片：台灣 vs 泰國 -->
+                <div id="tz-card" class="app-card px-4 py-3 mb-4 flex items-center justify-between" style="background:var(--bg-card);">
+                    <div class="flex items-center gap-3">
+                        <div>
+                            <div class="text-[9px] font-black text-[#B7B7A4] tracking-[0.2em] uppercase mb-0.5">🇹🇭 泰國</div>
+                            <div id="tz-thai" style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:var(--morandi-olive);line-height:1;">--:--</div>
+                            <div class="text-[9px] font-bold text-[#B7B7A4] tracking-wider mt-0.5">UTC+7</div>
+                        </div>
+                        <div style="width:1px;height:36px;background:var(--border-default);margin:0 4px;"></div>
+                        <div>
+                            <div class="text-[9px] font-black text-[#B7B7A4] tracking-[0.2em] uppercase mb-0.5">🇹🇼 台灣</div>
+                            <div id="tz-taiwan" style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:var(--text-primary);line-height:1;">--:--</div>
+                            <div class="text-[9px] font-bold text-[#B7B7A4] tracking-wider mt-0.5">UTC+8</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="text-[9px] font-black text-[#B7B7A4] tracking-[0.15em] uppercase">時差</div>
+                        <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--morandi-gold);">−1hr</div>
+                        <div class="text-[9px] font-bold text-[#B7B7A4]">台灣較快</div>
+                    </div>
                 </div>
 
                 <div id="day-tabs-container" class="flex overflow-x-auto no-scrollbar pb-3 mb-3 items-center gap-3"></div>
@@ -2020,8 +2043,8 @@
         };
 
         // 🌟 天氣卡全域狀態
-        window._wxData = null;       // 儲存兩城市完整資料
-        window._wxCity = 0;          // 0=Bangkok, 1=Phuket
+        window._wxData = null;       // 儲存三城市完整資料
+        window._wxCity = 0;          // 0=Bangkok, 1=Phuket, 2=Pattaya
         window._wxExpanded = false;  // 五日預報展開狀態
 
         const _wxDescMap = (code) => {
@@ -2125,13 +2148,14 @@
             const TZ = 'Asia%2FBangkok';
             const urls = [
                 `https://api.open-meteo.com/v1/forecast?latitude=13.75&longitude=100.50&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`,
-                `https://api.open-meteo.com/v1/forecast?latitude=7.88&longitude=98.39&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`
+                `https://api.open-meteo.com/v1/forecast?latitude=7.88&longitude=98.39&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`,
+                `https://api.open-meteo.com/v1/forecast?latitude=12.93&longitude=100.88&current=${CURRENT}&daily=${DAILY}&timezone=${TZ}&forecast_days=5`
             ];
             try {
-                const [r0, r1] = await Promise.all(urls.map(u => fetch(u)));
-                if (!r0.ok || !r1.ok) throw new Error('API error');
-                const [d0, d1] = await Promise.all([r0.json(), r1.json()]);
-                window._wxData = [d0, d1];
+                const [r0, r1, r2] = await Promise.all(urls.map(u => fetch(u)));
+                if (!r0.ok || !r1.ok || !r2.ok) throw new Error('API error');
+                const [d0, d1, d2] = await Promise.all([r0.json(), r1.json(), r2.json()]);
+                window._wxData = [d0, d1, d2];
                 window._wxLastFetch = Date.now();
                 window._wxRender();
             } catch(e) {
@@ -2141,6 +2165,28 @@
             }
         };
         
+        // 🌟 時差對照卡片：每秒更新台灣 & 泰國時間
+        (function initTzClock() {
+            const pad = n => String(n).padStart(2, '0');
+            function tickTz() {
+                const now = new Date();
+                // 泰國 UTC+7
+                const thaiOffset = 7 * 60;
+                const thaiUtc = now.getTime() + now.getTimezoneOffset() * 60000 + thaiOffset * 60000;
+                const thai = new Date(thaiUtc);
+                // 台灣 UTC+8
+                const twOffset = 8 * 60;
+                const twUtc = now.getTime() + now.getTimezoneOffset() * 60000 + twOffset * 60000;
+                const tw = new Date(twUtc);
+                const thaiEl = document.getElementById('tz-thai');
+                const twEl = document.getElementById('tz-taiwan');
+                if (thaiEl) thaiEl.textContent = `${pad(thai.getHours())}:${pad(thai.getMinutes())}`;
+                if (twEl) twEl.textContent = `${pad(tw.getHours())}:${pad(tw.getMinutes())}`;
+            }
+            tickTz();
+            setInterval(tickTz, 1000);
+        })();
+
         // 🌟 換算器使用「精準模式 (fmtExact)」，保留小數點 (並且把顯示精度拉到 4 位！)
         window.calcIndependentRate = () => { 
             const v = parseFloat(document.getElementById('conv-input').value) || 0; 
@@ -4022,7 +4068,7 @@
          ============================================================ -->
     <script>
         // ★ 改版本只需改這一行 ★
-        const APP_VERSION = '16.9';
+        const APP_VERSION = '17.0';
 
         // 自動注入 UI 版本號
         const verEl = document.getElementById('app-version-display');
