@@ -1658,7 +1658,7 @@
                 <div class="app-card p-5 mb-6 border-2 border-dashed border-[#6B705C]/30">
                     <div class="flex gap-2 mb-3">
                         <select id="mission-category" class="bg-gray-100 px-3 rounded-xl text-xs font-bold border-none outline-none">
-                            <option value="pre">✈️ 出發前</option><option value="day">🇹🇭 抵達當天</option><option value="trip">❤️ 旅程中</option>
+                            <option value="pre">✈️ 行前準備</option><option value="day">🇹🇭 旅途中</option><option value="trip">🧾 必買清單</option>
                         </select>
                         <input type="text" id="mission-task" placeholder="例如：買 eSIM 卡..." class="flex-1 bg-gray-50 p-3 rounded-xl text-sm border border-gray-100 outline-none">
                     </div>
@@ -3393,39 +3393,78 @@
             else { container.classList.add('hidden'); icon.classList.remove('open'); }
         };
 
+        // 🌟 記住每個 accordion 的展開狀態（預設 pre 展開）
+        window._missionAccordion = window._missionAccordion || { pre: true, day: false, trip: false };
+
+        window.toggleMissionAccordion = (key) => {
+            window._missionAccordion[key] = !window._missionAccordion[key];
+            window.renderMissions();
+        };
+
         window.renderMissions = () => { 
             const container = document.getElementById('missions-container'); 
             if (!container) return; 
-            const cats = { pre: '✈️ 出發前必辦', day: '🇹🇭 抵達當天任務', trip: '❤️ 旅程溫馨提醒' }; 
+            const cats = { 
+                pre:  { label: '✈️ 行前準備',  empty: '出發前沒有待辦，準備好了！' }, 
+                day:  { label: '🇹🇭 旅途中',   empty: '旅途中暫無待辦' }, 
+                trip: { label: '🧾 必買清單',  empty: '還沒有想買的東西' }
+            }; 
             
             const pendingMissions = missionsData.filter(m => !m.checked);
             const completedMissions = missionsData.filter(m => m.checked);
 
-            let html = '';
-            html += Object.keys(cats).map(key => { 
-                const items = pendingMissions.filter(m => m.category === key); 
-                if (items.length === 0 && key !== 'pre') return ''; 
-                // 🌟 修正：對齊 items-start、按鈕 shrink-0、文字 min-w-0 break-words
-                return `<div><h4 class="text-[11px] font-black text-[#B7B7A4] mb-3 uppercase tracking-tighter pl-1">${cats[key]}</h4><div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">${items.length === 0 ? '<div class="p-4 text-xs text-gray-300 italic text-center">暫無任務</div>' : items.map(m => `<div class="p-4 flex items-start gap-3 border-b last:border-0 transition-colors"><div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 shrink-0 mt-0.5 rounded-lg border-2 flex items-center justify-center transition-all border-gray-200 cursor-pointer"></div><span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-sm text-[#4A4E40] font-bold leading-relaxed">${m.task}</span><div class="flex gap-2 shrink-0 mt-0.5"><button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button><button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button></div></div>`).join('')}</div></div>`; 
+            // 任務列表 row
+            const missionRow = (m) => `
+                <div class="p-4 flex items-start gap-3 border-b last:border-0 transition-colors" style="border-color:var(--border-default);">
+                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-6 h-6 shrink-0 mt-0.5 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer" style="border-color:var(--border-default);"></div>
+                    <span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-sm font-bold leading-relaxed" style="color:var(--text-body);">${m.task}</span>
+                    <div class="flex gap-2 shrink-0 mt-0.5">
+                        <button onclick="window.editMission('${m.id}')" class="text-gray-400 hover:text-[#6B705C] px-1 text-lg">✎</button>
+                        <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-200 hover:text-red-300 px-1 text-lg">✕</button>
+                    </div>
+                </div>`;
+
+            let html = Object.keys(cats).map(key => {
+                const items = pendingMissions.filter(m => m.category === key);
+                const isOpen = window._missionAccordion[key];
+                const count = items.length;
+                return `
+                <div class="mb-3 rounded-2xl overflow-hidden" style="border:1px solid var(--border-default);">
+                    <div class="flex items-center justify-between px-4 py-3 cursor-pointer select-none" 
+                         style="background:var(--bg-card);"
+                         onclick="window.toggleMissionAccordion('${key}')">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-black tracking-wider uppercase" style="color:var(--text-caption);">${cats[key].label}</span>
+                            ${count > 0 ? `<span class="text-[9px] font-black px-1.5 py-0.5 rounded-full" style="background:var(--bg-card-2);color:var(--morandi-olive);">${count}</span>` : ''}
+                        </div>
+                        <span class="text-xs transition-transform duration-200" style="color:var(--text-caption);transform:rotate(${isOpen ? '0' : '-90'}deg);">▼</span>
+                    </div>
+                    ${isOpen ? `
+                    <div style="background:var(--bg-page);">
+                        ${items.length === 0 
+                            ? `<div class="p-4 text-xs italic text-center" style="color:var(--text-caption);">${cats[key].empty}</div>`
+                            : items.map(missionRow).join('')
+                        }
+                    </div>` : ''}
+                </div>`;
             }).join('');
 
             if (completedMissions.length > 0) {
                 html += `
-                    <div class="mt-8">
+                    <div class="mt-4">
                         <div class="flex items-center justify-between px-1 mb-3 cursor-pointer" onclick="window.toggleCompletedMissions()">
-                            <h4 class="text-[11px] font-black text-gray-400 uppercase tracking-tighter flex items-center gap-2">
-                                ✅ 已完成任務 <span class="bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full text-[9px]">${completedMissions.length}</span>
+                            <h4 class="text-[11px] font-black uppercase tracking-tighter flex items-center gap-2" style="color:var(--text-caption);">
+                                ✅ 已完成任務 <span class="px-2 py-0.5 rounded-full text-[9px]" style="background:var(--bg-card-2);color:var(--text-caption);">${completedMissions.length}</span>
                             </h4>
-                            <span id="completed-missions-icon" class="text-gray-400 text-sm toggle-icon">▼</span>
+                            <span id="completed-missions-icon" class="text-sm toggle-icon" style="color:var(--text-caption);">▼</span>
                         </div>
-                        <div id="completed-missions-list" class="hidden bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden opacity-70">
+                        <div id="completed-missions-list" class="hidden rounded-2xl overflow-hidden opacity-70" style="background:var(--bg-card);border:1px solid var(--border-default);">
                             ${completedMissions.map(m => `
-                                <!-- 🌟 修正：對齊 items-start、按鈕 shrink-0、文字 min-w-0 break-words -->
-                                <div class="p-3 flex items-start gap-3 border-b border-gray-200 last:border-0">
-                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-5 h-5 shrink-0 mt-0.5 rounded border-2 flex items-center justify-center transition-all bg-[#6B705C] border-[#6B705C] cursor-pointer">
+                                <div class="p-3 flex items-start gap-3 border-b last:border-0" style="border-color:var(--border-default);">
+                                    <div onclick="window.toggleMission('${m.id}', ${m.checked})" class="w-5 h-5 shrink-0 mt-0.5 rounded border-2 flex items-center justify-center transition-all cursor-pointer bg-[#6B705C] border-[#6B705C]">
                                         <span class="text-white text-[10px]">✓</span>
                                     </div>
-                                    <span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-xs line-through text-gray-400 font-medium leading-relaxed">${m.task}</span>
+                                    <span class="flex-1 min-w-0 break-words whitespace-pre-wrap text-xs line-through font-medium leading-relaxed" style="color:var(--text-caption);">${m.task}</span>
                                     <button onclick="window.deleteItem('missions','${m.id}')" class="text-gray-300 hover:text-red-300 px-1 text-base shrink-0 mt-0.5">✕</button>
                                 </div>
                             `).join('')}
@@ -4150,7 +4189,7 @@
          ============================================================ -->
     <script>
         // ★ 改版本只需改這一行 ★
-        const APP_VERSION = '17.2';
+        const APP_VERSION = '17.3';
 
         // 自動注入 UI 版本號
         const verEl = document.getElementById('app-version-display');
